@@ -27,6 +27,8 @@ export {
   AccessLevel,
   AssetType,
   AccessType,
+  AssetData,
+  AccessGrantData,
   RwaSecretsClient,
   createRwaSecretsClient,
 } from './client';

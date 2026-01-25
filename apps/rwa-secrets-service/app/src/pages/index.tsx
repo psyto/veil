@@ -4,42 +4,57 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PublicKey } from '@solana/web3.js';
 import toast from 'react-hot-toast';
 import * as nacl from 'tweetnacl';
+import {
+  RwaSecretsClient,
+  AssetData,
+  AccessGrantData,
+  AssetType,
+  AccessLevel,
+  generateAssetId,
+  encryptAssetMetadata,
+  createKeyShareForGrantee,
+  generateEncryptionKeypair,
+  EncryptionKeypair,
+} from '@rwa-secrets/sdk';
 
 // Asset types matching the on-chain enum
 const ASSET_TYPES = [
-  { value: 'realEstate', label: 'Real Estate' },
-  { value: 'securities', label: 'Securities' },
-  { value: 'commodities', label: 'Commodities' },
-  { value: 'receivables', label: 'Receivables' },
-  { value: 'intellectualProperty', label: 'Intellectual Property' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'other', label: 'Other' },
+  { value: 0, label: 'Real Estate' },
+  { value: 1, label: 'Securities' },
+  { value: 2, label: 'Commodities' },
+  { value: 3, label: 'Receivables' },
+  { value: 4, label: 'Intellectual Property' },
+  { value: 5, label: 'Equipment' },
+  { value: 6, label: 'Other' },
 ];
 
 // Access levels matching the on-chain enum
 const ACCESS_LEVELS = [
-  { value: 'viewBasic', label: 'View Basic', description: 'Basic asset info only' },
-  { value: 'viewFull', label: 'View Full', description: 'Full metadata access' },
-  { value: 'auditor', label: 'Auditor', description: 'Audit and compliance access' },
-  { value: 'admin', label: 'Admin', description: 'Full administrative access' },
+  { value: 0, label: 'View Basic', description: 'Basic asset info only' },
+  { value: 1, label: 'View Full', description: 'Full metadata access' },
+  { value: 2, label: 'Auditor', description: 'Audit and compliance access' },
+  { value: 3, label: 'Admin', description: 'Full administrative access' },
 ];
 
-// Mock data for demo (in production, fetch from chain)
-interface Asset {
+// Formatted asset for UI display
+interface FormattedAsset {
   id: string;
+  pda: PublicKey;
   name: string;
-  type: string;
-  status: 'active' | 'inactive';
+  type: number;
+  status: 'active' | 'inactive' | 'frozen' | 'transferred';
   createdAt: Date;
   accessGrants: number;
 }
 
-interface AccessGrant {
+// Formatted grant for UI display
+interface FormattedGrant {
   id: string;
-  assetId: string;
+  pda: PublicKey;
+  assetPda: PublicKey;
   assetName: string;
   grantee: string;
-  level: string;
+  level: number;
   grantedAt: Date;
   expiresAt: Date | null;
   isRevoked: boolean;
@@ -47,14 +62,20 @@ interface AccessGrant {
 
 export default function Home() {
   const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
+
+  const wallet = {
+    publicKey,
+    signTransaction,
+    signAllTransactions,
+  };
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'register' | 'assets' | 'grants'>('assets');
 
   // Register form state
   const [assetName, setAssetName] = useState('');
-  const [assetType, setAssetType] = useState('realEstate');
+  const [assetType, setAssetType] = useState(0);
   const [assetDescription, setAssetDescription] = useState('');
   const [legalDocHash, setLegalDocHash] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
@@ -62,78 +83,99 @@ export default function Home() {
   // Grant form state
   const [selectedAsset, setSelectedAsset] = useState('');
   const [granteeAddress, setGranteeAddress] = useState('');
-  const [accessLevel, setAccessLevel] = useState('viewBasic');
+  const [accessLevel, setAccessLevel] = useState(0);
   const [expiresInDays, setExpiresInDays] = useState('365');
   const [canDelegate, setCanDelegate] = useState(false);
   const [isGranting, setIsGranting] = useState(false);
 
   // Data state
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [grants, setGrants] = useState<AccessGrant[]>([]);
-  const [encryptionKeypair, setEncryptionKeypair] = useState<nacl.BoxKeyPair | null>(null);
+  const [assets, setAssets] = useState<FormattedAsset[]>([]);
+  const [grants, setGrants] = useState<FormattedGrant[]>([]);
+  const [encryptionKeypair, setEncryptionKeypair] = useState<EncryptionKeypair | null>(null);
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize encryption keypair when wallet connects
   useEffect(() => {
     if (publicKey) {
-      // Generate a deterministic keypair from wallet (simplified for demo)
-      // In production, use proper key derivation
+      // Generate a deterministic keypair from wallet
+      // In production, use proper key derivation from wallet signature
       const seed = new Uint8Array(32);
       const pubkeyBytes = publicKey.toBytes();
       for (let i = 0; i < 32; i++) {
         seed[i] = pubkeyBytes[i % pubkeyBytes.length];
       }
       const keypair = nacl.box.keyPair.fromSecretKey(seed);
-      setEncryptionKeypair(keypair);
+      setEncryptionKeypair({
+        publicKey: keypair.publicKey,
+        secretKey: keypair.secretKey,
+      });
     }
   }, [publicKey]);
 
-  // Fetch assets (mock for demo)
+  // Fetch assets and grants when wallet connects
   useEffect(() => {
-    if (publicKey) {
-      // In production, fetch from chain
-      setAssets([
-        {
-          id: 'asset-001',
-          name: 'Downtown Office Building',
-          type: 'realEstate',
-          status: 'active',
-          createdAt: new Date('2024-01-15'),
-          accessGrants: 3,
-        },
-        {
-          id: 'asset-002',
-          name: 'Tech Startup Equity',
-          type: 'securities',
-          status: 'active',
-          createdAt: new Date('2024-02-20'),
-          accessGrants: 5,
-        },
-      ]);
-
-      setGrants([
-        {
-          id: 'grant-001',
-          assetId: 'asset-001',
-          assetName: 'Downtown Office Building',
-          grantee: '7xKX...3mPq',
-          level: 'viewFull',
-          grantedAt: new Date('2024-01-20'),
-          expiresAt: new Date('2025-01-20'),
-          isRevoked: false,
-        },
-        {
-          id: 'grant-002',
-          assetId: 'asset-001',
-          assetName: 'Downtown Office Building',
-          grantee: '4pLm...9nKr',
-          level: 'auditor',
-          grantedAt: new Date('2024-02-01'),
-          expiresAt: null,
-          isRevoked: false,
-        },
-      ]);
+    if (!publicKey) {
+      setAssets([]);
+      setGrants([]);
+      return;
     }
-  }, [publicKey]);
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const client = new RwaSecretsClient(connection, undefined, wallet);
+
+        // Fetch assets issued by the connected wallet
+        const assetData = await client.getAssetsByIssuer(publicKey);
+
+        // Format assets for display
+        const formattedAssets: FormattedAsset[] = assetData.map((asset) => ({
+          id: Buffer.from(asset.assetId).toString('hex').slice(0, 16),
+          pda: asset.pda,
+          name: `Asset ${Buffer.from(asset.assetId).toString('hex').slice(0, 8)}`,
+          type: asset.assetType,
+          status: asset.status,
+          createdAt: new Date(asset.createdAt.toNumber() * 1000),
+          accessGrants: asset.accessGrantCount,
+        }));
+
+        setAssets(formattedAssets);
+
+        // Fetch grants for each asset
+        const allGrants: FormattedGrant[] = [];
+        for (const asset of assetData) {
+          const grantData = await client.getGrantsByAsset(asset.pda);
+          for (const grant of grantData) {
+            allGrants.push({
+              id: grant.pda.toBase58().slice(0, 16),
+              pda: grant.pda,
+              assetPda: grant.asset,
+              assetName: `Asset ${Buffer.from(asset.assetId).toString('hex').slice(0, 8)}`,
+              grantee: `${grant.grantee.toBase58().slice(0, 4)}...${grant.grantee.toBase58().slice(-4)}`,
+              level: grant.accessLevel,
+              grantedAt: new Date(grant.grantedAt.toNumber() * 1000),
+              expiresAt: grant.expiresAt.toNumber() > 0 ? new Date(grant.expiresAt.toNumber() * 1000) : null,
+              isRevoked: grant.isRevoked,
+            });
+          }
+        }
+
+        setGrants(allGrants);
+      } catch (err: any) {
+        console.error('Failed to fetch data:', err);
+        setError(err.message || 'Failed to load data from blockchain');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [publicKey, connection]);
 
   const handleRegisterAsset = useCallback(async () => {
     if (!publicKey || !encryptionKeypair) {
@@ -149,38 +191,76 @@ export default function Home() {
     setIsRegistering(true);
 
     try {
-      // In production:
-      // 1. Generate asset ID from name
-      // 2. Encrypt metadata with encryption keypair
-      // 3. Call program to register asset
+      const client = new RwaSecretsClient(connection, undefined, wallet);
 
-      // Simulate registration
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Generate asset ID from name
+      const assetId = await generateAssetId(assetName);
 
-      const newAsset: Asset = {
-        id: `asset-${Date.now()}`,
-        name: assetName,
-        type: assetType,
-        status: 'active',
-        createdAt: new Date(),
-        accessGrants: 0,
+      // Create legal doc hash from input or generate placeholder
+      let legalDocHashBytes: Uint8Array;
+      if (legalDocHash && legalDocHash.length === 64) {
+        // Assume hex string (64 hex chars = 32 bytes)
+        legalDocHashBytes = new Uint8Array(Buffer.from(legalDocHash, 'hex'));
+      } else {
+        // Generate placeholder hash (32 bytes) from asset ID
+        // In production, users should provide actual document hash
+        legalDocHashBytes = new Uint8Array(32);
+        for (let i = 0; i < 32; i++) {
+          legalDocHashBytes[i] = assetId[i] || 0;
+        }
+      }
+
+      // Create metadata object matching RwaAssetMetadata interface
+      const metadata = {
+        valuationUsdCents: BigInt(0), // Default valuation (can be updated later)
+        legalDocHash: legalDocHashBytes,
+        ownershipBps: 10000, // 100% ownership
+        jurisdictionCode: 'US',
+        additionalInfo: JSON.stringify({
+          name: assetName,
+          description: assetDescription,
+          assetType: ASSET_TYPES[assetType]?.label || 'Other',
+        }),
       };
 
-      setAssets(prev => [newAsset, ...prev]);
-      toast.success('Asset registered successfully!');
+      // Encrypt metadata
+      const encryptedMetadata = encryptAssetMetadata(metadata, encryptionKeypair);
+
+      // Register on-chain
+      const tx = await client.registerAssetOnChain(
+        assetId,
+        assetType as AssetType,
+        encryptedMetadata.bytes,
+        encryptionKeypair.publicKey
+      );
+
+      toast.success(`Asset registered! TX: ${tx.slice(0, 8)}...`);
+
+      // Refresh assets
+      const assetData = await client.getAssetsByIssuer(publicKey);
+      const formattedAssets: FormattedAsset[] = assetData.map((asset) => ({
+        id: Buffer.from(asset.assetId).toString('hex').slice(0, 16),
+        pda: asset.pda,
+        name: `Asset ${Buffer.from(asset.assetId).toString('hex').slice(0, 8)}`,
+        type: asset.assetType,
+        status: asset.status,
+        createdAt: new Date(asset.createdAt.toNumber() * 1000),
+        accessGrants: asset.accessGrantCount,
+      }));
+      setAssets(formattedAssets);
 
       // Reset form
       setAssetName('');
       setAssetDescription('');
       setLegalDocHash('');
       setActiveTab('assets');
-    } catch (error: any) {
-      console.error('Failed to register asset:', error);
-      toast.error(error.message || 'Failed to register asset');
+    } catch (err: any) {
+      console.error('Failed to register asset:', err);
+      toast.error(err.message || 'Failed to register asset');
     } finally {
       setIsRegistering(false);
     }
-  }, [publicKey, encryptionKeypair, assetName, assetType, assetDescription, legalDocHash]);
+  }, [publicKey, encryptionKeypair, assetName, assetType, assetDescription, legalDocHash, connection, wallet]);
 
   const handleGrantAccess = useCallback(async () => {
     if (!publicKey || !encryptionKeypair) {
@@ -199,8 +279,9 @@ export default function Home() {
     }
 
     // Validate grantee address
+    let granteePubkey: PublicKey;
     try {
-      new PublicKey(granteeAddress);
+      granteePubkey = new PublicKey(granteeAddress);
     } catch {
       toast.error('Invalid grantee address');
       return;
@@ -209,67 +290,125 @@ export default function Home() {
     setIsGranting(true);
 
     try {
-      // In production:
-      // 1. Create encrypted key share for grantee
-      // 2. Call program to grant access
+      const client = new RwaSecretsClient(connection, undefined, wallet);
 
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Find the asset PDA
+      const asset = assets.find((a) => a.id === selectedAsset);
+      if (!asset) {
+        throw new Error('Asset not found');
+      }
 
-      const asset = assets.find(a => a.id === selectedAsset);
-      const newGrant: AccessGrant = {
-        id: `grant-${Date.now()}`,
-        assetId: selectedAsset,
-        assetName: asset?.name || 'Unknown',
-        grantee: `${granteeAddress.slice(0, 4)}...${granteeAddress.slice(-4)}`,
-        level: accessLevel,
-        grantedAt: new Date(),
-        expiresAt: expiresInDays ? new Date(Date.now() + parseInt(expiresInDays) * 86400000) : null,
-        isRevoked: false,
-      };
+      // Create encrypted key share for grantee
+      // In production, fetch grantee's encryption pubkey from a registry
+      // For now, use a placeholder (grantee would need to provide their pubkey)
+      const granteeEncryptionPubkey = new Uint8Array(32);
+      crypto.getRandomValues(granteeEncryptionPubkey);
 
-      setGrants(prev => [newGrant, ...prev]);
-      setAssets(prev => prev.map(a =>
-        a.id === selectedAsset ? { ...a, accessGrants: a.accessGrants + 1 } : a
-      ));
-      toast.success('Access granted successfully!');
+      const encryptedKeyShare = createKeyShareForGrantee(encryptionKeypair, granteeEncryptionPubkey);
+
+      // Calculate expiration
+      const expiresAt = expiresInDays
+        ? Math.floor(Date.now() / 1000) + parseInt(expiresInDays) * 86400
+        : 0;
+
+      // Grant access on-chain
+      const tx = await client.grantAccessOnChain(
+        asset.pda,
+        granteePubkey,
+        accessLevel as AccessLevel,
+        encryptedKeyShare,
+        expiresAt,
+        canDelegate
+      );
+
+      toast.success(`Access granted! TX: ${tx.slice(0, 8)}...`);
+
+      // Refresh grants
+      const allGrants: FormattedGrant[] = [];
+      const assetData = await client.getAssetsByIssuer(publicKey);
+      for (const a of assetData) {
+        const grantData = await client.getGrantsByAsset(a.pda);
+        for (const grant of grantData) {
+          allGrants.push({
+            id: grant.pda.toBase58().slice(0, 16),
+            pda: grant.pda,
+            assetPda: grant.asset,
+            assetName: `Asset ${Buffer.from(a.assetId).toString('hex').slice(0, 8)}`,
+            grantee: `${grant.grantee.toBase58().slice(0, 4)}...${grant.grantee.toBase58().slice(-4)}`,
+            level: grant.accessLevel,
+            grantedAt: new Date(grant.grantedAt.toNumber() * 1000),
+            expiresAt: grant.expiresAt.toNumber() > 0 ? new Date(grant.expiresAt.toNumber() * 1000) : null,
+            isRevoked: grant.isRevoked,
+          });
+        }
+      }
+      setGrants(allGrants);
 
       // Reset form
       setGranteeAddress('');
       setActiveTab('grants');
-    } catch (error: any) {
-      console.error('Failed to grant access:', error);
-      toast.error(error.message || 'Failed to grant access');
+    } catch (err: any) {
+      console.error('Failed to grant access:', err);
+      toast.error(err.message || 'Failed to grant access');
     } finally {
       setIsGranting(false);
     }
-  }, [publicKey, encryptionKeypair, selectedAsset, granteeAddress, accessLevel, expiresInDays, assets]);
+  }, [publicKey, encryptionKeypair, selectedAsset, granteeAddress, accessLevel, expiresInDays, canDelegate, assets, connection, wallet]);
 
-  const handleRevokeAccess = useCallback(async (grantId: string) => {
-    try {
-      // In production: call program to revoke access
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setGrants(prev => prev.map(g =>
-        g.id === grantId ? { ...g, isRevoked: true } : g
-      ));
-      toast.success('Access revoked');
-    } catch (error: any) {
-      toast.error('Failed to revoke access');
+  const handleRevokeAccess = useCallback(async (grant: FormattedGrant) => {
+    if (!publicKey) {
+      toast.error('Please connect your wallet');
+      return;
     }
-  }, []);
 
-  const handleDeactivateAsset = useCallback(async (assetId: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const client = new RwaSecretsClient(connection, undefined, wallet);
 
-      setAssets(prev => prev.map(a =>
-        a.id === assetId ? { ...a, status: 'inactive' } : a
-      ));
-      toast.success('Asset deactivated');
-    } catch (error: any) {
-      toast.error('Failed to deactivate asset');
+      // Get the grantee pubkey from the grant
+      // We need to fetch the full grant data to get the grantee
+      const grantData = await client.getGrantsByAsset(grant.assetPda);
+      const fullGrant = grantData.find((g) => g.pda.equals(grant.pda));
+
+      if (!fullGrant) {
+        throw new Error('Grant not found');
+      }
+
+      const tx = await client.revokeAccessOnChain(grant.assetPda, fullGrant.grantee);
+
+      toast.success(`Access revoked! TX: ${tx.slice(0, 8)}...`);
+
+      // Update local state
+      setGrants((prev) =>
+        prev.map((g) => (g.id === grant.id ? { ...g, isRevoked: true } : g))
+      );
+    } catch (err: any) {
+      console.error('Failed to revoke access:', err);
+      toast.error(err.message || 'Failed to revoke access');
     }
-  }, []);
+  }, [publicKey, connection, wallet]);
+
+  const handleDeactivateAsset = useCallback(async (asset: FormattedAsset) => {
+    if (!publicKey) {
+      toast.error('Please connect your wallet');
+      return;
+    }
+
+    try {
+      const client = new RwaSecretsClient(connection, undefined, wallet);
+
+      const tx = await client.deactivateAssetOnChain(asset.pda);
+
+      toast.success(`Asset deactivated! TX: ${tx.slice(0, 8)}...`);
+
+      // Update local state
+      setAssets((prev) =>
+        prev.map((a) => (a.id === asset.id ? { ...a, status: 'inactive' as const } : a))
+      );
+    } catch (err: any) {
+      console.error('Failed to deactivate asset:', err);
+      toast.error(err.message || 'Failed to deactivate asset');
+    }
+  }, [publicKey, connection, wallet]);
 
   return (
     <main className="min-h-screen p-8">
@@ -282,6 +421,32 @@ export default function Home() {
           </div>
           <WalletMultiButton />
         </div>
+
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p className="text-red-200 text-sm">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="mt-2 text-xs text-red-300 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Loading Banner */}
+        {isLoading && (
+          <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <p className="text-emerald-200 text-sm">Loading data from blockchain...</p>
+            </div>
+          </div>
+        )}
 
         {/* Info Banner */}
         <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-lg p-4 mb-6">
@@ -297,7 +462,7 @@ export default function Home() {
             { id: 'assets', label: 'My Assets' },
             { id: 'register', label: 'Register Asset' },
             { id: 'grants', label: 'Access Grants' },
-          ].map(tab => (
+          ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
@@ -319,6 +484,14 @@ export default function Home() {
               <div className="bg-slate-800 rounded-xl p-8 text-center">
                 <p className="text-gray-400">Connect your wallet to view your assets</p>
               </div>
+            ) : isLoading ? (
+              <div className="bg-slate-800 rounded-xl p-8 text-center">
+                <svg className="animate-spin h-8 w-8 text-emerald-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <p className="text-gray-400">Loading assets...</p>
+              </div>
             ) : assets.length === 0 ? (
               <div className="bg-slate-800 rounded-xl p-8 text-center">
                 <p className="text-gray-400 mb-4">No assets registered yet</p>
@@ -330,22 +503,24 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              assets.map(asset => (
+              assets.map((asset) => (
                 <div key={asset.id} className="bg-slate-800 rounded-xl p-6">
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="flex items-center gap-3">
                         <h3 className="text-xl font-semibold">{asset.name}</h3>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          asset.status === 'active'
-                            ? 'bg-emerald-500/20 text-emerald-300'
-                            : 'bg-gray-500/20 text-gray-400'
-                        }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            asset.status === 'active'
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-gray-500/20 text-gray-400'
+                          }`}
+                        >
                           {asset.status}
                         </span>
                       </div>
                       <div className="flex gap-4 mt-2 text-sm text-gray-400">
-                        <span>{ASSET_TYPES.find(t => t.value === asset.type)?.label}</span>
+                        <span>{ASSET_TYPES.find((t) => t.value === asset.type)?.label}</span>
                         <span>Created: {asset.createdAt.toLocaleDateString()}</span>
                         <span>{asset.accessGrants} access grants</span>
                       </div>
@@ -362,7 +537,7 @@ export default function Home() {
                       </button>
                       {asset.status === 'active' && (
                         <button
-                          onClick={() => handleDeactivateAsset(asset.id)}
+                          onClick={() => handleDeactivateAsset(asset)}
                           className="bg-slate-600 hover:bg-slate-500 px-3 py-1.5 rounded text-sm"
                         >
                           Deactivate
@@ -398,10 +573,10 @@ export default function Home() {
                 <label className="block text-sm text-gray-400 mb-2">Asset Type</label>
                 <select
                   value={assetType}
-                  onChange={(e) => setAssetType(e.target.value)}
+                  onChange={(e) => setAssetType(parseInt(e.target.value))}
                   className="w-full bg-slate-700 rounded-lg px-4 py-3 outline-none cursor-pointer focus:ring-2 focus:ring-emerald-500"
                 >
-                  {ASSET_TYPES.map(type => (
+                  {ASSET_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
@@ -436,8 +611,18 @@ export default function Home() {
               {/* Encryption Notice */}
               <div className="bg-slate-700/50 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-emerald-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-5 h-5 text-emerald-400 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   <div className="text-sm text-gray-300">
                     <p className="font-medium">End-to-End Encryption</p>
@@ -481,11 +666,13 @@ export default function Home() {
                     className="w-full bg-slate-700 rounded-lg px-4 py-3 outline-none cursor-pointer"
                   >
                     <option value="">Select an asset</option>
-                    {assets.filter(a => a.status === 'active').map(asset => (
-                      <option key={asset.id} value={asset.id}>
-                        {asset.name}
-                      </option>
-                    ))}
+                    {assets
+                      .filter((a) => a.status === 'active')
+                      .map((asset) => (
+                        <option key={asset.id} value={asset.id}>
+                          {asset.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -494,10 +681,10 @@ export default function Home() {
                   <label className="block text-sm text-gray-400 mb-2">Access Level</label>
                   <select
                     value={accessLevel}
-                    onChange={(e) => setAccessLevel(e.target.value)}
+                    onChange={(e) => setAccessLevel(parseInt(e.target.value))}
                     className="w-full bg-slate-700 rounded-lg px-4 py-3 outline-none cursor-pointer"
                   >
-                    {ACCESS_LEVELS.map(level => (
+                    {ACCESS_LEVELS.map((level) => (
                       <option key={level.value} value={level.value}>
                         {level.label}
                       </option>
@@ -556,11 +743,18 @@ export default function Home() {
             <div className="bg-slate-800 rounded-xl p-6">
               <h2 className="text-xl font-semibold mb-4">Active Grants</h2>
 
-              {grants.length === 0 ? (
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <svg className="animate-spin h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                </div>
+              ) : grants.length === 0 ? (
                 <p className="text-gray-400 text-center py-4">No access grants yet</p>
               ) : (
                 <div className="space-y-3">
-                  {grants.map(grant => (
+                  {grants.map((grant) => (
                     <div
                       key={grant.id}
                       className={`bg-slate-700 rounded-lg p-4 ${grant.isRevoked ? 'opacity-50' : ''}`}
@@ -570,24 +764,29 @@ export default function Home() {
                           <div className="font-medium">{grant.assetName}</div>
                           <div className="text-sm text-gray-400 mt-1">
                             <span className="font-mono">{grant.grantee}</span>
-                            <span className="mx-2">•</span>
-                            <span className={`px-2 py-0.5 rounded text-xs ${
-                              grant.level === 'admin' ? 'bg-red-500/20 text-red-300' :
-                              grant.level === 'auditor' ? 'bg-yellow-500/20 text-yellow-300' :
-                              grant.level === 'viewFull' ? 'bg-blue-500/20 text-blue-300' :
-                              'bg-gray-500/20 text-gray-300'
-                            }`}>
-                              {ACCESS_LEVELS.find(l => l.value === grant.level)?.label}
+                            <span className="mx-2">-</span>
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs ${
+                                grant.level === 3
+                                  ? 'bg-red-500/20 text-red-300'
+                                  : grant.level === 2
+                                  ? 'bg-yellow-500/20 text-yellow-300'
+                                  : grant.level === 1
+                                  ? 'bg-blue-500/20 text-blue-300'
+                                  : 'bg-gray-500/20 text-gray-300'
+                              }`}
+                            >
+                              {ACCESS_LEVELS.find((l) => l.value === grant.level)?.label}
                             </span>
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
                             Granted: {grant.grantedAt.toLocaleDateString()}
-                            {grant.expiresAt && ` • Expires: ${grant.expiresAt.toLocaleDateString()}`}
+                            {grant.expiresAt && ` - Expires: ${grant.expiresAt.toLocaleDateString()}`}
                           </div>
                         </div>
                         {!grant.isRevoked ? (
                           <button
-                            onClick={() => handleRevokeAccess(grant.id)}
+                            onClick={() => handleRevokeAccess(grant)}
                             className="bg-red-600/20 hover:bg-red-600/40 text-red-300 px-3 py-1.5 rounded text-sm"
                           >
                             Revoke

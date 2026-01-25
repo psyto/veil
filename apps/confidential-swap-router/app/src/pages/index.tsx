@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { PublicKey } from '@solana/web3.js';
@@ -16,8 +16,19 @@ const TOKENS = {
   USDT: { mint: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', symbol: 'USDT', decimals: 6 },
 };
 
-// Placeholder solver encryption pubkey (would be fetched from on-chain)
-const SOLVER_ENCRYPTION_PUBKEY = new Uint8Array(32).fill(0);
+// Solver API URL (configurable via env)
+const SOLVER_API_URL = process.env.NEXT_PUBLIC_SOLVER_API_URL || 'http://localhost:3001';
+
+// Jupiter API URL
+const JUPITER_QUOTE_URL = 'https://quote-api.jup.ag/v6/quote';
+
+interface JupiterQuote {
+  inputMint: string;
+  outputMint: string;
+  inAmount: string;
+  outAmount: string;
+  priceImpactPct: string;
+}
 
 export default function Home() {
   const { connection } = useConnection();
@@ -30,11 +41,119 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
 
+  // New state for solver pubkey and Jupiter quotes
+  const [solverEncryptionPubkey, setSolverEncryptionPubkey] = useState<Uint8Array | null>(null);
+  const [solverPubkeyLoading, setSolverPubkeyLoading] = useState(true);
+  const [solverPubkeyError, setSolverPubkeyError] = useState<string | null>(null);
+
+  const [jupiterQuote, setJupiterQuote] = useState<JupiterQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   const wallet = {
     publicKey,
     signTransaction,
     signAllTransactions,
   };
+
+  // Fetch solver encryption pubkey on mount
+  useEffect(() => {
+    const fetchSolverPubkey = async () => {
+      setSolverPubkeyLoading(true);
+      setSolverPubkeyError(null);
+
+      try {
+        const response = await fetch(`${SOLVER_API_URL}/api/solver-pubkey`);
+        const data = await response.json();
+
+        if (!data.success || !data.encryptionPubkey) {
+          throw new Error(data.error || 'Failed to fetch solver pubkey');
+        }
+
+        // Parse hex string to Uint8Array
+        const pubkeyBytes = new Uint8Array(Buffer.from(data.encryptionPubkey, 'hex'));
+        setSolverEncryptionPubkey(pubkeyBytes);
+        console.log('Solver encryption pubkey loaded:', data.encryptionPubkey);
+      } catch (error: any) {
+        console.error('Failed to fetch solver pubkey:', error);
+        setSolverPubkeyError(error.message || 'Failed to connect to solver');
+      } finally {
+        setSolverPubkeyLoading(false);
+      }
+    };
+
+    fetchSolverPubkey();
+  }, []);
+
+  // Fetch Jupiter quote when input changes (debounced)
+  useEffect(() => {
+    // Clear previous debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const inputAmountNum = parseFloat(inputAmount);
+    if (!inputAmount || isNaN(inputAmountNum) || inputAmountNum <= 0) {
+      setJupiterQuote(null);
+      setQuoteError(null);
+      return;
+    }
+
+    if (inputToken === outputToken) {
+      setJupiterQuote(null);
+      setQuoteError('Input and output tokens must be different');
+      return;
+    }
+
+    // Debounce the API call by 500ms
+    debounceRef.current = setTimeout(async () => {
+      setQuoteLoading(true);
+      setQuoteError(null);
+
+      try {
+        const inputTokenInfo = TOKENS[inputToken as keyof typeof TOKENS];
+        const outputTokenInfo = TOKENS[outputToken as keyof typeof TOKENS];
+
+        const inputAmountRaw = Math.floor(inputAmountNum * 10 ** inputTokenInfo.decimals);
+
+        const params = new URLSearchParams({
+          inputMint: inputTokenInfo.mint,
+          outputMint: outputTokenInfo.mint,
+          amount: inputAmountRaw.toString(),
+          slippageBps: Math.floor(parseFloat(slippage) * 100).toString(),
+        });
+
+        const response = await fetch(`${JUPITER_QUOTE_URL}?${params}`);
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        setJupiterQuote({
+          inputMint: data.inputMint,
+          outputMint: data.outputMint,
+          inAmount: data.inAmount,
+          outAmount: data.outAmount,
+          priceImpactPct: data.priceImpactPct,
+        });
+      } catch (error: any) {
+        console.error('Failed to fetch Jupiter quote:', error);
+        setQuoteError(error.message || 'Failed to fetch quote');
+        setJupiterQuote(null);
+      } finally {
+        setQuoteLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [inputAmount, inputToken, outputToken, slippage]);
 
   // Fetch user's orders
   useEffect(() => {
@@ -53,9 +172,25 @@ export default function Home() {
     fetchOrders();
   }, [publicKey, connection]);
 
+  // Format output amount for display
+  const formatOutputAmount = (): string => {
+    if (quoteLoading) return 'Loading...';
+    if (quoteError) return 'Quote unavailable';
+    if (!jupiterQuote) return 'Enter amount';
+
+    const outputTokenInfo = TOKENS[outputToken as keyof typeof TOKENS];
+    const outputAmount = parseInt(jupiterQuote.outAmount) / 10 ** outputTokenInfo.decimals;
+    return `~${outputAmount.toFixed(6)} ${outputToken}`;
+  };
+
   const handleSubmitOrder = useCallback(async () => {
     if (!publicKey || !signTransaction) {
       toast.error('Please connect your wallet');
+      return;
+    }
+
+    if (!solverEncryptionPubkey) {
+      toast.error('Solver not available. Please wait or try again.');
       return;
     }
 
@@ -70,10 +205,20 @@ export default function Home() {
       const client = new ConfidentialSwapClient(connection, wallet);
 
       // Derive encryption keypair from wallet (simplified - in production use secure key derivation)
-      // This is a placeholder - in production you'd use the actual wallet secret key
       const dummySecretKey = new Uint8Array(64);
       crypto.getRandomValues(dummySecretKey);
       client.initializeEncryption(dummySecretKey);
+
+      // Register user's encryption pubkey with the solver
+      const userEncryptionPubkey = client.getEncryptionPublicKey();
+      await fetch(`${SOLVER_API_URL}/api/register-encryption-pubkey`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userAddress: publicKey.toBase58(),
+          encryptionPubkey: Buffer.from(userEncryptionPubkey).toString('hex'),
+        }),
+      });
 
       const inputTokenInfo = TOKENS[inputToken as keyof typeof TOKENS];
       const outputTokenInfo = TOKENS[outputToken as keyof typeof TOKENS];
@@ -82,8 +227,14 @@ export default function Home() {
         Math.floor(parseFloat(inputAmount) * 10 ** inputTokenInfo.decimals)
       );
 
-      // Estimated min output (would be fetched from Jupiter in production)
-      const estimatedOutput = amountBN.mul(new BN(98)).div(new BN(100));
+      // Use Jupiter quote for min output, or fallback to 98% estimate
+      let minOutput: BN;
+      if (jupiterQuote) {
+        const slippageMultiplier = 1 - parseFloat(slippage) / 100;
+        minOutput = new BN(Math.floor(parseInt(jupiterQuote.outAmount) * slippageMultiplier));
+      } else {
+        minOutput = amountBN.mul(new BN(98)).div(new BN(100));
+      }
 
       const slippageBps = Math.floor(parseFloat(slippage) * 100);
       const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
@@ -96,10 +247,10 @@ export default function Home() {
         new PublicKey(inputTokenInfo.mint),
         new PublicKey(outputTokenInfo.mint),
         amountBN,
-        estimatedOutput,
+        minOutput,
         slippageBps,
         deadline,
-        SOLVER_ENCRYPTION_PUBKEY
+        solverEncryptionPubkey
       );
 
       toast.success(`Order submitted! TX: ${tx.slice(0, 8)}...`);
@@ -114,7 +265,7 @@ export default function Home() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [publicKey, signTransaction, connection, inputAmount, inputToken, outputToken, slippage]);
+  }, [publicKey, signTransaction, connection, inputAmount, inputToken, outputToken, slippage, solverEncryptionPubkey, jupiterQuote]);
 
   const handleCancelOrder = useCallback(
     async (orderId: BN, inputMint: PublicKey) => {
@@ -135,6 +286,9 @@ export default function Home() {
     [publicKey, connection]
   );
 
+  // Determine if submit button should be disabled
+  const isSubmitDisabled = !publicKey || isSubmitting || solverPubkeyLoading || !solverEncryptionPubkey;
+
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-2xl mx-auto">
@@ -145,6 +299,33 @@ export default function Home() {
           </h1>
           <WalletMultiButton />
         </div>
+
+        {/* Solver Status Banner */}
+        {solverPubkeyLoading && (
+          <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <p className="text-yellow-200 text-sm">Connecting to solver...</p>
+            </div>
+          </div>
+        )}
+
+        {solverPubkeyError && (
+          <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p className="text-red-200 text-sm">
+              Solver unavailable: {solverPubkeyError}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 text-xs text-red-300 underline"
+            >
+              Retry connection
+            </button>
+          </div>
+        )}
 
         {/* Info Banner */}
         <div className="bg-purple-900/30 border border-purple-500/30 rounded-lg p-4 mb-6">
@@ -207,8 +388,18 @@ export default function Home() {
           <div className="mb-4">
             <label className="block text-sm text-gray-400 mb-2">You Receive</label>
             <div className="flex gap-2">
-              <div className="flex-1 bg-slate-700 rounded-lg px-4 py-3 text-lg text-gray-400">
-                Estimated after execution
+              <div className="flex-1 bg-slate-700 rounded-lg px-4 py-3 text-lg text-gray-300 flex items-center">
+                {quoteLoading ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span className="text-gray-400">Fetching quote...</span>
+                  </div>
+                ) : (
+                  <span className={quoteError ? 'text-red-400' : ''}>{formatOutputAmount()}</span>
+                )}
               </div>
               <select
                 value={outputToken}
@@ -222,6 +413,11 @@ export default function Home() {
                 ))}
               </select>
             </div>
+            {jupiterQuote && (
+              <div className="mt-2 text-xs text-gray-500">
+                Price impact: {parseFloat(jupiterQuote.priceImpactPct).toFixed(4)}%
+              </div>
+            )}
           </div>
 
           {/* Slippage */}
@@ -256,11 +452,15 @@ export default function Home() {
           {/* Submit Button */}
           <button
             onClick={handleSubmitOrder}
-            disabled={!publicKey || isSubmitting}
+            disabled={isSubmitDisabled}
             className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-lg transition-colors"
           >
             {!publicKey
               ? 'Connect Wallet'
+              : solverPubkeyLoading
+              ? 'Connecting to Solver...'
+              : !solverEncryptionPubkey
+              ? 'Solver Unavailable'
               : isSubmitting
               ? 'Submitting...'
               : 'Submit Encrypted Order'}

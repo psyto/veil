@@ -4,7 +4,7 @@ import {
   PublicKey,
   sendAndConfirmTransaction,
 } from '@solana/web3.js';
-import { AnchorProvider, Wallet, BN } from '@coral-xyz/anchor';
+import { AnchorProvider, Wallet, BN, Program, Idl } from '@coral-xyz/anchor';
 import {
   SolverClient,
   OrderData,
@@ -14,9 +14,14 @@ import {
   PROGRAM_ID,
   SOLVER_CONFIG_SEED,
   ORDER_SEED,
+  ConfidentialSwapClient,
 } from '@confidential-swap/sdk';
 import { JupiterClient, findOptimalRoute } from './jupiter';
 import { getAssociatedTokenAddress, getAccount, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
+// In-memory registry for user encryption pubkeys
+// Key: user wallet address (base58), Value: encryption pubkey (Uint8Array)
+export const userEncryptionPubkeyRegistry: Map<string, Uint8Array> = new Map();
 
 /**
  * Solver configuration
@@ -147,23 +152,20 @@ export class ConfidentialSwapSolver {
   }
 
   /**
-   * Fetch all pending orders from the program
+   * Fetch all pending orders from the program using Anchor deserialization
    */
   private async fetchPendingOrders(): Promise<OrderData[]> {
-    const programAccounts = await this.connection.getProgramAccounts(PROGRAM_ID, {
-      filters: [
-        {
-          memcmp: {
-            // Filter by OrderStatus::Pending (first variant = 0)
-            offset: 8 + 32 + 8 + 32 + 32 + 8 + 8 + 8 + 4, // Skip to status field
-            bytes: 'CpiPMDVP', // Base58 encoded 0
-          },
-        },
-      ],
-    });
+    try {
+      // Use SDK client to fetch pending orders with proper Anchor deserialization
+      const swapClient = new ConfidentialSwapClient(this.connection, this.wallet);
+      const pendingOrders = await swapClient.getPendingOrders();
 
-    // Parse the accounts (simplified - would need proper deserialization)
-    return [];
+      console.log(`Found ${pendingOrders.length} pending orders`);
+      return pendingOrders;
+    } catch (error) {
+      console.error('Error fetching pending orders:', error);
+      return [];
+    }
   }
 
   /**
@@ -256,17 +258,33 @@ export class ConfidentialSwapSolver {
   }
 
   /**
-   * Get user's encryption public key
-   * This could be stored on-chain or in a registry
+   * Get user's encryption public key from in-memory registry
+   * Users must register their encryption pubkey via the API before submitting orders
    */
   private async getUserEncryptionPubkey(userAddress: PublicKey): Promise<Uint8Array> {
-    // In production, this would look up the user's encryption pubkey from:
-    // 1. An on-chain registry
-    // 2. A database
-    // 3. The order metadata
+    const userAddressStr = userAddress.toBase58();
+    const encryptionPubkey = userEncryptionPubkeyRegistry.get(userAddressStr);
 
-    // For now, return a placeholder that needs to be implemented
-    throw new Error('User encryption pubkey lookup not implemented');
+    if (!encryptionPubkey) {
+      throw new Error(`User encryption pubkey not found for ${userAddressStr}. User must register via /api/register-encryption-pubkey`);
+    }
+
+    return encryptionPubkey;
+  }
+
+  /**
+   * Register a user's encryption public key (called from API)
+   */
+  static registerUserEncryptionPubkey(userAddress: string, encryptionPubkey: Uint8Array): void {
+    userEncryptionPubkeyRegistry.set(userAddress, encryptionPubkey);
+    console.log(`Registered encryption pubkey for user: ${userAddress}`);
+  }
+
+  /**
+   * Get the count of registered users
+   */
+  static getRegisteredUserCount(): number {
+    return userEncryptionPubkeyRegistry.size;
   }
 
   private sleep(ms: number): Promise<void> {

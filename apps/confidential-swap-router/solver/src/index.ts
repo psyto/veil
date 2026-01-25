@@ -1,4 +1,5 @@
 import { ConfidentialSwapSolver, createSolverConfig } from './solver';
+import { createSolverApiServer } from './api';
 
 async function main() {
   console.log('=== Confidential Swap Router Solver ===');
@@ -7,6 +8,10 @@ async function main() {
   try {
     const config = createSolverConfig();
     const solver = new ConfidentialSwapSolver(config);
+
+    // Start the API server
+    const apiPort = parseInt(process.env.API_PORT || '3001');
+    createSolverApiServer(solver, apiPort);
 
     // Handle shutdown gracefully
     process.on('SIGINT', () => {
@@ -32,3 +37,4 @@ main();
 
 export { ConfidentialSwapSolver, createSolverConfig } from './solver';
 export { JupiterClient, findOptimalRoute } from './jupiter';
+export { createSolverApiServer, createSolverApiRouter } from './api';
