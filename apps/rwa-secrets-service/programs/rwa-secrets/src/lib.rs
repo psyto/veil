@@ -7,7 +7,7 @@ pub mod error;
 use state::*;
 use error::RwaError;
 
-declare_id!("RWAsec1111111111111111111111111111111111111");
+declare_id!("DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam");
 
 #[program]
 pub mod rwa_secrets {

@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-rwa_secrets = "RWAsec1111111111111111111111111111111111111"
+rwa_secrets = "DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam"
 
 [registry]
 url = "https://api.apr.dev"
