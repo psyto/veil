@@ -52,6 +52,7 @@ confidential-swap-router/
 │       └── index.ts            # Exports
 ├── solver/                     # Solver service
 │   └── src/
+│       ├── api.ts              # Express API server
 │       ├── jupiter.ts          # Jupiter integration
 │       ├── solver.ts           # Order execution
 │       └── index.ts            # Entry point
@@ -118,6 +119,15 @@ yarn dev
 
 Open http://localhost:3000 in your browser.
 
+#### Frontend Features
+
+- **Wallet Connection**: Supports Phantom, Solflare, and other Solana wallets
+- **Real-time Quotes**: Jupiter Quote API integration with 500ms debounce
+- **Price Impact Display**: Shows estimated output and price impact percentage
+- **Slippage Configuration**: Preset options (0.1%, 0.5%, 1.0%) or custom input
+- **Order Management**: View pending orders, cancel, and claim outputs
+- **Solver Status**: Real-time connection status to solver API
+
 ### Run the Solver
 
 ```bash
@@ -126,8 +136,29 @@ cd solver
 # Set environment variables
 export SOLVER_KEYPAIR_PATH=/path/to/solver-keypair.json
 export RPC_URL=https://api.devnet.solana.com
+export API_PORT=3001  # Optional, defaults to 3001
 
 yarn dev
+```
+
+The solver starts both the order execution service and an Express API server.
+
+## Solver API
+
+The solver exposes a REST API for encryption key exchange:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/solver-pubkey` | GET | Get solver's encryption public key (hex/base64) |
+| `/api/register-encryption-pubkey` | POST | Register user's encryption pubkey |
+| `/api/health` | GET | Health check |
+
+### Example: Register User Encryption Key
+
+```bash
+curl -X POST http://localhost:3001/api/register-encryption-pubkey \
+  -H "Content-Type: application/json" \
+  -d '{"userAddress": "YOUR_WALLET_ADDRESS", "encryptionPubkey": "HEX_ENCODED_32_BYTES"}'
 ```
 
 ## Program Instructions
