@@ -5,21 +5,28 @@ export type ConfidentialSwapRouter = {
   "instructions": [
     {
       "name": "initializeSolver",
+      "discriminator": [93, 104, 26, 39, 243, 139, 10, 223],
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "solverConfig",
-          "isMut": true,
-          "isSigner": false
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 111, 108, 118, 101, 114, 95, 99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -35,51 +42,41 @@ export type ConfidentialSwapRouter = {
     },
     {
       "name": "submitOrder",
+      "discriminator": [230, 150, 200, 53, 92, 208, 109, 108],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "solverConfig",
-          "isMut": false,
-          "isSigner": false
+          "name": "solverConfig"
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "userInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -99,61 +96,50 @@ export type ConfidentialSwapRouter = {
     },
     {
       "name": "executeOrder",
+      "discriminator": [115, 61, 180, 24, 168, 32, 215, 20],
       "accounts": [
         {
           "name": "solver",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "solverConfig",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "outputVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "solverInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "solverOutputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -169,88 +155,86 @@ export type ConfidentialSwapRouter = {
     },
     {
       "name": "cancelOrder",
+      "discriminator": [95, 129, 237, 240, 8, 49, 223, 132],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "userInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
       "name": "claimOutput",
+      "discriminator": [150, 201, 54, 233, 4, 59, 65, 32],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "outputVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "userOutputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "solverConfig",
+      "discriminator": [224, 189, 236, 109, 124, 58, 53, 146]
+    },
+    {
+      "name": "encryptedOrder",
+      "discriminator": [82, 52, 93, 72, 209, 212, 50, 250]
+    }
+  ],
+  "types": [
     {
       "name": "solverConfig",
       "type": {
@@ -327,7 +311,9 @@ export type ConfidentialSwapRouter = {
           {
             "name": "status",
             "type": {
-              "defined": "OrderStatus"
+              "defined": {
+                "name": "orderStatus"
+              }
             }
           },
           {
@@ -354,28 +340,26 @@ export type ConfidentialSwapRouter = {
           }
         ]
       }
-    }
-  ],
-  "types": [
+    },
     {
-      "name": "OrderStatus",
+      "name": "orderStatus",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Pending"
+            "name": "pending"
           },
           {
-            "name": "Executing"
+            "name": "executing"
           },
           {
-            "name": "Completed"
+            "name": "completed"
           },
           {
-            "name": "Cancelled"
+            "name": "cancelled"
           },
           {
-            "name": "Failed"
+            "name": "failed"
           }
         ]
       }
@@ -384,67 +368,67 @@ export type ConfidentialSwapRouter = {
   "errors": [
     {
       "code": 6000,
-      "name": "OrderNotCancellable",
+      "name": "orderNotCancellable",
       "msg": "Order is not in a cancellable state"
     },
     {
       "code": 6001,
-      "name": "OrderNotExecutable",
+      "name": "orderNotExecutable",
       "msg": "Order is not in an executable state"
     },
     {
       "code": 6002,
-      "name": "OrderNotClaimable",
+      "name": "orderNotClaimable",
       "msg": "Order is not in a claimable state"
     },
     {
       "code": 6003,
-      "name": "UnauthorizedOwner",
+      "name": "unauthorizedOwner",
       "msg": "Unauthorized owner"
     },
     {
       "code": 6004,
-      "name": "UnauthorizedSolver",
+      "name": "unauthorizedSolver",
       "msg": "Unauthorized solver"
     },
     {
       "code": 6005,
-      "name": "InvalidPayloadLength",
+      "name": "invalidPayloadLength",
       "msg": "Invalid encrypted payload length"
     },
     {
       "code": 6006,
-      "name": "SlippageExceeded",
+      "name": "slippageExceeded",
       "msg": "Slippage tolerance exceeded"
     },
     {
       "code": 6007,
-      "name": "OrderExpired",
+      "name": "orderExpired",
       "msg": "Order has expired"
     },
     {
       "code": 6008,
-      "name": "SolverNotActive",
+      "name": "solverNotActive",
       "msg": "Solver is not active"
     },
     {
       "code": 6009,
-      "name": "InvalidInputAmount",
+      "name": "invalidInputAmount",
       "msg": "Invalid input amount"
     },
     {
       "code": 6010,
-      "name": "InvalidTokenMint",
+      "name": "invalidTokenMint",
       "msg": "Invalid token mint"
     },
     {
       "code": 6011,
-      "name": "ArithmeticOverflow",
+      "name": "arithmeticOverflow",
       "msg": "Arithmetic overflow"
     },
     {
       "code": 6012,
-      "name": "AlreadyClaimed",
+      "name": "alreadyClaimed",
       "msg": "Output already claimed"
     }
   ],
@@ -460,21 +444,28 @@ export const IDL: ConfidentialSwapRouter = {
   "instructions": [
     {
       "name": "initializeSolver",
+      "discriminator": [93, 104, 26, 39, 243, 139, 10, 223],
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "solverConfig",
-          "isMut": true,
-          "isSigner": false
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [115, 111, 108, 118, 101, 114, 95, 99, 111, 110, 102, 105, 103]
+              }
+            ]
+          }
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -490,51 +481,41 @@ export const IDL: ConfidentialSwapRouter = {
     },
     {
       "name": "submitOrder",
+      "discriminator": [230, 150, 200, 53, 92, 208, 109, 108],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "solverConfig",
-          "isMut": false,
-          "isSigner": false
+          "name": "solverConfig"
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "userInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -554,61 +535,50 @@ export const IDL: ConfidentialSwapRouter = {
     },
     {
       "name": "executeOrder",
+      "discriminator": [115, 61, 180, 24, 168, 32, 215, 20],
       "accounts": [
         {
           "name": "solver",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "solverConfig",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "outputVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "solverInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "solverOutputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -624,88 +594,86 @@ export const IDL: ConfidentialSwapRouter = {
     },
     {
       "name": "cancelOrder",
+      "discriminator": [95, 129, 237, 240, 8, 49, 223, 132],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "inputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "inputMint"
         },
         {
           "name": "orderVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "userInputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
       "name": "claimOutput",
+      "discriminator": [150, 201, 54, 233, 4, 59, 65, 32],
       "accounts": [
         {
           "name": "owner",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "order",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "outputMint",
-          "isMut": false,
-          "isSigner": false
+          "name": "outputMint"
         },
         {
           "name": "outputVault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "userOutputToken",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "solverConfig",
+      "discriminator": [224, 189, 236, 109, 124, 58, 53, 146]
+    },
+    {
+      "name": "encryptedOrder",
+      "discriminator": [82, 52, 93, 72, 209, 212, 50, 250]
+    }
+  ],
+  "types": [
     {
       "name": "solverConfig",
       "type": {
@@ -782,7 +750,9 @@ export const IDL: ConfidentialSwapRouter = {
           {
             "name": "status",
             "type": {
-              "defined": "OrderStatus"
+              "defined": {
+                "name": "orderStatus"
+              }
             }
           },
           {
@@ -809,28 +779,26 @@ export const IDL: ConfidentialSwapRouter = {
           }
         ]
       }
-    }
-  ],
-  "types": [
+    },
     {
-      "name": "OrderStatus",
+      "name": "orderStatus",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Pending"
+            "name": "pending"
           },
           {
-            "name": "Executing"
+            "name": "executing"
           },
           {
-            "name": "Completed"
+            "name": "completed"
           },
           {
-            "name": "Cancelled"
+            "name": "cancelled"
           },
           {
-            "name": "Failed"
+            "name": "failed"
           }
         ]
       }
@@ -839,67 +807,67 @@ export const IDL: ConfidentialSwapRouter = {
   "errors": [
     {
       "code": 6000,
-      "name": "OrderNotCancellable",
+      "name": "orderNotCancellable",
       "msg": "Order is not in a cancellable state"
     },
     {
       "code": 6001,
-      "name": "OrderNotExecutable",
+      "name": "orderNotExecutable",
       "msg": "Order is not in an executable state"
     },
     {
       "code": 6002,
-      "name": "OrderNotClaimable",
+      "name": "orderNotClaimable",
       "msg": "Order is not in a claimable state"
     },
     {
       "code": 6003,
-      "name": "UnauthorizedOwner",
+      "name": "unauthorizedOwner",
       "msg": "Unauthorized owner"
     },
     {
       "code": 6004,
-      "name": "UnauthorizedSolver",
+      "name": "unauthorizedSolver",
       "msg": "Unauthorized solver"
     },
     {
       "code": 6005,
-      "name": "InvalidPayloadLength",
+      "name": "invalidPayloadLength",
       "msg": "Invalid encrypted payload length"
     },
     {
       "code": 6006,
-      "name": "SlippageExceeded",
+      "name": "slippageExceeded",
       "msg": "Slippage tolerance exceeded"
     },
     {
       "code": 6007,
-      "name": "OrderExpired",
+      "name": "orderExpired",
       "msg": "Order has expired"
     },
     {
       "code": 6008,
-      "name": "SolverNotActive",
+      "name": "solverNotActive",
       "msg": "Solver is not active"
     },
     {
       "code": 6009,
-      "name": "InvalidInputAmount",
+      "name": "invalidInputAmount",
       "msg": "Invalid input amount"
     },
     {
       "code": 6010,
-      "name": "InvalidTokenMint",
+      "name": "invalidTokenMint",
       "msg": "Invalid token mint"
     },
     {
       "code": 6011,
-      "name": "ArithmeticOverflow",
+      "name": "arithmeticOverflow",
       "msg": "Arithmetic overflow"
     },
     {
       "code": 6012,
-      "name": "AlreadyClaimed",
+      "name": "alreadyClaimed",
       "msg": "Output already claimed"
     }
   ],

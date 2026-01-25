@@ -24,8 +24,8 @@ import { IDL } from './idl';
 // Use Idl type for Program to avoid type compatibility issues with Anchor 0.30+
 type AnyProgram = Program<Idl>;
 
-// Program ID
-export const PROGRAM_ID = new PublicKey('3GmHiJL75TVeyCxFpQMJBAr5FhdHT8rTwHraJ9C1giXz');
+// Program ID (must match IDL address)
+export const PROGRAM_ID = new PublicKey('v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM');
 
 // Seeds
 export const SOLVER_CONFIG_SEED = Buffer.from('solver_config');

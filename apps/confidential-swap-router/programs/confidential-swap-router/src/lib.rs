@@ -241,15 +241,15 @@ pub struct SubmitOrder<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     #[account(seeds = [SOLVER_CONFIG_SEED], bump = solver_config.bump, constraint = solver_config.is_active @ SwapError::SolverNotActive)]
-    pub solver_config: Account<'info, SolverConfig>,
+    pub solver_config: Box<Account<'info, SolverConfig>>,
     #[account(init, payer = owner, space = 8 + EncryptedOrder::INIT_SPACE, seeds = [ORDER_SEED, owner.key().as_ref(), &order_id.to_le_bytes()], bump)]
-    pub order: Account<'info, EncryptedOrder>,
-    pub input_mint: Account<'info, Mint>,
-    pub output_mint: Account<'info, Mint>,
+    pub order: Box<Account<'info, EncryptedOrder>>,
+    pub input_mint: Box<Account<'info, Mint>>,
+    pub output_mint: Box<Account<'info, Mint>>,
     #[account(mut, constraint = user_input_token.mint == input_mint.key() @ SwapError::InvalidTokenMint, constraint = user_input_token.owner == owner.key() @ SwapError::UnauthorizedOwner)]
-    pub user_input_token: Account<'info, TokenAccount>,
+    pub user_input_token: Box<Account<'info, TokenAccount>>,
     #[account(init, payer = owner, seeds = [ORDER_VAULT_SEED, order.key().as_ref()], bump, token::mint = input_mint, token::authority = order)]
-    pub order_vault: Account<'info, TokenAccount>,
+    pub order_vault: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -259,19 +259,19 @@ pub struct ExecuteOrder<'info> {
     #[account(mut)]
     pub solver: Signer<'info>,
     #[account(mut, seeds = [SOLVER_CONFIG_SEED], bump = solver_config.bump, constraint = solver_config.is_active @ SwapError::SolverNotActive, constraint = solver_config.solver_pubkey == solver.key() @ SwapError::UnauthorizedSolver)]
-    pub solver_config: Account<'info, SolverConfig>,
+    pub solver_config: Box<Account<'info, SolverConfig>>,
     #[account(mut, seeds = [ORDER_SEED, order.owner.as_ref(), &order.order_id.to_le_bytes()], bump = order.bump, constraint = order.is_executable() @ SwapError::OrderNotExecutable)]
-    pub order: Account<'info, EncryptedOrder>,
-    pub input_mint: Account<'info, Mint>,
-    pub output_mint: Account<'info, Mint>,
+    pub order: Box<Account<'info, EncryptedOrder>>,
+    pub input_mint: Box<Account<'info, Mint>>,
+    pub output_mint: Box<Account<'info, Mint>>,
     #[account(mut, seeds = [ORDER_VAULT_SEED, order.key().as_ref()], bump, constraint = order_vault.mint == input_mint.key() @ SwapError::InvalidTokenMint)]
-    pub order_vault: Account<'info, TokenAccount>,
+    pub order_vault: Box<Account<'info, TokenAccount>>,
     #[account(init, payer = solver, seeds = [OUTPUT_VAULT_SEED, order.key().as_ref()], bump, token::mint = output_mint, token::authority = order)]
-    pub output_vault: Account<'info, TokenAccount>,
+    pub output_vault: Box<Account<'info, TokenAccount>>,
     #[account(mut, constraint = solver_input_token.mint == input_mint.key() @ SwapError::InvalidTokenMint, constraint = solver_input_token.owner == solver.key() @ SwapError::UnauthorizedSolver)]
-    pub solver_input_token: Account<'info, TokenAccount>,
+    pub solver_input_token: Box<Account<'info, TokenAccount>>,
     #[account(mut, constraint = solver_output_token.mint == output_mint.key() @ SwapError::InvalidTokenMint, constraint = solver_output_token.owner == solver.key() @ SwapError::UnauthorizedSolver)]
-    pub solver_output_token: Account<'info, TokenAccount>,
+    pub solver_output_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -281,12 +281,12 @@ pub struct CancelOrder<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     #[account(mut, seeds = [ORDER_SEED, owner.key().as_ref(), &order.order_id.to_le_bytes()], bump = order.bump, constraint = order.owner == owner.key() @ SwapError::UnauthorizedOwner, constraint = order.is_cancellable() @ SwapError::OrderNotCancellable)]
-    pub order: Account<'info, EncryptedOrder>,
-    pub input_mint: Account<'info, Mint>,
+    pub order: Box<Account<'info, EncryptedOrder>>,
+    pub input_mint: Box<Account<'info, Mint>>,
     #[account(mut, seeds = [ORDER_VAULT_SEED, order.key().as_ref()], bump, constraint = order_vault.mint == input_mint.key() @ SwapError::InvalidTokenMint)]
-    pub order_vault: Account<'info, TokenAccount>,
+    pub order_vault: Box<Account<'info, TokenAccount>>,
     #[account(mut, constraint = user_input_token.mint == input_mint.key() @ SwapError::InvalidTokenMint, constraint = user_input_token.owner == owner.key() @ SwapError::UnauthorizedOwner)]
-    pub user_input_token: Account<'info, TokenAccount>,
+    pub user_input_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -296,12 +296,12 @@ pub struct ClaimOutput<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
     #[account(mut, seeds = [ORDER_SEED, owner.key().as_ref(), &order.order_id.to_le_bytes()], bump = order.bump, constraint = order.owner == owner.key() @ SwapError::UnauthorizedOwner, constraint = order.is_claimable() @ SwapError::OrderNotClaimable)]
-    pub order: Account<'info, EncryptedOrder>,
-    pub output_mint: Account<'info, Mint>,
+    pub order: Box<Account<'info, EncryptedOrder>>,
+    pub output_mint: Box<Account<'info, Mint>>,
     #[account(mut, seeds = [OUTPUT_VAULT_SEED, order.key().as_ref()], bump, constraint = output_vault.mint == output_mint.key() @ SwapError::InvalidTokenMint)]
-    pub output_vault: Account<'info, TokenAccount>,
+    pub output_vault: Box<Account<'info, TokenAccount>>,
     #[account(mut, constraint = user_output_token.mint == output_mint.key() @ SwapError::InvalidTokenMint, constraint = user_output_token.owner == owner.key() @ SwapError::UnauthorizedOwner)]
-    pub user_output_token: Account<'info, TokenAccount>,
+    pub user_output_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
