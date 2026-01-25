@@ -10,7 +10,8 @@ import { Toaster } from 'react-hot-toast';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 export default function App({ Component, pageProps }: AppProps) {
-  const endpoint = useMemo(() => clusterApiUrl('devnet'), []);
+  // Use localnet for local testing, devnet for production
+  const endpoint = useMemo(() => process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899', []);
 
   const wallets = useMemo(
     () => [

@@ -6,7 +6,9 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "apps/*/sdk"
+    "apps/*/sdk",
+    "apps/*/app",
+    "apps/*/solver"
   ],
   "scripts": {
     "build": "yarn workspaces run build",
