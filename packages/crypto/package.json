@@ -1,0 +1,24 @@
+{
+  "name": "@privacy-suite/crypto",
+  "version": "0.1.0",
+  "description": "Shared encryption and privacy utilities for Solana Privacy Suite",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@solana/web3.js": "^1.95.0"
+  }
+}
