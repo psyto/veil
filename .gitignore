@@ -8,6 +8,7 @@ dist/
 target/
 *.so
 .anchor/
+.next/
 
 # IDE
 .idea/
