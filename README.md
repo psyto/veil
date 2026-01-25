@@ -33,7 +33,8 @@ solana-privacy-suite/
 │   │   └── app/                    # Next.js frontend
 │   └── rwa-secrets-service/         # RWA secrets protocol
 │       ├── programs/               # Anchor smart contract
-│       └── sdk/                    # TypeScript SDK
+│       ├── sdk/                    # TypeScript SDK
+│       └── app/                    # Next.js frontend
 ├── package.json                     # Workspace configuration
 └── yarn.lock
 ```
@@ -134,13 +135,45 @@ anchor build --no-idl
 # Start local validator
 solana-test-validator
 
+# Deploy programs
+cd apps/confidential-swap-router && anchor deploy
+cd apps/rwa-secrets-service && anchor deploy
+
 # Run tests (in another terminal)
 cd apps/confidential-swap-router
-anchor test
+ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=~/.config/solana/id.json yarn run ts-mocha -p ./tsconfig.json -t 1000000 "tests/**/*.ts"
 
 cd apps/rwa-secrets-service
-anchor test
+ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=~/.config/solana/id.json yarn run ts-mocha -p ./tsconfig.json -t 1000000 "tests/**/*.ts"
 ```
+
+### Running Frontends
+
+Both protocols include Next.js frontends for interacting with the on-chain programs.
+
+```bash
+# Start Confidential Swap Router frontend (default: http://localhost:3000)
+cd apps/confidential-swap-router/app
+yarn dev
+
+# Start RWA Secrets Service frontend (default: http://localhost:3000)
+cd apps/rwa-secrets-service/app
+yarn dev -p 3001
+```
+
+#### Confidential Swap Router Frontend
+- Connect wallet (Phantom, Solflare)
+- Submit encrypted swap orders (SOL, USDC, USDT)
+- Configure slippage tolerance
+- View and cancel pending orders
+- Claim executed swap outputs
+
+#### RWA Secrets Service Frontend
+- Register new RWA assets with encrypted metadata
+- Manage access grants (ViewBasic, ViewFull, Auditor, Admin)
+- Grant access to investors, auditors, and regulators
+- Revoke access and track expiration
+- View all registered assets and their status
 
 ## Encryption Details
 
@@ -159,6 +192,10 @@ Implements Shamir's Secret Sharing for M-of-N threshold decryption. Useful for:
 - Solver operators must secure their encryption private keys
 - On-chain encrypted data is visible but unreadable without the corresponding private key
 - Consider using hardware security modules (HSMs) for key management in production
+
+## Built For
+
+Colosseum Eternal Challenge - Privacy & Security Track
 
 ## License
 
