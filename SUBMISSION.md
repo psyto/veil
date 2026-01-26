@@ -308,6 +308,22 @@ npx ts-node --esm scripts/verify-deployment.ts
 
 ---
 
+## Philosophy
+
+We believe financial privacy is a fundamental human right—as essential as freedom of speech and assembly.
+
+> "Privacy is not about having something to hide. Privacy is about having something to protect."
+
+Read our full philosophical background: [PHILOSOPHY.md](./PHILOSOPHY.md)
+
+**Key principles:**
+- Privacy by default
+- User sovereignty over data
+- Selective disclosure for compliance
+- Open source for trust through verification
+
+---
+
 ## Team
 
 **psyto** - Solo developer

@@ -378,6 +378,12 @@ cp apps/rwa-secrets-service/app/.env.example apps/rwa-secrets-service/app/.env.l
 | **Quicknode** | Varies | Get endpoint at [quicknode.com](https://www.quicknode.com/) |
 | **Custom** | Manual | Any Solana RPC endpoint |
 
+## Philosophy
+
+We believe financial privacy is a fundamental human right. Read our full philosophical background in [PHILOSOPHY.md](./PHILOSOPHY.md).
+
+> "Privacy is not about having something to hide. Privacy is about having something to protect."
+
 ## Built For
 
 [Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Privacy Infrastructure on Solana
