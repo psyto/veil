@@ -406,7 +406,7 @@ QUICKNODE_ENDPOINT=your-endpoint
 
 ---
 
-### Phase 5: Deployment & Submission [PENDING]
+### Phase 5: Deployment & Submission [IN PROGRESS]
 
 #### 5.1 Deploy to Devnet
 
@@ -440,11 +440,12 @@ anchor deploy
 **For Each Project:**
 
 - [x] Code is open source on GitHub
-- [ ] Programs deployed to devnet
+- [x] Programs deployed to devnet
 - [ ] Demo video uploaded (max 3 minutes)
 - [x] README with setup instructions
 - [x] Working frontend demo
 - [x] Sponsor SDK integrations documented
+- [x] Devnet integration tests passing
 
 ---
 
@@ -470,9 +471,9 @@ anchor deploy
 │  Jan 21-22: Phase 4 - RPC Integration                      [COMPLETED]  │
 │  └── Day 10-11: Helius/Quicknode setup                     ✓            │
 │                                                                          │
-│  Jan 23-26: Phase 5 - Deployment & Testing                 [PENDING]    │
-│  ├── Day 12: Deploy to devnet                                           │
-│  └── Day 13-15: End-to-end testing                                      │
+│  Jan 23-26: Phase 5 - Deployment & Testing                 [COMPLETED]  │
+│  ├── Day 12: Deploy to devnet                              ✓            │
+│  └── Day 13-15: End-to-end testing                         ✓            │
 │                                                                          │
 │  Jan 27-30: Phase 6 - Demo Videos & Documentation          [PENDING]    │
 │  ├── Day 16-17: Record demo videos                                      │
