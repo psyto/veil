@@ -19,6 +19,19 @@ export {
   decryptThresholdMetadata,
   hashLegalDocument,
   generateAssetId,
+  // ZK Compression exports
+  ZkAssetConfig,
+  ZkEncryptedAsset,
+  ZkAccessProof,
+  createZkEncryptedAsset,
+  decryptZkAsset,
+  createZkAccessProof,
+  verifyZkAccessProof,
+  estimateAssetCompressionSavings,
+  ZkCompressionConfig,
+  CompressedPayload,
+  createZkRpc,
+  estimateCompressionSavings,
 } from './encryption';
 
 // Client

@@ -35,3 +35,54 @@ export {
   RWA_ASSET_SCHEMA,
   RWA_ACCESS_GRANT_SCHEMA,
 } from './payload';
+
+// ZK Compression (Light Protocol)
+export {
+  ZkCompressionConfig,
+  CompressedAccount,
+  CompressedPayload,
+  CompressedTokenInfo,
+  createZkRpc,
+  createStandardConnection,
+  compressData,
+  decompressData,
+  createCompressedMint,
+  mintCompressedTokens,
+  transferCompressedTokens,
+  getCompressedTokenBalance,
+  compressTokenAccount,
+  decompressTokenAccount,
+  estimateCompressionSavings,
+} from './zk-compression';
+
+// Shielded Transfers (Privacy Cash)
+export {
+  PrivacyCashConfig,
+  ShieldedBalance,
+  DepositResult,
+  WithdrawalResult,
+  ShieldedTransferParams,
+  PrivacyCashClient,
+  createShieldedTransfer,
+  verifyShieldedProof,
+  estimateShieldedFee,
+  isPrivacyCashAvailable,
+  shieldTokens,
+  unshieldTokens,
+} from './shielded';
+
+// RPC Provider Configuration (Helius, Quicknode)
+export {
+  RpcProvider,
+  Network,
+  RpcProviderConfig,
+  RpcConnections,
+  createRpcConnections,
+  createHeliusRpc,
+  createQuicknodeRpc,
+  createRpcFromEnv,
+  getRpcAttribution,
+  createPublicRpc,
+  RPC_ENV_VARS,
+  PUBLIC_RPC_ENDPOINTS,
+} from './rpc-providers';

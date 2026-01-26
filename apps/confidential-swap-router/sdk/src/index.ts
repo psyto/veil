@@ -14,6 +14,18 @@ export {
   base58ToEncryptionKey,
   serializeOrderPayload,
   deserializeOrderPayload,
+  // ZK Compression exports
+  ZkOrderConfig,
+  ZkEncryptedOrder,
+  createZkEncryptedOrder,
+  decryptZkOrder,
+  shieldSwapOutput,
+  unshieldForSwap,
+  estimateOrderCompressionSavings,
+  ZkCompressionConfig,
+  CompressedPayload,
+  createZkRpc,
+  estimateCompressionSavings,
 } from './encryption';
 
 // Client classes
