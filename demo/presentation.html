@@ -6,42 +6,79 @@
   <title>Solana Privacy Suite - PrivacyHack 2026</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @media print {
-      .slide { page-break-after: always; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
     }
     .slide {
-      min-height: 100vh;
-      display: flex;
+      width: 100vw;
+      height: 100vh;
+      display: none;
       align-items: center;
       justify-content: center;
       padding: 2rem;
-      border-bottom: 1px solid #1f2937;
+      box-sizing: border-box;
     }
-    .slide:last-child { border-bottom: none; }
+    .slide.active {
+      display: flex;
+    }
     pre { background: #1a1a2e; padding: 1rem; border-radius: 8px; overflow-x: auto; }
     code { font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; }
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #374151; padding: 0.75rem 1rem; text-align: left; }
     th { background: #1f2937; }
     .speaker-notes {
-      margin-top: 2rem;
-      padding: 1rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
       background: #111827;
-      border-left: 4px solid #6366f1;
+      border-top: 2px solid #6366f1;
+      padding: 1rem 2rem;
       font-size: 14px;
       color: #9ca3af;
+      max-height: 120px;
+      overflow-y: auto;
+      display: none;
     }
-    .speaker-notes::before {
-      content: "Speaker Notes: ";
-      font-weight: bold;
-      color: #6366f1;
+    .speaker-notes.visible {
+      display: block;
+    }
+    .controls {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    .controls button {
+      background: #374151;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .controls button:hover {
+      background: #4b5563;
+    }
+    .slide-counter {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      color: #6b7280;
+      font-size: 14px;
     }
   </style>
 </head>
 <body class="bg-gray-900 text-white">
 
   <!-- Slide 1: Title -->
-  <div class="slide">
+  <div class="slide" data-notes="Welcome to Solana Privacy Suite. We're submitting to both Open Track with our Confidential Swap Router and Privacy Tooling Track with our RWA Secrets Service. Our core philosophy: MEV bots can't frontrun what they can't read.">
     <div class="text-center max-w-4xl">
       <h1 class="text-6xl font-bold mb-6">Solana Privacy Suite</h1>
       <p class="text-2xl text-gray-300 mb-12">MEV protection through encryption.<br/>Confidentiality through selective disclosure.</p>
@@ -56,12 +93,11 @@
         </div>
       </div>
       <p class="text-gray-500">github.com/psyto/solana-privacy-suite</p>
-      <div class="speaker-notes">Welcome to Solana Privacy Suite. We're submitting to both Open Track with our Confidential Swap Router and Privacy Tooling Track with our RWA Secrets Service. Our core philosophy: MEV bots can't frontrun what they can't read.</div>
     </div>
   </div>
 
   <!-- Slide 2: Core Problem -->
-  <div class="slide">
+  <div class="slide" data-notes="Public blockchains were supposed to enable financial freedom, but they became the most surveilled financial infrastructure ever built. Every transaction permanent, every intention broadcast. This transparency has real consequences we'll explore.">
     <div class="text-center max-w-4xl">
       <h2 class="text-5xl font-bold mb-8">The Core Problem</h2>
       <div class="bg-gray-800 rounded-xl p-8 mb-8">
@@ -76,12 +112,11 @@
         </div>
       </div>
       <p class="text-2xl text-yellow-400 font-semibold">This has consequences.</p>
-      <div class="speaker-notes">Public blockchains were supposed to enable financial freedom, but they became the most surveilled financial infrastructure ever built. Every transaction permanent, every intention broadcast. This transparency has real consequences we'll explore.</div>
     </div>
   </div>
 
   <!-- Slide 3: MEV Problem -->
-  <div class="slide">
+  <div class="slide" data-notes="MEV - Maximal Extractable Value - costs users billions every year. When you submit a swap, it's visible in the mempool. Bots see your order, buy before you, then sell to you at a higher price. This is frontrunning, and it's a direct consequence of transparent mempools.">
     <div class="text-center max-w-4xl">
       <h2 class="text-5xl font-bold mb-8">MEV: The $Billion Problem</h2>
       <div class="bg-gray-800 rounded-xl p-8 font-mono text-lg text-left mb-8">
@@ -95,12 +130,11 @@
       </div>
       <p class="text-2xl text-gray-300">MEV extraction costs users <span class="text-red-500 font-bold">billions</span> annually.</p>
       <p class="text-gray-400 mt-4">Frontrunning. Sandwich attacks. All enabled by transparent mempools.</p>
-      <div class="speaker-notes">MEV - Maximal Extractable Value - costs users billions every year. When you submit a swap, it's visible in the mempool. Bots see your order, buy before you, then sell to you at a higher price. This is frontrunning, and it's a direct consequence of transparent mempools.</div>
     </div>
   </div>
 
   <!-- Slide 4: RWA Problem -->
-  <div class="slide">
+  <div class="slide" data-notes="Tokenized real-world assets have a different problem. They need confidential data on-chain - valuations, legal docs, ownership structures. On a public blockchain, this is visible to everyone: competitors, adversaries, the whole world. Total transparency destroys business confidentiality.">
     <div class="text-center max-w-4xl">
       <h2 class="text-5xl font-bold mb-8">RWA: The Confidentiality Problem</h2>
       <div class="grid grid-cols-2 gap-8 mb-8">
@@ -123,12 +157,11 @@
         </div>
       </div>
       <p class="text-2xl text-red-400 font-semibold">Total transparency destroys business confidentiality.</p>
-      <div class="speaker-notes">Tokenized real-world assets have a different problem. They need confidential data on-chain - valuations, legal docs, ownership structures. On a public blockchain, this is visible to everyone: competitors, adversaries, the whole world. Total transparency destroys business confidentiality.</div>
     </div>
   </div>
 
   <!-- Slide 5: Philosophy -->
-  <div class="slide">
+  <div class="slide" data-notes="Our philosophy is simple. For trading: MEV bots can't frontrun what they can't read. For RWAs: it's not about hiding from regulators, it's about not exposing everything to everyone. Privacy should be built into the architecture from the start, not added as an afterthought.">
     <div class="text-center max-w-4xl">
       <h2 class="text-5xl font-bold mb-12">Our Philosophy</h2>
       <div class="space-y-8">
@@ -140,12 +173,11 @@
         </div>
       </div>
       <p class="text-xl text-gray-400 mt-12">Privacy by architecture, not as an afterthought.</p>
-      <div class="speaker-notes">Our philosophy is simple. For trading: MEV bots can't frontrun what they can't read. For RWAs: it's not about hiding from regulators, it's about not exposing everything to everyone. Privacy should be built into the architecture from the start, not added as an afterthought.</div>
     </div>
   </div>
 
   <!-- Slide 6: Solution 1 - Swap Router -->
-  <div class="slide">
+  <div class="slide" data-notes="The Confidential Swap Router solves MEV with one principle: encrypt first, execute later. Users encrypt their order with the solver's public key. On-chain, it's just ciphertext - MEV bots see bytes, not intentions. Only the authorized solver can decrypt and execute via Jupiter for best pricing.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-2 text-purple-400">Solution 1</h2>
       <h3 class="text-5xl font-bold mb-8">Confidential Swap Router</h3>
@@ -160,12 +192,11 @@
         <p class="text-green-500 font-bold">Result: Fair execution. No frontrunning.</p>
       </div>
       <p class="text-xl text-gray-400 mt-8">MEV bots see bytes, not intentions.</p>
-      <div class="speaker-notes">The Confidential Swap Router solves MEV with one principle: encrypt first, execute later. Users encrypt their order with the solver's public key. On-chain, it's just ciphertext - MEV bots see bytes, not intentions. Only the authorized solver can decrypt and execute via Jupiter for best pricing.</div>
     </div>
   </div>
 
   <!-- Slide 7: Swap Router Features -->
-  <div class="slide">
+  <div class="slide" data-notes="Key features: NaCl box encryption hides order details until execution. Jupiter integration provides best price routing. It's non-custodial - users can cancel anytime. We use Light Protocol for 99% storage reduction through ZK compression. And Privacy Cash enables shielded settlement for private output delivery.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8 text-purple-400">Confidential Swap Router</h2>
       <table class="mb-8">
@@ -187,12 +218,11 @@
         <p class="text-gray-400 text-sm">Program ID</p>
         <p class="font-mono text-purple-400">v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM</p>
       </div>
-      <div class="speaker-notes">Key features: NaCl box encryption hides order details until execution. Jupiter integration provides best price routing. It's non-custodial - users can cancel anytime. We use Light Protocol for 99% storage reduction through ZK compression. And Privacy Cash enables shielded settlement for private output delivery.</div>
     </div>
   </div>
 
   <!-- Slide 8: Solution 2 - RWA Secrets -->
-  <div class="slide">
+  <div class="slide" data-notes="The RWA Secrets Service implements selective disclosure - encrypted by default, disclosed by choice. When an asset is registered, metadata is encrypted. Different parties can be granted different access levels. An investor might see valuations while a regulator sees compliance data. Each party only sees what they need.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-2 text-green-400">Solution 2</h2>
       <h3 class="text-5xl font-bold mb-8">RWA Secrets Service</h3>
@@ -216,12 +246,11 @@
         </div>
       </div>
       <p class="text-xl text-gray-400 mt-8">Different parties see different information.</p>
-      <div class="speaker-notes">The RWA Secrets Service implements selective disclosure - encrypted by default, disclosed by choice. When an asset is registered, metadata is encrypted. Different parties can be granted different access levels. An investor might see valuations while a regulator sees compliance data. Each party only sees what they need.</div>
     </div>
   </div>
 
   <!-- Slide 9: RWA Access Levels -->
-  <div class="slide">
+  <div class="slide" data-notes="Four access levels provide granular control. ViewBasic for public investors, ViewFull for qualified investors, Auditor for regulators, Admin for the asset issuer. Features include time-limited access, delegation rights, on-chain audit trails, and access is revocable at any time.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8 text-green-400">RWA Secrets Service</h2>
       <div class="grid grid-cols-2 gap-8 mb-8">
@@ -250,12 +279,11 @@
         <p class="text-gray-400 text-sm">Program ID</p>
         <p class="font-mono text-green-400">DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam</p>
       </div>
-      <div class="speaker-notes">Four access levels provide granular control. ViewBasic for public investors, ViewFull for qualified investors, Auditor for regulators, Admin for the asset issuer. Features include time-limited access, delegation rights, on-chain audit trails, and access is revocable at any time.</div>
     </div>
   </div>
 
   <!-- Slide 10: Architecture -->
-  <div class="slide">
+  <div class="slide" data-notes="Both applications share a common crypto library that provides NaCl box encryption, Shamir's secret sharing for threshold decryption, ZK compression via Light Protocol, and shielded transfers via Privacy Cash. This shared foundation ensures consistent security across both protocols.">
     <div class="text-center max-w-5xl">
       <h2 class="text-4xl font-bold mb-8">Technical Architecture</h2>
       <div class="bg-gray-800 rounded-xl p-8 font-mono text-sm">
@@ -283,12 +311,11 @@
 │  └───────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘</pre>
       </div>
-      <div class="speaker-notes">Both applications share a common crypto library that provides NaCl box encryption, Shamir's secret sharing for threshold decryption, ZK compression via Light Protocol, and shielded transfers via Privacy Cash. This shared foundation ensures consistent security across both protocols.</div>
     </div>
   </div>
 
   <!-- Slide 11: Bounty Integrations -->
-  <div class="slide">
+  <div class="slide" data-notes="We've integrated with multiple bounty partners. Light Protocol for ZK compression gives us 99% storage reduction. Privacy Cash SDK enables shielded transfers. Helius provides RPC with ZK compression support. Quicknode for reliable infrastructure. And Jupiter for best execution routing.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">Bounty Integrations</h2>
       <table>
@@ -327,12 +354,11 @@
           </tr>
         </tbody>
       </table>
-      <div class="speaker-notes">We've integrated with multiple bounty partners. Light Protocol for ZK compression gives us 99% storage reduction. Privacy Cash SDK enables shielded transfers. Helius provides RPC with ZK compression support. Quicknode for reliable infrastructure. And Jupiter for best execution routing.</div>
     </div>
   </div>
 
   <!-- Slide 12: Code Example - Swap -->
-  <div class="slide">
+  <div class="slide" data-notes="Here's how simple it is to create an encrypted swap order. Import from our SDK, create the encrypted order with your parameters and the solver's public key, then submit. On-chain, MEV bots only see ciphertext. They can't read your minimum output or slippage tolerance.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">Code: Encrypted Swap</h2>
       <pre class="text-left"><code class="text-gray-300"><span class="text-purple-400">import</span> { createEncryptedOrder } <span class="text-purple-400">from</span> <span class="text-green-400">'@confidential-swap/sdk'</span>;
@@ -350,12 +376,11 @@
 
 <span class="text-gray-500">// Submit to chain - MEV bots see only ciphertext</span>
 <span class="text-purple-400">await</span> program.<span class="text-yellow-400">submitEncryptedOrder</span>(encrypted);</code></pre>
-      <div class="speaker-notes">Here's how simple it is to create an encrypted swap order. Import from our SDK, create the encrypted order with your parameters and the solver's public key, then submit. On-chain, MEV bots only see ciphertext. They can't read your minimum output or slippage tolerance.</div>
     </div>
   </div>
 
   <!-- Slide 13: Code Example - RWA -->
-  <div class="slide">
+  <div class="slide" data-notes="For RWA assets, you encrypt the metadata client-side before it ever touches the blockchain. Then you can grant selective access to specific parties with specific levels and expiration times. Only the grantee can decrypt their key share.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">Code: Selective Disclosure</h2>
       <pre class="text-left"><code class="text-gray-300"><span class="text-purple-400">import</span> { encryptAssetMetadata, grantAccess } <span class="text-purple-400">from</span> <span class="text-green-400">'@rwa-secrets/sdk'</span>;
@@ -374,12 +399,11 @@
   level: AccessLevel.<span class="text-blue-400">ViewFull</span>,
   expiresAt: Date.<span class="text-yellow-400">now</span>() + <span class="text-blue-400">30</span> * <span class="text-blue-400">24</span> * <span class="text-blue-400">60</span> * <span class="text-blue-400">60</span> * <span class="text-blue-400">1000</span>
 });</code></pre>
-      <div class="speaker-notes">For RWA assets, you encrypt the metadata client-side before it ever touches the blockchain. Then you can grant selective access to specific parties with specific levels and expiration times. Only the grantee can decrypt their key share.</div>
     </div>
   </div>
 
   <!-- Slide 14: Why This Matters -->
-  <div class="slide">
+  <div class="slide" data-notes="Why does this matter? For traders, no more MEV tax on every swap. For businesses, confidential operations on public chains become possible. For markets, fair price discovery. For compliance, privacy and regulation can coexist. Privacy isn't just a feature - it's infrastructure.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">Why This Matters</h2>
       <div class="grid grid-cols-2 gap-6 mb-8">
@@ -401,12 +425,11 @@
         </div>
       </div>
       <p class="text-2xl font-semibold text-yellow-400">Privacy isn't a feature. It's infrastructure.</p>
-      <div class="speaker-notes">Why does this matter? For traders, no more MEV tax on every swap. For businesses, confidential operations on public chains become possible. For markets, fair price discovery. For compliance, privacy and regulation can coexist. Privacy isn't just a feature - it's infrastructure.</div>
     </div>
   </div>
 
   <!-- Slide 15: Third Era -->
-  <div class="slide">
+  <div class="slide" data-notes="Crypto is entering its third era. Era 1 was decentralized money - pseudonymous but traceable. Era 2 was decentralized compute - transparent by default. Era 3 is decentralized privacy - confidential by design. Previous eras treated privacy as optional. Era 3 makes it foundational. Solana Privacy Suite is infrastructure for this era.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">The Third Era of Crypto</h2>
       <table class="mb-8">
@@ -437,12 +460,11 @@
       </table>
       <p class="text-xl text-gray-400 mb-4">Previous eras treated privacy as optional. Era 3 makes it foundational.</p>
       <p class="text-2xl font-semibold text-purple-400">Solana Privacy Suite is infrastructure for Era 3.</p>
-      <div class="speaker-notes">Crypto is entering its third era. Era 1 was decentralized money - pseudonymous but traceable. Era 2 was decentralized compute - transparent by default. Era 3 is decentralized privacy - confidential by design. Previous eras treated privacy as optional. Era 3 makes it foundational. Solana Privacy Suite is infrastructure for this era.</div>
     </div>
   </div>
 
   <!-- Slide 16: Deployed -->
-  <div class="slide">
+  <div class="slide" data-notes="Both programs are deployed and tested on devnet. All verification tests pass - network connectivity, wallet configuration, program deployment, PDA derivation, encryption functions, and threshold secret sharing. The code is production-ready.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-8">Deployed & Tested</h2>
       <div class="grid grid-cols-1 gap-6 mb-8">
@@ -466,12 +488,11 @@
           <p>Threshold secret sharing</p>
         </div>
       </div>
-      <div class="speaker-notes">Both programs are deployed and tested on devnet. All verification tests pass - network connectivity, wallet configuration, program deployment, PDA derivation, encryption functions, and threshold secret sharing. The code is production-ready.</div>
     </div>
   </div>
 
   <!-- Slide 17: Summary -->
-  <div class="slide">
+  <div class="slide" data-notes="To summarize: two protocols, one principle. Confidential Swap Router solves MEV extraction with encrypted orders. RWA Secrets Service solves data exposure with selective disclosure. MEV bots can't frontrun what they can't read. Privacy and compliance can coexist.">
     <div class="text-center max-w-4xl">
       <h2 class="text-4xl font-bold mb-4">Summary</h2>
       <p class="text-2xl text-gray-400 mb-8">Two protocols. One principle.</p>
@@ -491,12 +512,11 @@
         <p class="text-2xl font-bold text-purple-300">"MEV bots can't frontrun what they can't read."</p>
         <p class="text-2xl font-bold text-green-300">"Privacy and compliance can coexist."</p>
       </div>
-      <div class="speaker-notes">To summarize: two protocols, one principle. Confidential Swap Router solves MEV extraction with encrypted orders. RWA Secrets Service solves data exposure with selective disclosure. MEV bots can't frontrun what they can't read. Privacy and compliance can coexist.</div>
     </div>
   </div>
 
   <!-- Slide 18: Links -->
-  <div class="slide">
+  <div class="slide" data-notes="Thank you for your attention. The code is open source on GitHub. Both programs are live on devnet - you can verify them on Solana Explorer. Built with Light Protocol, Privacy Cash, Jupiter, Helius, and Quicknode. I'm psyto, and this is Solana Privacy Suite.">
     <div class="text-center max-w-4xl">
       <h1 class="text-5xl font-bold mb-8">Solana Privacy Suite</h1>
       <p class="text-2xl text-gray-300 mb-12">MEV protection through encryption.<br/>Confidentiality through selective disclosure.</p>
@@ -512,9 +532,71 @@
       </div>
 
       <p class="text-gray-500">Developer: psyto</p>
-      <div class="speaker-notes">Thank you for your attention. The code is open source on GitHub. Both programs are live on devnet - you can verify them on Solana Explorer. Built with Light Protocol, Privacy Cash, Jupiter, Helius, and Quicknode. I'm psyto, and this is Solana Privacy Suite.</div>
     </div>
   </div>
 
+  <!-- Speaker Notes Panel -->
+  <div id="speaker-notes" class="speaker-notes"></div>
+
+  <!-- Slide Counter -->
+  <div class="slide-counter">
+    <span id="current-slide">1</span> / <span id="total-slides">18</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button onclick="toggleNotes()">Notes (N)</button>
+    <button onclick="prevSlide()">← Prev</button>
+    <button onclick="nextSlide()">Next →</button>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const notesPanel = document.getElementById('speaker-notes');
+
+    document.getElementById('total-slides').textContent = totalSlides;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+      });
+      document.getElementById('current-slide').textContent = index + 1;
+      notesPanel.textContent = slides[index].getAttribute('data-notes') || '';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    function toggleNotes() {
+      notesPanel.classList.toggle('visible');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      }
+    });
+
+    showSlide(0);
+  </script>
 </body>
 </html>
