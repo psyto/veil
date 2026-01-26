@@ -446,6 +446,8 @@ anchor deploy
 - [x] Working frontend demo
 - [x] Sponsor SDK integrations documented
 - [x] Devnet integration tests passing
+- [x] SUBMISSION.md created
+- [x] DEMO_SCRIPT.md created
 
 ---
 
@@ -475,9 +477,9 @@ anchor deploy
 │  ├── Day 12: Deploy to devnet                              ✓            │
 │  └── Day 13-15: End-to-end testing                         ✓            │
 │                                                                          │
-│  Jan 27-30: Phase 6 - Demo Videos & Documentation          [PENDING]    │
-│  ├── Day 16-17: Record demo videos                                      │
-│  └── Day 18-19: Final documentation                                     │
+│  Jan 27-30: Phase 6 - Demo Videos & Documentation          [IN PROGRESS]│
+│  ├── Day 16-17: Record demo videos                         (pending)    │
+│  └── Day 18-19: Final documentation                        ✓            │
 │                                                                          │
 │  Feb 1: SUBMISSION DEADLINE                                              │
 │                                                                          │
