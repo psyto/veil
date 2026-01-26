@@ -1,6 +1,6 @@
 # Solana Privacy Suite
 
-Privacy-focused DeFi infrastructure for Solana, featuring encrypted swap orders and confidential RWA (Real World Asset) metadata management.
+Privacy-focused DeFi infrastructure for Solana, featuring encrypted swap orders and confidential RWA (Real World Asset) metadata management with ZK compression and shielded transfers.
 
 ## Overview
 
@@ -12,7 +12,9 @@ This monorepo contains two privacy-preserving protocols built on Solana:
 Both protocols share a common encryption library (`@privacy-suite/crypto`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
-- Payload serialization utilities
+- ZK compression via Light Protocol (~99% on-chain storage reduction)
+- Shielded transfers via Privacy Cash SDK
+- RPC provider configuration (Helius, Quicknode)
 
 ## Architecture
 
@@ -34,7 +36,12 @@ Both protocols share a common encryption library (`@privacy-suite/crypto`) that 
 │                                                                            │
 │  ┌────────────────────────────────────────────────────────────────────┐   │
 │  │                    @privacy-suite/crypto                           │   │
-│  │         NaCl Box  •  Shamir's Secret Sharing  •  Payloads          │   │
+│  │    NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers │   │
+│  └────────────────────────────────────────────────────────────────────┘   │
+│                                                                            │
+│  ┌────────────────────────────────────────────────────────────────────┐   │
+│  │                       RPC Providers                                 │   │
+│  │           Helius (ZK support)  •  Quicknode  •  Custom              │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -48,7 +55,10 @@ solana-privacy-suite/
 │       ├── src/
 │       │   ├── nacl-box.ts         # NaCl box encryption/decryption
 │       │   ├── threshold.ts        # Shamir's Secret Sharing (M-of-N)
-│       │   └── payload.ts          # Binary payload serialization
+│       │   ├── payload.ts          # Binary payload serialization
+│       │   ├── zk-compression.ts   # Light Protocol ZK compression
+│       │   ├── shielded.ts         # Privacy Cash shielded transfers
+│       │   └── rpc-providers.ts    # Helius/Quicknode RPC config
 │       └── package.json
 ├── apps/
 │   ├── confidential-swap-router/    # MEV-protected swap protocol
@@ -82,6 +92,8 @@ Users encrypt their order parameters (minimum output, slippage tolerance, deadli
 - **Jupiter Integration**: Real-time quotes and optimal routing
 - **Non-custodial**: Users retain control; can cancel pending orders
 - **Solver API**: REST endpoints for encryption key exchange
+- **ZK Compression**: Optional Light Protocol integration for ~99% on-chain storage reduction
+- **Shielded Settlement**: Optional Privacy Cash integration for private output delivery
 
 ### How It Works
 1. Frontend fetches solver's encryption public key via API
@@ -119,6 +131,8 @@ Asset metadata is encrypted on-chain, with selective disclosure through encrypte
 - **Access Delegation**: Optional delegation rights
 - **Expiration Support**: Time-limited access grants
 - **Audit Logging**: On-chain access records
+- **ZK Access Proofs**: Optional ZK proofs for privacy-preserving access verification
+- **Compressed Metadata**: Optional Light Protocol compression for reduced costs
 
 ### How It Works
 1. Issuer registers asset with encrypted metadata
@@ -245,7 +259,7 @@ Open http://localhost:3001
 - View all assets and access grants
 - Real-time on-chain data
 
-## Encryption Details
+## Encryption & Privacy Features
 
 ### NaCl Box
 Uses Curve25519 for key exchange, XSalsa20 for encryption, and Poly1305 for authentication. Provides authenticated encryption ensuring both confidentiality and integrity.
@@ -274,6 +288,57 @@ const shares = splitSecret(secretKey, 5, 3);
 const recovered = combineShares([shares[0], shares[2], shares[4]]);
 ```
 
+### ZK Compression (Light Protocol)
+Compress on-chain data using Light Protocol's ZK compression for ~99% storage reduction.
+
+```typescript
+import { createZkRpc, compressData, transferCompressedTokens } from '@privacy-suite/crypto';
+
+// Create ZK-enabled RPC connection
+const rpc = createZkRpc('https://devnet.helius-rpc.com/?api-key=YOUR_KEY');
+
+// Compress data
+const compressed = await compressData(rpc, data, payer);
+
+// Transfer compressed tokens
+const txId = await transferCompressedTokens(rpc, payer, mint, amount, owner, recipient);
+```
+
+### Shielded Transfers (Privacy Cash)
+Enable private transfers with shielded balances using Privacy Cash SDK.
+
+```typescript
+import { PrivacyCashClient, shieldTokens, unshieldTokens } from '@privacy-suite/crypto';
+
+// Create Privacy Cash client
+const client = new PrivacyCashClient(connection, wallet, 'SOL');
+
+// Shield tokens (deposit to private balance)
+const depositResult = await client.deposit(1000000n);
+
+// Unshield tokens (withdraw from private balance)
+const withdrawResult = await client.withdraw(500000n, recipient);
+
+// Get private balance
+const balance = await client.getPrivateBalance();
+```
+
+### RPC Provider Configuration
+Easily connect to supported RPC providers with ZK compression support.
+
+```typescript
+import { createHeliusRpc, createQuicknodeRpc, createRpcFromEnv } from '@privacy-suite/crypto';
+
+// Using Helius (recommended for ZK compression)
+const { connection, zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
+
+// Using Quicknode
+const { connection } = createQuicknodeRpc('YOUR_QUICKNODE_ENDPOINT', 'devnet');
+
+// Auto-configure from environment variables
+const rpcConnections = createRpcFromEnv();
+```
+
 ## Security Considerations
 
 - **Key Management**: Dedicated encryption keypairs are recommended for production
@@ -288,12 +353,43 @@ const recovered = combineShares([shares[0], shares[2], shares[4]]);
 - **Smart Contracts**: Anchor 0.30
 - **Frontend**: Next.js 14, React 18, TailwindCSS
 - **Encryption**: TweetNaCl (NaCl implementation)
+- **ZK Compression**: Light Protocol
+- **Shielded Transfers**: Privacy Cash SDK
 - **DEX Aggregation**: Jupiter API
 - **Wallet Integration**: Solana Wallet Adapter
+- **RPC Providers**: Helius (recommended), Quicknode
+
+## Environment Configuration
+
+Copy the `.env.example` files and configure your RPC provider:
+
+```bash
+# Apps use NEXT_PUBLIC_ prefix for frontend access
+cp apps/confidential-swap-router/app/.env.example apps/confidential-swap-router/app/.env.local
+cp apps/confidential-swap-router/solver/.env.example apps/confidential-swap-router/solver/.env
+cp apps/rwa-secrets-service/app/.env.example apps/rwa-secrets-service/app/.env.local
+```
+
+### Supported RPC Providers
+
+| Provider | ZK Compression | Setup |
+|----------|----------------|-------|
+| **Helius** (Recommended) | Yes | Get API key at [helius.dev](https://helius.dev/) |
+| **Quicknode** | Varies | Get endpoint at [quicknode.com](https://www.quicknode.com/) |
+| **Custom** | Manual | Any Solana RPC endpoint |
 
 ## Built For
 
-[Colosseum Eternal Challenge](https://www.colosseum.com/) - Privacy & Security Track
+[Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Privacy Infrastructure on Solana
+
+### Bounty Eligibility
+
+| Bounty | Technology Used |
+|--------|-----------------|
+| Light Protocol | ZK compression for order payloads and metadata |
+| Privacy Cash | Shielded settlement for swap outputs |
+| Helius | RPC provider with ZK compression support |
+| Quicknode | RPC provider integration |
 
 ## License
 
@@ -308,3 +404,6 @@ Contributions are welcome! Please open an issue or submit a pull request.
 - Inspired by [a16z crypto privacy research](https://a16zcrypto.com/posts/article/privacy-trends-moats-quantum-data-testing/)
 - Powered by [Jupiter](https://jup.ag/) aggregator
 - Built with [Anchor](https://www.anchor-lang.com/) framework
+- ZK compression by [Light Protocol](https://lightprotocol.com/)
+- Shielded transfers by [Privacy Cash](https://privacycash.io/)
+- RPC infrastructure by [Helius](https://helius.dev/) and [Quicknode](https://www.quicknode.com/)

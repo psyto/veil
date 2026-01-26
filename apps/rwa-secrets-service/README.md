@@ -1,10 +1,16 @@
 # RWA Secrets Service
 
-Encrypted metadata management for tokenized Real World Assets on Solana.
+Encrypted metadata management for tokenized Real World Assets on Solana, featuring ZK access proofs and compressed storage.
 
 ## Overview
 
 RWA Secrets Service enables asset issuers to register tokenized real-world assets with encrypted metadata on-chain, while providing selective disclosure to authorized parties. This ensures confidentiality of sensitive information (valuations, legal documents, ownership details) while maintaining regulatory compliance through granular access control.
+
+### Privacy Features
+
+- **NaCl Box Encryption**: Metadata encrypted with Curve25519-XSalsa20-Poly1305
+- **ZK Access Proofs**: Privacy-preserving access verification via Light Protocol
+- **Compressed Storage**: ~99% on-chain storage reduction for encrypted metadata
 
 ### How It Works
 
@@ -35,6 +41,8 @@ RWA Secrets Service enables asset issuers to register tokenized real-world asset
 - **Expiration Support**: Time-limited access grants
 - **Audit Logging**: On-chain record of all access attempts
 - **Asset Lifecycle**: Support for active, inactive, frozen, and transferred states
+- **ZK Access Proofs**: Verify access without revealing sensitive details
+- **Compressed Metadata**: Reduce storage costs by ~99% with Light Protocol
 
 ## Project Structure
 
@@ -82,6 +90,25 @@ yarn install
 # Build the SDK
 cd sdk && yarn build && cd ..
 ```
+
+## Environment Configuration
+
+Copy the example environment file and configure your settings:
+
+```bash
+cp app/.env.example app/.env.local
+```
+
+### Required Environment Variables
+
+```bash
+NEXT_PUBLIC_HELIUS_API_KEY=your_helius_api_key    # Recommended for ZK support
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_PROGRAM_ID=your_program_id
+NEXT_PUBLIC_ENABLE_ZK_COMPRESSION=true            # Optional, default: true
+```
+
+See `.env.example` for all available options.
 
 ## Usage
 
@@ -167,6 +194,38 @@ await client.grantAccessOnChain(
 );
 ```
 
+### ZK-Enhanced Operations (Optional)
+
+For enhanced privacy with ZK proofs and compressed storage:
+
+```typescript
+import {
+  createZkEncryptedAsset,
+  createZkAccessProof,
+  verifyZkAccessProof
+} from '@rwa-secrets/sdk';
+import { createHeliusRpc } from '@privacy-suite/crypto';
+
+// Create ZK-compressed encrypted asset
+const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
+const zkAsset = await createZkEncryptedAsset(
+  metadata,
+  issuerKeypair,
+  payer,
+  { rpc: zkRpc, enableCompression: true }
+);
+
+// Create ZK access proof (privacy-preserving)
+const accessProof = await createZkAccessProof(
+  assetId,
+  AccessLevel.ViewFull,
+  granteeKeypair
+);
+
+// Verify access without revealing details
+const isValid = await verifyZkAccessProof(accessProof, zkRpc);
+```
+
 ## Program Instructions
 
 | Instruction | Description |
@@ -220,8 +279,20 @@ await client.grantAccessOnChain(
 
 MIT
 
+## Built For
+
+[Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Privacy Tooling Track
+
+### Bounty Eligibility
+
+| Bounty | Integration |
+|--------|-------------|
+| Light Protocol | ZK compression for encrypted metadata and access proofs |
+| Helius | RPC provider with ZK compression support |
+| Quicknode | RPC provider integration |
+
 ## Acknowledgments
 
-- Built for [Colosseum Eternal Challenge](https://www.colosseum.com/)
 - Inspired by [a16z crypto privacy research](https://a16zcrypto.com/posts/article/privacy-trends-moats-quantum-data-testing/)
 - Uses [NaCl](https://nacl.cr.yp.to/) cryptographic primitives
+- ZK compression by [Light Protocol](https://lightprotocol.com/)

@@ -1,10 +1,16 @@
 # Confidential Swap Router
 
-MEV-protected swap router with encrypted order payloads on Solana.
+MEV-protected swap router with encrypted order payloads on Solana, featuring ZK compression and shielded settlements.
 
 ## Overview
 
 Confidential Swap Router enables users to submit swap orders with encrypted details, protecting them from MEV (Maximal Extractable Value) attacks such as frontrunning and sandwich attacks. Only authorized solvers can decrypt and execute orders, ensuring fair execution through Jupiter aggregator.
+
+### Privacy Features
+
+- **NaCl Box Encryption**: Order details encrypted with Curve25519-XSalsa20-Poly1305
+- **ZK Compression**: Optional Light Protocol integration for ~99% on-chain storage reduction
+- **Shielded Settlement**: Optional Privacy Cash integration for private output delivery
 
 ### How It Works
 
@@ -33,6 +39,8 @@ Confidential Swap Router enables users to submit swap orders with encrypted deta
 - **Non-custodial**: Users retain control; can cancel pending orders anytime
 - **Best Execution**: Solvers use Jupiter aggregator for optimal routing
 - **Transparent**: All executions verifiable on-chain
+- **ZK Compression**: Reduce on-chain storage costs by ~99% with Light Protocol
+- **Shielded Output**: Receive swap outputs privately via Privacy Cash
 
 ## Project Structure
 
@@ -94,6 +102,38 @@ cd solver && yarn install && cd ..
 # Install app dependencies
 cd app && yarn install && cd ..
 ```
+
+## Environment Configuration
+
+Copy the example environment files and configure your settings:
+
+```bash
+# Frontend configuration
+cp app/.env.example app/.env.local
+
+# Solver configuration
+cp solver/.env.example solver/.env
+```
+
+### Required Environment Variables
+
+**Frontend (app/.env.local)**:
+```bash
+NEXT_PUBLIC_HELIUS_API_KEY=your_helius_api_key    # Recommended for ZK support
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_PROGRAM_ID=your_program_id
+NEXT_PUBLIC_SOLVER_API_URL=http://localhost:3001
+```
+
+**Solver (solver/.env)**:
+```bash
+SOLVER_KEYPAIR_PATH=/path/to/solver-keypair.json
+HELIUS_API_KEY=your_helius_api_key
+SOLANA_NETWORK=devnet
+PROGRAM_ID=your_program_id
+```
+
+See `.env.example` files for all available options including ZK compression and shielded settlement toggles.
 
 ## Usage
 
@@ -171,7 +211,9 @@ curl -X POST http://localhost:3001/api/register-encryption-pubkey \
 | `cancel_order` | Cancel pending order (owner only) |
 | `claim_output` | Claim output tokens after execution |
 
-## Encryption
+## Encryption & Privacy
+
+### Standard Encryption (NaCl Box)
 
 Orders are encrypted using **NaCl box** (Curve25519-XSalsa20-Poly1305):
 
@@ -191,6 +233,33 @@ const encryptedPayload = createEncryptedOrder(
 );
 ```
 
+### ZK-Enhanced Encryption (Optional)
+
+For enhanced privacy with ~99% on-chain storage reduction:
+
+```typescript
+import { createZkEncryptedOrder, shieldSwapOutput } from '@confidential-swap/sdk';
+import { createHeliusRpc } from '@privacy-suite/crypto';
+
+// Create ZK-compressed encrypted order
+const { connection, zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
+const zkOrder = await createZkEncryptedOrder(
+  orderPayload,
+  solverPublicKey,
+  userKeypair,
+  payer,
+  { rpc: zkRpc, enableCompression: true }
+);
+
+// Shield swap output for private settlement
+const shieldedTxId = await shieldSwapOutput(
+  connection,
+  wallet,
+  outputAmount,
+  'SOL'
+);
+```
+
 ## Security Considerations
 
 - **Solver Trust**: Users must trust the solver to execute orders fairly
@@ -201,8 +270,22 @@ const encryptedPayload = createEncryptedOrder(
 
 MIT
 
+## Built For
+
+[Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Open Track
+
+### Bounty Eligibility
+
+| Bounty | Integration |
+|--------|-------------|
+| Light Protocol | ZK compression for encrypted order payloads |
+| Privacy Cash | Shielded settlement for swap outputs |
+| Helius | RPC provider with ZK compression support |
+| Quicknode | RPC provider integration |
+
 ## Acknowledgments
 
-- Built for [Colosseum Eternal Challenge](https://www.colosseum.com/)
 - Inspired by [a16z crypto privacy research](https://a16zcrypto.com/posts/article/privacy-trends-moats-quantum-data-testing/)
 - Powered by [Jupiter](https://jup.ag/) aggregator
+- ZK compression by [Light Protocol](https://lightprotocol.com/)
+- Shielded transfers by [Privacy Cash](https://privacycash.io/)
