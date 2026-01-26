@@ -17,6 +17,8 @@
     "clean": "yarn workspaces run clean"
   },
   "devDependencies": {
+    "puppeteer": "^24.36.0",
+    "puppeteer-screen-recorder": "^3.0.6",
     "typescript": "^5.0.0"
   }
 }

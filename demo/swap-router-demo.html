@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confidential Swap Router - Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      animation: typing 2s steps(40, end);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+  <!-- Phase 1: Problem Statement -->
+  <div id="phase-problem" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="max-w-4xl text-center">
+      <h1 class="text-5xl font-bold mb-8 fade-in">The MEV Problem</h1>
+      <div class="text-left bg-gray-800 rounded-lg p-8 font-mono text-lg space-y-4 fade-in">
+        <p class="text-yellow-400">You: "I want to buy 10,000 USDC worth of TOKEN"</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-red-400">Mempool: [Your transaction is visible to everyone]</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-red-500">MEV Bot: Sees your order, buys TOKEN first, sells to you at higher price</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-red-600 font-bold">Result: You pay more. Bot profits. Value extracted.</p>
+      </div>
+      <p class="mt-8 text-2xl text-gray-300 fade-in">MEV costs users <span class="text-red-500 font-bold">billions</span> annually.</p>
+    </div>
+  </div>
+
+  <!-- Phase 2: Solution Statement -->
+  <div id="phase-solution" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="max-w-4xl text-center">
+      <h1 class="text-5xl font-bold mb-8 fade-in text-green-400">The Solution: Encrypt First</h1>
+      <div class="text-left bg-gray-800 rounded-lg p-8 font-mono text-lg space-y-4 fade-in">
+        <p class="text-blue-400">You: Encrypt order with solver's public key</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-purple-400">On-chain: Encrypted blob. Contents unknown.</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-green-400">Solver: Decrypts, executes via Jupiter</p>
+        <p class="text-gray-400 ml-8">↓</p>
+        <p class="text-green-500 font-bold">Result: Fair execution. No frontrunning possible.</p>
+      </div>
+      <p class="mt-8 text-3xl font-bold fade-in">"MEV bots can't frontrun what they can't read."</p>
+    </div>
+  </div>
+
+  <!-- Phase 3: App Demo -->
+  <div id="phase-app" class="hidden min-h-screen bg-gray-900 p-8">
+    <div class="max-w-2xl mx-auto">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold">🔐 Confidential Swap Router</h1>
+        <button id="connect-btn" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition">
+          Connect Wallet
+        </button>
+        <div id="wallet-connected" class="hidden bg-green-600 px-4 py-2 rounded-lg">
+          <span class="text-sm">AmSY...Keb1</span>
+        </div>
+      </div>
+
+      <!-- Swap Card -->
+      <div class="bg-gray-800 rounded-xl p-6 shadow-xl">
+        <h2 class="text-xl font-semibold mb-6">Swap Tokens</h2>
+
+        <!-- From -->
+        <div class="bg-gray-700 rounded-lg p-4 mb-2">
+          <div class="flex justify-between text-sm text-gray-400 mb-2">
+            <span>From</span>
+            <span>Balance: <span id="sol-balance">5.52</span> SOL</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <input id="input-amount" type="text" value="" placeholder="0.0"
+              class="bg-transparent text-3xl font-semibold w-full outline-none" readonly>
+            <div class="flex items-center gap-2 bg-gray-600 px-3 py-2 rounded-lg">
+              <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+              <span class="font-semibold">SOL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex justify-center -my-2 relative z-10">
+          <div class="bg-gray-700 p-2 rounded-lg border-4 border-gray-800">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- To -->
+        <div class="bg-gray-700 rounded-lg p-4 mt-2">
+          <div class="flex justify-between text-sm text-gray-400 mb-2">
+            <span>To (estimated)</span>
+            <span>Balance: 0 USDC</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <input id="output-amount" type="text" value="" placeholder="0.0"
+              class="bg-transparent text-3xl font-semibold w-full outline-none" readonly>
+            <div class="flex items-center gap-2 bg-gray-600 px-3 py-2 rounded-lg">
+              <div class="w-6 h-6 bg-green-500 rounded-full"></div>
+              <span class="font-semibold">USDC</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quote Info -->
+        <div id="quote-info" class="hidden mt-4 p-3 bg-gray-700 rounded-lg text-sm">
+          <div class="flex justify-between text-gray-400">
+            <span>Rate</span>
+            <span id="rate">1 SOL = 98.50 USDC</span>
+          </div>
+          <div class="flex justify-between text-gray-400 mt-1">
+            <span>Price Impact</span>
+            <span class="text-green-400" id="impact">0.05%</span>
+          </div>
+          <div class="flex justify-between text-gray-400 mt-1">
+            <span>Slippage Tolerance</span>
+            <span>0.5%</span>
+          </div>
+        </div>
+
+        <!-- Encryption Status -->
+        <div id="encryption-status" class="hidden mt-4 p-3 bg-purple-900/50 border border-purple-500 rounded-lg">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            <span class="text-purple-300" id="encryption-text">Order will be encrypted with solver's public key</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="submit-btn" disabled
+          class="w-full mt-6 py-4 rounded-lg font-semibold text-lg transition disabled:bg-gray-600 disabled:cursor-not-allowed bg-gray-600">
+          Enter an amount
+        </button>
+      </div>
+
+      <!-- Solver Status -->
+      <div class="mt-4 flex items-center gap-2 text-sm text-gray-400">
+        <div id="solver-dot" class="w-2 h-2 bg-gray-500 rounded-full"></div>
+        <span id="solver-status">Connecting to solver...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: Encrypting -->
+  <div id="phase-encrypting" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="text-center">
+      <div class="mb-8">
+        <svg class="w-24 h-24 mx-auto text-purple-500 pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-bold mb-4">Encrypting Order...</h2>
+      <p class="text-gray-400 text-lg">Using solver's public key</p>
+      <div class="mt-8 font-mono text-sm text-gray-500 bg-gray-800 p-4 rounded-lg max-w-md mx-auto text-left">
+        <p>Order Details (before encryption):</p>
+        <p class="text-yellow-400 mt-2">  amount: 1.0 SOL</p>
+        <p class="text-yellow-400">  minOutput: 97.52 USDC</p>
+        <p class="text-yellow-400">  slippage: 0.5%</p>
+        <p class="mt-4 text-purple-400">Encrypting with NaCl box...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 5: Order Submitted -->
+  <div id="phase-submitted" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="text-center max-w-2xl">
+      <div class="mb-8">
+        <svg class="w-24 h-24 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h2 class="text-3xl font-bold mb-4 text-green-400">Order Submitted!</h2>
+      <p class="text-gray-400 text-lg mb-8">Encrypted order is now on-chain</p>
+
+      <div class="bg-gray-800 p-6 rounded-lg text-left font-mono text-sm">
+        <p class="text-gray-400">What MEV bots see on-chain:</p>
+        <div class="mt-4 bg-gray-900 p-4 rounded overflow-hidden">
+          <p class="text-purple-400 break-all">0x7f3a9b2c4d5e6f8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2...</p>
+        </div>
+        <p class="mt-4 text-gray-500">↑ Just encrypted bytes. No readable order details.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 6: Solver Executing -->
+  <div id="phase-solver" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="text-center max-w-2xl">
+      <h2 class="text-3xl font-bold mb-8">Solver Processing</h2>
+      <div class="bg-gray-800 p-6 rounded-lg text-left font-mono text-sm space-y-2">
+        <p class="text-gray-400">[Solver] Detected new encrypted order</p>
+        <p class="text-purple-400">[Solver] Decrypting with private key...</p>
+        <p class="text-green-400">[Solver] Order decrypted successfully</p>
+        <p class="text-blue-400">[Solver] Fetching Jupiter quote...</p>
+        <p class="text-blue-400">[Solver] Route: SOL → USDC via Raydium</p>
+        <p class="text-yellow-400">[Solver] Executing swap...</p>
+        <p class="text-green-400 font-bold">[Solver] ✓ Swap executed! Output: 98.45 USDC</p>
+      </div>
+      <p class="mt-6 text-gray-400">Only the solver can decrypt order details.</p>
+    </div>
+  </div>
+
+  <!-- Phase 7: Closing -->
+  <div id="phase-closing" class="hidden min-h-screen flex items-center justify-center p-8">
+    <div class="text-center max-w-3xl">
+      <h1 class="text-5xl font-bold mb-8">Confidential Swap Router</h1>
+      <p class="text-2xl text-gray-300 mb-12">MEV protection through encryption.</p>
+
+      <div class="text-3xl font-bold text-purple-400 mb-12">
+        "MEV bots can't frontrun what they can't read."
+      </div>
+
+      <div class="flex justify-center gap-8 text-gray-400">
+        <div class="text-center">
+          <p class="text-sm mb-2">Built with</p>
+          <p class="text-white">Light Protocol • Privacy Cash • Jupiter</p>
+        </div>
+      </div>
+
+      <div class="mt-12 text-gray-500">
+        github.com/psyto/solana-privacy-suite
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Demo controller - will be driven by Puppeteer
+    window.demoPhases = [
+      'phase-problem',
+      'phase-solution',
+      'phase-app',
+      'phase-encrypting',
+      'phase-submitted',
+      'phase-solver',
+      'phase-closing'
+    ];
+
+    window.currentPhase = -1;
+
+    window.showPhase = function(phaseId) {
+      // Hide all phases
+      document.querySelectorAll('[id^="phase-"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+      // Show target phase
+      const phase = document.getElementById(phaseId);
+      if (phase) {
+        phase.classList.remove('hidden');
+      }
+    };
+
+    window.nextPhase = function() {
+      window.currentPhase++;
+      if (window.currentPhase < window.demoPhases.length) {
+        window.showPhase(window.demoPhases[window.currentPhase]);
+        return window.demoPhases[window.currentPhase];
+      }
+      return null;
+    };
+
+    // App phase interactions
+    window.connectWallet = function() {
+      document.getElementById('connect-btn').classList.add('hidden');
+      document.getElementById('wallet-connected').classList.remove('hidden');
+      document.getElementById('solver-dot').classList.remove('bg-gray-500');
+      document.getElementById('solver-dot').classList.add('bg-green-500');
+      document.getElementById('solver-status').textContent = 'Solver connected';
+    };
+
+    window.typeAmount = function(amount) {
+      const input = document.getElementById('input-amount');
+      input.value = amount;
+
+      // Update output
+      const output = document.getElementById('output-amount');
+      const rate = 98.5;
+      output.value = (parseFloat(amount) * rate).toFixed(2);
+
+      // Show quote info
+      document.getElementById('quote-info').classList.remove('hidden');
+      document.getElementById('encryption-status').classList.remove('hidden');
+
+      // Enable button
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = false;
+      btn.classList.remove('bg-gray-600');
+      btn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+      btn.textContent = 'Create Encrypted Order';
+    };
+
+    // Start with nothing shown
+    document.querySelectorAll('[id^="phase-"]').forEach(el => {
+      el.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
