@@ -2,9 +2,14 @@
 
 Guidelines for recording the 3-minute demo videos for PrivacyHack 2026.
 
+**Key principle: Lead with philosophy, then show the solution.**
+
 ---
 
 ## Demo 1: Confidential Swap Router (3 min max)
+
+### Core Message
+**"MEV bots can't frontrun what they can't read."**
 
 ### Setup Before Recording
 1. Start solver: `cd apps/confidential-swap-router/solver && yarn dev`
@@ -14,53 +19,90 @@ Guidelines for recording the 3-minute demo videos for PrivacyHack 2026.
 
 ### Script
 
-**[0:00 - 0:20] Introduction**
-- "This is the Confidential Swap Router - MEV-protected swaps on Solana"
-- "Traditional swaps expose order details, enabling frontrunning attacks"
-- "Our solution encrypts orders using NaCl box encryption"
+**[0:00 - 0:30] The Problem (Philosophy)**
 
-**[0:20 - 0:50] Show Architecture**
-- Open the README or architecture diagram
-- "Orders are encrypted client-side using the solver's public key"
-- "Only the solver can decrypt and execute via Jupiter"
-- "We integrate Light Protocol for ZK compression and Privacy Cash for shielded settlement"
+Open with the problem statement:
 
-**[0:50 - 1:30] Connect Wallet & Create Order**
-- Click "Connect Wallet" button
-- Show wallet connection
-- "Let's create an encrypted swap order"
+"Every time you submit a swap on a public blockchain, you're broadcasting your intention to the world before it executes."
+
+Show a simple diagram or text:
+```
+You: "I want to buy TOKEN"
+     ↓
+Mempool: [Visible to everyone]
+     ↓
+MEV Bot: Sees your order, buys first, sells to you higher
+     ↓
+Result: You pay more. Bot profits.
+```
+
+"This is MEV — Maximal Extractable Value. It costs users billions annually. And it's a direct consequence of transparent mempools."
+
+**[0:30 - 0:50] The Solution (Philosophy)**
+
+"The Confidential Swap Router fixes this with one principle: **encrypt first, execute later.**"
+
+Show the solution diagram:
+```
+You: Encrypt order with solver's public key
+     ↓
+On-chain: Encrypted blob. Contents unknown.
+     ↓
+Solver: Decrypts, executes via Jupiter
+     ↓
+Result: Fair execution. No frontrunning.
+```
+
+"MEV bots can't frontrun what they can't read."
+
+**[0:50 - 1:20] Connect & Create Order**
+
+"Let me show you how it works."
+
+- Connect wallet
 - Select SOL → USDC
-- Enter amount (e.g., 0.1 SOL)
-- Show the Jupiter quote appearing
-- Point out slippage settings
+- Enter amount (0.1 SOL)
+- Show Jupiter quote appearing
+- "Notice we get real-time quotes from Jupiter, but the actual order details will be encrypted."
 
-**[1:30 - 2:00] Submit Encrypted Order**
+**[1:20 - 1:50] Submit Encrypted Order**
+
+- Adjust slippage if needed
 - Click "Create Encrypted Order"
-- Show the encryption happening
-- "The order details are now encrypted"
-- "Only the solver can see the actual amounts"
+- "The order is now encrypted with the solver's public key. On-chain, this is just ciphertext."
 - Show transaction confirmation
+- "No one watching the blockchain knows my minimum output or slippage tolerance."
 
-**[2:00 - 2:30] Show Solver Execution**
-- Switch to terminal showing solver logs
-- "The solver picks up the order, decrypts it, and executes via Jupiter"
-- Show solver decrypting and executing
-- "MEV searchers can't frontrun because they can't read the order"
+**[1:50 - 2:20] Solver Execution**
 
-**[2:30 - 2:50] Claim Output**
-- Back to frontend
-- Show order in "Pending Orders" section
-- "User claims their output tokens"
-- "Optionally, outputs can be shielded using Privacy Cash"
+- Switch to solver terminal
+- "The solver picks up encrypted orders, decrypts them, and executes through Jupiter for best pricing."
+- Show solver logs
+- "This is the only entity that can read the order details."
 
-**[2:50 - 3:00] Conclusion**
-- "Confidential Swap Router - private, MEV-protected swaps on Solana"
-- "Built with Light Protocol ZK compression and Privacy Cash SDK"
-- Show GitHub link
+**[2:20 - 2:45] Claim Output**
+
+- Return to frontend
+- Show completed order
+- "User claims output tokens. Optionally, outputs can be shielded using Privacy Cash for additional privacy."
+- Click claim
+
+**[2:45 - 3:00] Closing (Philosophy)**
+
+"Traditional finance doesn't broadcast your orders to competitors before execution. DeFi shouldn't either."
+
+"Confidential Swap Router: MEV protection through encryption."
+
+Show:
+- GitHub: github.com/psyto/solana-privacy-suite
+- Built with: Light Protocol, Privacy Cash, Jupiter
 
 ---
 
 ## Demo 2: RWA Secrets Service (3 min max)
+
+### Core Message
+**"Not about hiding from regulators. It's about not exposing everything to everyone."**
 
 ### Setup Before Recording
 1. Start frontend: `cd apps/rwa-secrets-service/app && yarn dev`
@@ -69,94 +111,145 @@ Guidelines for recording the 3-minute demo videos for PrivacyHack 2026.
 
 ### Script
 
-**[0:00 - 0:20] Introduction**
-- "This is the RWA Secrets Service - encrypted metadata for tokenized real-world assets"
-- "Asset issuers need to store confidential information like valuations and legal docs"
-- "Our solution encrypts metadata on-chain with selective disclosure"
+**[0:00 - 0:30] The Problem (Philosophy)**
 
-**[0:20 - 0:50] Show Architecture**
-- Open the README or architecture diagram
-- "Metadata is encrypted using NaCl box encryption"
-- "Access is granted through encrypted key shares"
-- "Four access levels: ViewBasic, ViewFull, Auditor, Admin"
-- "ZK compression reduces storage costs by 99%"
+"Tokenized real-world assets have a problem: they need confidential information on-chain."
 
-**[0:50 - 1:30] Connect Wallet & Register Asset**
-- Click "Connect Wallet"
-- Show wallet connection
-- "Let's register a real estate asset"
+"Property valuations. Legal documents. Ownership structures. Financial statements."
+
+"On a public blockchain, this information is visible to everyone — competitors, adversaries, the entire world."
+
+"Total transparency destroys business confidentiality."
+
+**[0:30 - 0:55] The Solution (Philosophy)**
+
+"But total privacy isn't the answer either. Regulators need access. Investors need information. Auditors need verification."
+
+"The answer is **selective disclosure** — encrypted by default, disclosed by choice."
+
+Show diagram:
+```
+Asset registered → Metadata encrypted
+                         ↓
+         ┌───────────────┴───────────────┐
+         ↓                               ↓
+   Investor granted              Regulator granted
+   ViewFull access               Auditor access
+         ↓                               ↓
+   Sees valuation                Sees compliance data
+```
+
+"Different parties see different information based on their role. All access logged on-chain."
+
+"This is not about hiding from regulators. It's about not exposing everything to everyone."
+
+**[0:55 - 1:25] Connect & Register Asset**
+
+"Let me demonstrate."
+
+- Connect wallet
 - Click "Register New Asset"
 - Fill in:
-  - Asset ID: "PROPERTY-001"
-  - Asset Type: "Real Estate"
-  - Description: "Office building in San Francisco"
-- "The metadata is encrypted client-side before submission"
+  - Asset ID: "SF-OFFICE-001"
+  - Type: Real Estate
+  - Description: "Commercial office building, San Francisco"
+- "This metadata is encrypted client-side before it ever touches the blockchain."
 
-**[1:30 - 2:00] Submit Registration**
+**[1:25 - 1:50] Submit Registration**
+
 - Click "Register Asset"
 - Show encryption happening
-- "Metadata is encrypted with our keypair"
+- "On-chain, this is encrypted data. The public sees that an asset exists, but not its details."
 - Show transaction confirmation
-- "Asset is now registered on-chain with encrypted metadata"
 
-**[2:00 - 2:30] Grant Access**
-- Select the registered asset
+**[1:50 - 2:20] Grant Access (Selective Disclosure)**
+
+"Now let's grant selective access to an investor."
+
+- Select the asset
 - Click "Grant Access"
-- Enter grantee address
-- Select access level: "ViewFull"
-- Set expiration: "30 days"
-- "The grantee receives an encrypted key share"
-- Click "Grant Access"
-- Show transaction
+- Enter investor address
+- Select "ViewFull" access level
+- Set expiration: 30 days
+- "The investor receives an encrypted key share. Only they can decrypt."
+- Submit
 
-**[2:30 - 2:50] Show Access Control**
-- "Different parties get different access levels"
-- "Investors see basic info, auditors see full details"
-- "All access is logged on-chain for compliance"
-- "ZK proofs verify access without revealing details"
+**[2:20 - 2:40] Show Access Levels**
 
-**[2:50 - 3:00] Conclusion**
-- "RWA Secrets Service - privacy-preserving RWA management"
-- "Built with Light Protocol for ZK compression"
-- "Perfect for tokenized real estate, securities, and more"
-- Show GitHub link
+"We have four access levels:"
+- ViewBasic — basic info only
+- ViewFull — complete metadata
+- Auditor — compliance verification
+- Admin — full control
+
+"Each level sees only what they need. Nothing more."
+
+**[2:40 - 3:00] Closing (Philosophy)**
+
+"Privacy and compliance can coexist. You don't need to expose everything to prove anything."
+
+"RWA Secrets Service: Confidentiality through selective disclosure."
+
+Show:
+- GitHub: github.com/psyto/solana-privacy-suite
+- Built with: Light Protocol, NaCl encryption
 
 ---
 
 ## Recording Tips
 
-1. **Resolution:** Record at 1920x1080 or higher
-2. **Audio:** Use a good microphone, speak clearly
-3. **Pace:** Don't rush, but stay within 3 minutes
-4. **Preparation:**
-   - Clear browser cache before recording
-   - Have all tabs ready
-   - Test wallet connection beforehand
-5. **Editing:**
-   - Cut out long transaction wait times
-   - Add captions if possible
-   - Include GitHub link overlay
+### Lead with Philosophy
+- Judges see many technical demos
+- Philosophy differentiates your project
+- Start with "why" before "how"
 
-## Key Points to Emphasize
+### Key Phrases to Emphasize
+- "MEV bots can't frontrun what they can't read"
+- "Encrypt first, execute later"
+- "Not about hiding from regulators — about not exposing everything to everyone"
+- "Encrypted by default, disclosed by choice"
+- "Privacy and compliance can coexist"
 
-### Confidential Swap Router
-- MEV protection through encryption
-- Jupiter integration for best execution
-- Light Protocol ZK compression
-- Privacy Cash shielded settlement
-- Non-custodial design
+### Visual Suggestions
+- Use simple diagrams (can be slides or whiteboard)
+- Show the problem → solution flow
+- Terminal + frontend split screen for solver demo
 
-### RWA Secrets Service
-- End-to-end encryption for metadata
-- Granular access control (4 levels)
-- On-chain audit logging
-- ZK access proofs
-- Regulatory compliance support
+### Technical Tips
+- Resolution: 1920x1080 or higher
+- Clear audio is essential
+- Cut long transaction waits in editing
+- Add captions if possible
+
+### Timing
+- Philosophy/Problem: ~30 seconds
+- Solution concept: ~20-25 seconds
+- Live demo: ~90 seconds
+- Closing: ~15-20 seconds
+
+---
 
 ## Bounty Mentions
 
-Make sure to mention these integrations:
-- "Using Light Protocol for ZK compression - 99% storage reduction"
+Naturally incorporate these:
+- "Using Light Protocol for ZK compression"
 - "Privacy Cash SDK for shielded transfers"
 - "Helius RPC for ZK compression support"
-- "Built on Solana with Anchor framework"
+- "Jupiter for best execution routing"
+
+---
+
+## Philosophy Summary (For Reference)
+
+### Confidential Swap Router
+> MEV is surveillance-enabled theft. When your trading intentions are public before execution, sophisticated actors extract value from you. Encrypted orders restore the information symmetry that fair markets require.
+
+### RWA Secrets Service
+> Total transparency and total privacy are both failures. Selective disclosure is the middle path — users control what they reveal and to whom. Compliance without surveillance.
+
+### Shared Principle
+> "Not 'add encryption' but 'design so there's nothing to expose.'"
+
+---
+
+*Remember: The philosophy is what makes this project different. Lead with it.*

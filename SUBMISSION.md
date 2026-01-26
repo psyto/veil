@@ -8,6 +8,24 @@
 
 ---
 
+## Philosophy
+
+> **"MEV bots can't frontrun what they can't read."**
+
+> **"Not about hiding from regulators. It's about not exposing everything to everyone."**
+
+Public blockchains created a paradox: systems designed for financial freedom became the most surveilled financial infrastructure in history. Every transaction is permanent. Every intention is broadcast. Every strategy is exposed.
+
+**Solana Privacy Suite addresses two consequences of this transparency:**
+
+1. **MEV Extraction** — When trading intentions are public, sophisticated actors extract value through frontrunning and sandwich attacks. The Confidential Swap Router encrypts orders so MEV bots see only ciphertext.
+
+2. **Business Confidentiality** — Tokenized assets need sensitive metadata on-chain, but total transparency destroys competitive advantage. The RWA Secrets Service implements selective disclosure — encrypted by default, disclosed by choice.
+
+Read our full philosophy: [PHILOSOPHY.md](./PHILOSOPHY.md)
+
+---
+
 ## Overview
 
 Solana Privacy Suite is a collection of privacy-preserving protocols for Solana featuring:
