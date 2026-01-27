@@ -12,7 +12,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.0",
     "@solana/web3.js": "^1.95.0",
-    "@privacy-suite/crypto": "workspace:*"
+    "@solana/spl-token": "^0.4.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
