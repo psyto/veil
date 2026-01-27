@@ -1,0 +1,25 @@
+{
+  "name": "@veil/darkflow",
+  "version": "0.1.0",
+  "description": "DarkFlow - Confidential AMM with Dark Liquidity for Solana",
+  "private": true,
+  "scripts": {
+    "build": "anchor build --no-idl",
+    "test": "ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=~/.config/solana/id.json yarn run ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'",
+    "deploy": "anchor deploy",
+    "clean": "rm -rf target"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.0",
+    "@solana/web3.js": "^1.95.0",
+    "@privacy-suite/crypto": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}

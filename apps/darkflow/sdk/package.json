@@ -1,0 +1,20 @@
+{
+  "name": "@veil/darkflow-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for DarkFlow - Confidential AMM with Dark Liquidity",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.0",
+    "@solana/web3.js": "^1.95.0",
+    "@privacy-suite/crypto": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

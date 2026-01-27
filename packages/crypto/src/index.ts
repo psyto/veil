@@ -86,3 +86,35 @@ export {
   RPC_ENV_VARS,
   PUBLIC_RPC_ENDPOINTS,
 } from './rpc-providers';
+
+// Arcium Integration (Encrypted Shared State)
+export {
+  ArciumConfig,
+  EncryptedStateEntry,
+  PoolAggregates,
+  EncryptedPosition,
+  DarkOrder,
+  MpcComputationResult,
+  ArciumClient,
+  DarkPoolStateManager,
+  createArciumClient,
+  createDarkPoolManager,
+} from './arcium';
+
+// Noir ZK Proofs
+export {
+  NoirProof,
+  VerificationResult,
+  SwapProofInputs,
+  SwapProofOutputs,
+  PositionProofInputs,
+  RangeProofInputs,
+  CircuitConfig,
+  NoirProver,
+  NoirVerifier,
+  createNoirProver,
+  createNoirVerifier,
+  generateSwapProof,
+  verifySwapProof,
+  generateRangeProof,
+} from './noir';
