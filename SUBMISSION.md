@@ -1,6 +1,6 @@
 # Solana PrivacyHack 2026 - Submission
 
-## Project: Solana Privacy Suite
+## Project: Veil
 
 **Track:** Open Track (Confidential Swap Router) + Privacy Tooling (RWA Secrets Service)
 
@@ -16,7 +16,7 @@
 
 Public blockchains created a paradox: systems designed for financial freedom became the most surveilled financial infrastructure in history. Every transaction is permanent. Every intention is broadcast. Every strategy is exposed.
 
-**Solana Privacy Suite addresses two consequences of this transparency:**
+**Veil addresses two consequences of this transparency:**
 
 1. **MEV Extraction** — When trading intentions are public, sophisticated actors extract value through frontrunning and sandwich attacks. The Confidential Swap Router encrypts orders so MEV bots see only ciphertext.
 
@@ -28,12 +28,12 @@ Read our full philosophy: [PHILOSOPHY.md](./PHILOSOPHY.md)
 
 ## Overview
 
-Solana Privacy Suite is a collection of privacy-preserving protocols for Solana featuring:
+Veil is a collection of privacy-preserving protocols for Solana featuring:
 
 1. **Confidential Swap Router** - MEV-protected token swaps with encrypted order payloads
 2. **RWA Secrets Service** - Encrypted metadata management for tokenized real-world assets
 
-Both applications share a common cryptographic library (`@privacy-suite/crypto`) that provides:
+Both applications share a common cryptographic library (`@veil/crypto`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
 - ZK compression via Light Protocol
@@ -79,7 +79,7 @@ Both applications share a common cryptographic library (`@privacy-suite/crypto`)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                          Solana Privacy Suite                               │
+│                          Veil                               │
 ├────────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────────────┐    ┌─────────────────────────────┐       │
 │  │  Confidential Swap Router   │    │    RWA Secrets Service      │       │
@@ -92,7 +92,7 @@ Both applications share a common cryptographic library (`@privacy-suite/crypto`)
 │  └─────────────────────────────┘    └─────────────────────────────┘       │
 │                                                                            │
 │  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │                    @privacy-suite/crypto                           │   │
+│  │                    @veil/crypto                           │   │
 │  │                                                                     │   │
 │  │  NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers  │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
@@ -236,7 +236,7 @@ const encrypted = encryptAssetMetadata({
 
 ### ZK Compression
 ```typescript
-import { createHeliusRpc, compressData } from '@privacy-suite/crypto';
+import { createHeliusRpc, compressData } from '@veil/crypto';
 
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
 const compressed = await compressData(zkRpc, data, payer);
@@ -245,7 +245,7 @@ const compressed = await compressData(zkRpc, data, payer);
 
 ### Shielded Transfer
 ```typescript
-import { PrivacyCashClient } from '@privacy-suite/crypto';
+import { PrivacyCashClient } from '@veil/crypto';
 
 const client = new PrivacyCashClient(connection, wallet, 'SOL');
 await client.deposit(1000000n);  // Shield tokens
@@ -257,7 +257,7 @@ await client.withdraw(500000n, recipient);  // Unshield
 ## Project Structure
 
 ```
-solana-privacy-suite/
+veil/
 ├── packages/
 │   └── crypto/                     # Shared encryption library
 │       ├── src/

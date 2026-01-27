@@ -144,7 +144,7 @@ Crypto is entering its third era:
 
 Previous eras treated privacy as optional. Era 3 makes it foundational.
 
-Solana Privacy Suite is infrastructure for this era.
+Veil is infrastructure for this era.
 
 ---
 
@@ -161,4 +161,4 @@ Different problems, same principle: **design for privacy from the start.**
 
 ---
 
-*Solana Privacy Suite: MEV protection through encryption. Confidentiality through selective disclosure.*
+*Veil: MEV protection through encryption. Confidentiality through selective disclosure.*

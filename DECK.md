@@ -1,4 +1,4 @@
-# Solana Privacy Suite - Presentation Deck
+# Veil - Presentation Deck
 
 ## PrivacyHack 2026 Submission
 
@@ -6,7 +6,7 @@
 
 ## Slide 1: Title
 
-**Solana Privacy Suite**
+**Veil**
 
 *MEV protection through encryption. Confidentiality through selective disclosure.*
 
@@ -146,7 +146,7 @@ Asset registered → Metadata encrypted
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│              Solana Privacy Suite                       │
+│              Veil                       │
 ├────────────────────────────────────────────────────────┤
 │  ┌──────────────────┐    ┌──────────────────┐         │
 │  │ Confidential     │    │ RWA Secrets      │         │
@@ -158,7 +158,7 @@ Asset registered → Metadata encrypted
 │  └──────────────────┘    └──────────────────┘         │
 │                                                        │
 │  ┌────────────────────────────────────────────────┐   │
-│  │           @privacy-suite/crypto                 │   │
+│  │           @veil/crypto                 │   │
 │  │  NaCl Box • Shamir's • ZK Compression          │   │
 │  └────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────┘
@@ -244,7 +244,7 @@ await grantAccess({
 | Era 2 | Decentralized compute | Transparent by default |
 | **Era 3** | **Decentralized privacy** | **Confidential by design** |
 
-**Solana Privacy Suite is infrastructure for Era 3.**
+**Veil is infrastructure for Era 3.**
 
 ---
 
@@ -267,7 +267,7 @@ await grantAccess({
 
 ## Slide 17: Summary
 
-**Solana Privacy Suite**
+**Veil**
 
 Two protocols. One principle.
 

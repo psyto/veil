@@ -1,4 +1,6 @@
-# Solana Privacy Suite
+# Veil
+
+> "MEV bots can't frontrun what they can't read."
 
 Privacy-focused DeFi infrastructure for Solana, featuring encrypted swap orders and confidential RWA (Real World Asset) metadata management with ZK compression and shielded transfers.
 
@@ -9,7 +11,7 @@ This monorepo contains two privacy-preserving protocols built on Solana:
 1. **Confidential Swap Router** - MEV-protected token swaps with encrypted order payloads
 2. **RWA Secrets Service** - Encrypted metadata management for tokenized real-world assets with selective disclosure
 
-Both protocols share a common encryption library (`@privacy-suite/crypto`) that provides:
+Both protocols share a common encryption library (`@veil/crypto`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
 - ZK compression via Light Protocol (~99% on-chain storage reduction)
@@ -20,7 +22,7 @@ Both protocols share a common encryption library (`@privacy-suite/crypto`) that 
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                          Solana Privacy Suite                               │
+│                                   Veil                                      │
 ├────────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────────────┐    ┌─────────────────────────────┐       │
 │  │  Confidential Swap Router   │    │    RWA Secrets Service      │       │
@@ -35,7 +37,7 @@ Both protocols share a common encryption library (`@privacy-suite/crypto`) that 
 │  └─────────────────────────────┘    └─────────────────────────────┘       │
 │                                                                            │
 │  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │                    @privacy-suite/crypto                           │   │
+│  │                    @veil/crypto                           │   │
 │  │    NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers │   │
 │  └────────────────────────────────────────────────────────────────────┘   │
 │                                                                            │
@@ -49,7 +51,7 @@ Both protocols share a common encryption library (`@privacy-suite/crypto`) that 
 ## Project Structure
 
 ```
-solana-privacy-suite/
+veil/
 ├── packages/
 │   └── crypto/                      # Shared encryption library
 │       ├── src/
@@ -265,7 +267,7 @@ Open http://localhost:3001
 Uses Curve25519 for key exchange, XSalsa20 for encryption, and Poly1305 for authentication. Provides authenticated encryption ensuring both confidentiality and integrity.
 
 ```typescript
-import { generateEncryptionKeypair, encrypt, decrypt } from '@privacy-suite/crypto';
+import { generateEncryptionKeypair, encrypt, decrypt } from '@veil/crypto';
 
 const keypair = generateEncryptionKeypair();
 const encrypted = encrypt(data, recipientPublicKey, keypair);
@@ -279,7 +281,7 @@ Implements Shamir's Secret Sharing for M-of-N threshold decryption. Useful for:
 - Key recovery mechanisms
 
 ```typescript
-import { splitSecret, combineShares } from '@privacy-suite/crypto';
+import { splitSecret, combineShares } from '@veil/crypto';
 
 // Split secret into 5 shares, requiring 3 to reconstruct
 const shares = splitSecret(secretKey, 5, 3);
@@ -292,7 +294,7 @@ const recovered = combineShares([shares[0], shares[2], shares[4]]);
 Compress on-chain data using Light Protocol's ZK compression for ~99% storage reduction.
 
 ```typescript
-import { createZkRpc, compressData, transferCompressedTokens } from '@privacy-suite/crypto';
+import { createZkRpc, compressData, transferCompressedTokens } from '@veil/crypto';
 
 // Create ZK-enabled RPC connection
 const rpc = createZkRpc('https://devnet.helius-rpc.com/?api-key=YOUR_KEY');
@@ -308,7 +310,7 @@ const txId = await transferCompressedTokens(rpc, payer, mint, amount, owner, rec
 Enable private transfers with shielded balances using Privacy Cash SDK.
 
 ```typescript
-import { PrivacyCashClient, shieldTokens, unshieldTokens } from '@privacy-suite/crypto';
+import { PrivacyCashClient, shieldTokens, unshieldTokens } from '@veil/crypto';
 
 // Create Privacy Cash client
 const client = new PrivacyCashClient(connection, wallet, 'SOL');
@@ -327,7 +329,7 @@ const balance = await client.getPrivateBalance();
 Easily connect to supported RPC providers with ZK compression support.
 
 ```typescript
-import { createHeliusRpc, createQuicknodeRpc, createRpcFromEnv } from '@privacy-suite/crypto';
+import { createHeliusRpc, createQuicknodeRpc, createRpcFromEnv } from '@veil/crypto';
 
 // Using Helius (recommended for ZK compression)
 const { connection, zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
