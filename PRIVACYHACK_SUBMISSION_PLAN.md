@@ -66,18 +66,18 @@ This document outlines the strategy for submitting **three privacy-focused proje
 | Project | Repository | Track | Rationale |
 |---------|------------|-------|-----------|
 | **Fabcash** | psyto/fabcash | Private Payments | Strongest fit - burner wallet with offline payments, already integrates Privacy Cash + Light Protocol |
-| **Confidential Swap Router** | psyto/solana-privacy-suite | Open Track | MEV-protected swaps with encrypted orders - unique angle for open track |
-| **RWA Secrets Service** | psyto/solana-privacy-suite | Privacy Tooling | Infrastructure for encrypted RWA metadata - clear tooling use case |
+| **Confidential Swap Router** | psyto/veil | Open Track | MEV-protected swaps with encrypted orders - unique angle for open track |
+| **RWA Secrets Service** | psyto/veil | Privacy Tooling | Infrastructure for encrypted RWA metadata - clear tooling use case |
 
 ---
 
 ## Shared Architecture Advantage
 
-The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@privacy-suite/crypto`). Upgrading this shared library benefits both projects simultaneously.
+The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@veil/crypto`). Upgrading this shared library benefits both projects simultaneously.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                       @privacy-suite/crypto                              │
+│                       @veil/crypto                              │
 │                                                                          │
 │   Current Implementation:                                                │
 │   ├── nacl-box.ts      → NaCl box encryption (Curve25519-XSalsa20)     │
@@ -205,7 +205,7 @@ export * from './shielded';
 Update to use ZK compression for order payloads:
 
 ```typescript
-import { compressPayload } from '@privacy-suite/crypto';
+import { compressPayload } from '@veil/crypto';
 
 export async function encryptSwapOrder(
   order: SwapOrderParams,
@@ -236,7 +236,7 @@ export async function encryptSwapOrder(
 Add shielded output delivery:
 
 ```typescript
-import { createShieldedTransfer, settleShielded } from '@privacy-suite/crypto';
+import { createShieldedTransfer, settleShielded } from '@veil/crypto';
 
 async function executeOrderWithShielding(order: OrderData): Promise<string> {
   // 1. Execute swap via Jupiter (existing)
@@ -287,7 +287,7 @@ pub fn submit_order_zk(
 Add ZK proofs for access verification:
 
 ```typescript
-import { compressPayload } from '@privacy-suite/crypto';
+import { compressPayload } from '@veil/crypto';
 
 export async function createAccessProof(
   grantee: PublicKey,
@@ -555,7 +555,7 @@ anchor deploy
 
 ## Conclusion
 
-By leveraging the shared `@privacy-suite/crypto` library, we can efficiently upgrade both the Confidential Swap Router and RWA Secrets Service with ZK proofs and sponsor SDK integrations. Combined with Fabcash, this gives us three strong submissions across all three tracks, maximizing our prize potential while minimizing redundant development effort.
+By leveraging the shared `@veil/crypto` library, we can efficiently upgrade both the Confidential Swap Router and RWA Secrets Service with ZK proofs and sponsor SDK integrations. Combined with Fabcash, this gives us three strong submissions across all three tracks, maximizing our prize potential while minimizing redundant development effort.
 
 **Key Success Factors:**
 1. Shared library upgrades benefit multiple projects

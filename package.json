@@ -1,8 +1,8 @@
 {
-  "name": "solana-privacy-suite",
+  "name": "veil",
   "version": "0.1.0",
   "private": true,
-  "description": "Privacy-focused DeFi infrastructure for Solana",
+  "description": "Veil - Privacy-focused DeFi infrastructure for Solana",
   "workspaces": [
     "packages/*",
     "apps/*",

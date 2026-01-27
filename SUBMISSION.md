@@ -4,7 +4,7 @@
 
 **Track:** Open Track (Confidential Swap Router) + Privacy Tooling (RWA Secrets Service)
 
-**Repository:** https://github.com/psyto/solana-privacy-suite
+**Repository:** https://github.com/psyto/veil
 
 ---
 
@@ -167,8 +167,8 @@ Asset metadata is encrypted on-chain with selective disclosure through encrypted
 
 ### Installation
 ```bash
-git clone https://github.com/psyto/solana-privacy-suite.git
-cd solana-privacy-suite
+git clone https://github.com/psyto/veil.git
+cd veil
 yarn install
 ```
 
@@ -350,7 +350,7 @@ Read our full philosophical background: [PHILOSOPHY.md](./PHILOSOPHY.md)
 
 ## Links
 
-- **GitHub:** https://github.com/psyto/solana-privacy-suite
+- **GitHub:** https://github.com/psyto/veil
 - **Swap Router Program:** https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet
 - **RWA Secrets Program:** https://explorer.solana.com/address/DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam?cluster=devnet
 

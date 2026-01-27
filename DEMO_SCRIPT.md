@@ -94,7 +94,7 @@ Result: Fair execution. No frontrunning.
 "Confidential Swap Router: MEV protection through encryption."
 
 Show:
-- GitHub: github.com/psyto/solana-privacy-suite
+- GitHub: github.com/psyto/veil
 - Built with: Light Protocol, Privacy Cash, Jupiter
 
 ---
@@ -191,7 +191,7 @@ Asset registered → Metadata encrypted
 "RWA Secrets Service: Confidentiality through selective disclosure."
 
 Show:
-- GitHub: github.com/psyto/solana-privacy-suite
+- GitHub: github.com/psyto/veil
 - Built with: Light Protocol, NaCl encryption
 
 ---

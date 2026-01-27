@@ -181,8 +181,8 @@ Asset metadata is encrypted on-chain, with selective disclosure through encrypte
 
 ```bash
 # Clone the repository
-git clone https://github.com/psyto/solana-privacy-suite.git
-cd solana-privacy-suite
+git clone https://github.com/psyto/veil.git
+cd veil
 
 # Install dependencies
 yarn install

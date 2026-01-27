@@ -13,7 +13,7 @@
 - Confidential Swap Router (Open Track)
 - RWA Secrets Service (Privacy Tooling Track)
 
-GitHub: github.com/psyto/solana-privacy-suite
+GitHub: github.com/psyto/veil
 
 ---
 
@@ -284,7 +284,7 @@ Two protocols. One principle.
 
 ## Slide 18: Links & Contact
 
-**Repository:** github.com/psyto/solana-privacy-suite
+**Repository:** github.com/psyto/veil
 
 **Explorer Links:**
 - [Swap Router Program](https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet)
