@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil - PrivacyHack 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+    }
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+    .slide.active {
+      display: flex;
+    }
+    .controls {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    .controls button {
+      background: #374151;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .controls button:hover {
+      background: #4b5563;
+    }
+    .slide-counter {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .speaker-notes {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #111827;
+      border-top: 2px solid #6366f1;
+      padding: 1rem 2rem;
+      font-size: 14px;
+      color: #9ca3af;
+      max-height: 120px;
+      overflow-y: auto;
+      display: none;
+    }
+    .speaker-notes.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- Slide 1: Title -->
+  <div class="slide" data-notes="Welcome to Veil. We're presenting two privacy protocols for Solana - the Confidential Swap Router for MEV protection, and the RWA Secrets Service for selective disclosure of tokenized asset metadata.">
+    <div class="text-center max-w-4xl">
+      <h1 class="text-7xl font-bold mb-6">Veil</h1>
+      <p class="text-3xl text-gray-300 mb-12">MEV protection through encryption.<br/>Confidentiality through selective disclosure.</p>
+      <div class="flex justify-center gap-8 mb-12">
+        <div class="bg-purple-900/50 border border-purple-500 px-8 py-6 rounded-xl">
+          <p class="text-purple-300 text-sm mb-1">Open Track</p>
+          <p class="text-2xl font-semibold">Confidential Swap Router</p>
+        </div>
+        <div class="bg-green-900/50 border border-green-500 px-8 py-6 rounded-xl">
+          <p class="text-green-300 text-sm mb-1">Privacy Tooling Track</p>
+          <p class="text-2xl font-semibold">RWA Secrets Service</p>
+        </div>
+      </div>
+      <p class="text-xl text-gray-500">PrivacyHack 2026</p>
+    </div>
+  </div>
+
+  <!-- Slide 2: Philosophy -->
+  <div class="slide" data-notes="Our core philosophy is simple. For trading: MEV bots can't frontrun what they can't read. For real-world assets: it's not about hiding from regulators, it's about not exposing everything to everyone. Privacy by architecture, not as an afterthought.">
+    <div class="text-center max-w-4xl">
+      <h2 class="text-5xl font-bold mb-12">Our Philosophy</h2>
+      <div class="space-y-8">
+        <div class="bg-purple-900/30 border border-purple-500 rounded-xl p-8">
+          <p class="text-3xl font-bold text-purple-300">"MEV bots can't frontrun what they can't read."</p>
+        </div>
+        <div class="bg-green-900/30 border border-green-500 rounded-xl p-8">
+          <p class="text-3xl font-bold text-green-300">"Not about hiding from regulators.<br/>It's about not exposing everything to everyone."</p>
+        </div>
+      </div>
+      <p class="text-xl text-gray-400 mt-12">Privacy by architecture, not as an afterthought.</p>
+    </div>
+  </div>
+
+  <!-- Slide 3: Demo 1 Intro - Confidential Swap Router -->
+  <div class="slide" data-notes="Now let's see the Confidential Swap Router in action. This protocol encrypts swap orders so MEV bots can only see ciphertext, not your trading intentions. [PLAY SWAP ROUTER DEMO VIDEO]">
+    <div class="text-center max-w-4xl">
+      <p class="text-purple-400 text-2xl mb-4">Demo 1</p>
+      <h2 class="text-6xl font-bold mb-8 text-purple-300">Confidential Swap Router</h2>
+      <p class="text-2xl text-gray-300 mb-12">MEV-protected token swaps with encrypted order payloads</p>
+      <div class="bg-gray-800 rounded-xl p-8 font-mono text-xl text-left max-w-2xl mx-auto">
+        <p class="text-blue-400">User encrypts order</p>
+        <p class="text-gray-500 ml-8 my-2">↓</p>
+        <p class="text-purple-400">On-chain: ciphertext only</p>
+        <p class="text-gray-500 ml-8 my-2">↓</p>
+        <p class="text-green-400">Solver decrypts & executes via Jupiter</p>
+        <p class="text-gray-500 ml-8 my-2">↓</p>
+        <p class="text-green-500 font-bold">Fair execution. No frontrunning.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: [PLAY SWAP ROUTER DEMO VIDEO] -->
+  <div class="slide" data-notes="[PLAY swap-router-demo.mp4 HERE]">
+    <div class="text-center max-w-4xl">
+      <div class="bg-gray-800 rounded-xl p-16 border-2 border-dashed border-purple-500">
+        <p class="text-purple-400 text-3xl mb-4">▶</p>
+        <p class="text-2xl text-gray-300 mb-2">Play Demo Video</p>
+        <p class="text-xl text-purple-400 font-mono">swap-router-demo.mp4</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Demo 2 Intro - RWA Secrets Service -->
+  <div class="slide" data-notes="Next, the RWA Secrets Service. This protocol enables encrypted metadata for tokenized real-world assets with selective disclosure - different parties see different information based on their authorization. [PLAY RWA SECRETS DEMO VIDEO]">
+    <div class="text-center max-w-4xl">
+      <p class="text-green-400 text-2xl mb-4">Demo 2</p>
+      <h2 class="text-6xl font-bold mb-8 text-green-300">RWA Secrets Service</h2>
+      <p class="text-2xl text-gray-300 mb-12">Encrypted metadata with selective disclosure</p>
+      <div class="bg-gray-800 rounded-xl p-8 font-mono text-xl text-left max-w-2xl mx-auto">
+        <p class="text-blue-400 text-center mb-4">Asset registered → Metadata encrypted</p>
+        <p class="text-gray-500 text-center mb-4">↓</p>
+        <div class="grid grid-cols-2 gap-8">
+          <div class="text-center">
+            <p class="text-purple-400">Investor</p>
+            <p class="text-gray-500 my-1">↓</p>
+            <p class="text-green-400">Sees valuation</p>
+          </div>
+          <div class="text-center">
+            <p class="text-orange-400">Regulator</p>
+            <p class="text-gray-500 my-1">↓</p>
+            <p class="text-green-400">Sees compliance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: [PLAY RWA SECRETS DEMO VIDEO] -->
+  <div class="slide" data-notes="[PLAY rwa-secrets-demo.mp4 HERE]">
+    <div class="text-center max-w-4xl">
+      <div class="bg-gray-800 rounded-xl p-16 border-2 border-dashed border-green-500">
+        <p class="text-green-400 text-3xl mb-4">▶</p>
+        <p class="text-2xl text-gray-300 mb-2">Play Demo Video</p>
+        <p class="text-xl text-green-400 font-mono">rwa-secrets-demo.mp4</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Bounty Integrations -->
+  <div class="slide" data-notes="We've integrated with multiple bounty partners: Light Protocol for ZK compression with 99% storage reduction, Privacy Cash for shielded transfers, Helius and Quicknode for RPC infrastructure, and Jupiter for best execution routing.">
+    <div class="text-center max-w-4xl">
+      <h2 class="text-5xl font-bold mb-12">Bounty Integrations</h2>
+      <div class="grid grid-cols-5 gap-6">
+        <div class="bg-gray-800 rounded-xl p-6">
+          <p class="text-purple-400 font-bold text-lg mb-2">Light Protocol</p>
+          <p class="text-gray-400 text-sm">ZK Compression</p>
+          <p class="text-gray-500 text-xs mt-2">~99% storage reduction</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-6">
+          <p class="text-green-400 font-bold text-lg mb-2">Privacy Cash</p>
+          <p class="text-gray-400 text-sm">Shielded Transfers</p>
+          <p class="text-gray-500 text-xs mt-2">Private delivery</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-6">
+          <p class="text-orange-400 font-bold text-lg mb-2">Helius</p>
+          <p class="text-gray-400 text-sm">RPC Provider</p>
+          <p class="text-gray-500 text-xs mt-2">ZK support</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-6">
+          <p class="text-blue-400 font-bold text-lg mb-2">Quicknode</p>
+          <p class="text-gray-400 text-sm">RPC Provider</p>
+          <p class="text-gray-500 text-xs mt-2">Infrastructure</p>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-6">
+          <p class="text-yellow-400 font-bold text-lg mb-2">Jupiter</p>
+          <p class="text-gray-400 text-sm">DEX Aggregation</p>
+          <p class="text-gray-500 text-xs mt-2">Best routing</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Summary -->
+  <div class="slide" data-notes="To summarize: Veil provides two protocols with one principle. The Confidential Swap Router solves MEV extraction with encrypted orders. The RWA Secrets Service solves data exposure with selective disclosure. MEV bots can't frontrun what they can't read. Privacy and compliance can coexist.">
+    <div class="text-center max-w-4xl">
+      <h2 class="text-5xl font-bold mb-4">Summary</h2>
+      <p class="text-2xl text-gray-400 mb-10">Two protocols. One principle.</p>
+      <div class="grid grid-cols-2 gap-8 mb-10">
+        <div class="bg-purple-900/30 border border-purple-500 rounded-xl p-8">
+          <h3 class="text-2xl font-semibold text-purple-400 mb-4">Confidential Swap Router</h3>
+          <p class="text-gray-400 mb-2">Problem: MEV extraction</p>
+          <p class="text-xl text-gray-200">Solution: Encrypted orders</p>
+        </div>
+        <div class="bg-green-900/30 border border-green-500 rounded-xl p-8">
+          <h3 class="text-2xl font-semibold text-green-400 mb-4">RWA Secrets Service</h3>
+          <p class="text-gray-400 mb-2">Problem: Data exposure</p>
+          <p class="text-xl text-gray-200">Solution: Selective disclosure</p>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <p class="text-2xl font-bold text-purple-300">"MEV bots can't frontrun what they can't read."</p>
+        <p class="text-2xl font-bold text-green-300">"Privacy and compliance can coexist."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Closing -->
+  <div class="slide" data-notes="Thank you for watching. Veil is open source on GitHub. Both programs are deployed on devnet. Built with Light Protocol, Privacy Cash, Jupiter, Helius, and Quicknode. I'm psyto.">
+    <div class="text-center max-w-4xl">
+      <h1 class="text-7xl font-bold mb-8">Veil</h1>
+      <p class="text-2xl text-gray-300 mb-12">MEV protection through encryption.<br/>Confidentiality through selective disclosure.</p>
+
+      <div class="bg-gray-800 rounded-xl p-8 mb-8">
+        <p class="text-gray-400 mb-4">Repository</p>
+        <p class="text-3xl font-mono text-blue-400">github.com/psyto/veil</p>
+      </div>
+
+      <div class="mb-8">
+        <p class="text-gray-400 mb-4">Built with</p>
+        <p class="text-xl text-gray-300">Light Protocol • Privacy Cash • Jupiter • Helius • Quicknode</p>
+      </div>
+
+      <p class="text-gray-500">Developer: psyto</p>
+    </div>
+  </div>
+
+  <!-- Speaker Notes Panel -->
+  <div id="speaker-notes" class="speaker-notes"></div>
+
+  <!-- Slide Counter -->
+  <div class="slide-counter">
+    <span id="current-slide">1</span> / <span id="total-slides">9</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button onclick="toggleNotes()">Notes (N)</button>
+    <button onclick="prevSlide()">← Prev</button>
+    <button onclick="nextSlide()">Next →</button>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const notesPanel = document.getElementById('speaker-notes');
+
+    document.getElementById('total-slides').textContent = totalSlides;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+      });
+      document.getElementById('current-slide').textContent = index + 1;
+      notesPanel.textContent = slides[index].getAttribute('data-notes') || '';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    function toggleNotes() {
+      notesPanel.classList.toggle('visible');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      }
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
