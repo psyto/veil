@@ -37,7 +37,7 @@ pub fn launch_confidential_token(
     launch.end_time = 0; // No end time by default
     launch.state_commitment = [0u8; 32];
     launch.created_at = now;
-    launch.bump = ctx.bumps.launch;
+    launch.bump = 0; // No PDA derivation, using default
 
     msg!("Confidential token launch created");
     msg!("Token: {}", token_mint);

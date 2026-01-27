@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
-declare_id!("DFLow1111111111111111111111111111111111111");
+declare_id!("8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U");
 
 /// DarkFlow - Confidential AMM with Dark Liquidity
 ///
@@ -20,8 +20,8 @@ pub mod state;
 pub mod instructions;
 pub mod errors;
 
-use state::*;
-use errors::*;
+pub use state::*;
+pub use errors::*;
 
 #[program]
 pub mod darkflow {
@@ -302,6 +302,7 @@ pub struct RemoveLiquidityPrivate<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(encrypted_order: Vec<u8>, zk_proof: Vec<u8>, nullifier: [u8; 32])]
 pub struct DarkSwap<'info> {
     #[account(mut)]
     pub pool: Account<'info, DarkPool>,
@@ -318,12 +319,12 @@ pub struct DarkSwap<'info> {
     #[account(mut)]
     pub vault_output: Account<'info, TokenAccount>,
 
-    /// CHECK: Nullifier tracking account
+    /// CHECK: Nullifier tracking account - initialized if this is the first use
     #[account(
         init_if_needed,
         payer = user,
         space = 8 + 32,
-        seeds = [b"nullifier", pool.key().as_ref(), &nullifier_seed],
+        seeds = [b"nullifier", pool.key().as_ref(), nullifier.as_ref()],
         bump
     )]
     pub nullifier_account: UncheckedAccount<'info>,
@@ -446,5 +447,3 @@ pub struct QueryPoolAggregates<'info> {
     pub pool: Account<'info, DarkPool>,
 }
 
-// Placeholder for nullifier seed in DarkSwap
-const nullifier_seed: [u8; 32] = [0u8; 32];

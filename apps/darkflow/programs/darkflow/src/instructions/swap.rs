@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::prelude::UncheckedAccount;
 use anchor_spl::token::{self, Transfer};
 use crate::{DarkSwap, SubmitDarkOrder, ExecuteDarkOrder, CancelDarkOrder, DarkOrder, OrderStatus};
 use crate::errors::DarkFlowError;
@@ -91,7 +92,7 @@ pub fn submit_dark_order(
     let order = &mut ctx.accounts.order;
     let bump = ctx.bumps.order;
 
-    *order = DarkOrder::new(
+    **order = DarkOrder::new(
         ctx.accounts.maker.key(),
         pool.key(),
         ctx.accounts.maker_input_token.mint,

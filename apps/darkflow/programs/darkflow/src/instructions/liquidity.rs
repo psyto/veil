@@ -61,7 +61,7 @@ pub fn add_liquidity_encrypted(
     let position = &mut ctx.accounts.position;
     let bump = ctx.bumps.position;
 
-    *position = EncryptedPosition::new(
+    **position = EncryptedPosition::new(
         ctx.accounts.lp.key(),
         pool.key(),
         encrypted_amount,
