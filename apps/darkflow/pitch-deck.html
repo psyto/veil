@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DarkFlow - Pitch Deck</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      padding: 60px 80px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 64px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: 48px;
+      font-weight: 600;
+      margin-bottom: 40px;
+      color: #e2e8f0;
+    }
+
+    h3 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #a855f7;
+    }
+
+    p {
+      font-size: 28px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+    }
+
+    .subtitle {
+      font-size: 32px;
+      color: #94a3b8;
+      margin-bottom: 40px;
+    }
+
+    ul {
+      list-style: none;
+      font-size: 26px;
+      line-height: 2;
+    }
+
+    li {
+      color: #cbd5e1;
+      padding-left: 40px;
+      position: relative;
+    }
+
+    li::before {
+      content: ">";
+      position: absolute;
+      left: 0;
+      color: #a855f7;
+      font-weight: bold;
+    }
+
+    .highlight {
+      color: #a855f7;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-top: 40px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .card h3 {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .card p {
+      font-size: 22px;
+    }
+
+    .bounty-card {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .bounty-card h3 {
+      color: #22c55e;
+      font-size: 24px;
+    }
+
+    .bounty-card .amount {
+      font-size: 36px;
+      font-weight: 700;
+      color: #22c55e;
+      margin: 12px 0;
+    }
+
+    .bounty-card p {
+      font-size: 18px;
+      color: #94a3b8;
+    }
+
+    .problem-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .solution-box {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      font-size: 18px;
+      color: #94a3b8;
+      margin-top: 24px;
+      white-space: pre;
+    }
+
+    .code .comment { color: #64748b; }
+    .code .keyword { color: #a855f7; }
+    .code .string { color: #22c55e; }
+
+    .nav {
+      position: fixed;
+      bottom: 30px;
+      right: 40px;
+      display: flex;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav button {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      color: #a855f7;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav button:hover {
+      background: rgba(168, 85, 247, 0.4);
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      font-size: 18px;
+      color: #64748b;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 120px;
+      margin-bottom: 20px;
+    }
+
+    .tech-stack {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .tech-item {
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      padding: 16px 32px;
+      font-size: 20px;
+      color: #cbd5e1;
+    }
+
+    .architecture {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 40px;
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #94a3b8;
+      white-space: pre;
+    }
+
+    .total-bounty {
+      font-size: 72px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #22c55e, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 40px 0;
+    }
+
+    .links {
+      margin-top: 40px;
+    }
+
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .link-item span {
+      color: #64748b;
+      width: 160px;
+    }
+
+    .link-item a, .link-item code {
+      color: #a855f7;
+      text-decoration: none;
+      font-family: monospace;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 40px;
+    }
+
+    .comparison-col h3 {
+      margin-bottom: 24px;
+      font-size: 28px;
+    }
+
+    .comparison-col.bad h3 { color: #ef4444; }
+    .comparison-col.good h3 { color: #22c55e; }
+  </style>
+</head>
+<body>
+
+  <!-- Slide 1: Title -->
+  <div class="slide active" id="slide-1">
+    <div class="center">
+      <div class="logo">🌑</div>
+      <h1>DarkFlow</h1>
+      <p class="subtitle">Confidential AMM with Dark Liquidity</p>
+      <p style="font-size: 24px; color: #64748b; margin-top: 60px;">Solana PrivacyHack 2026</p>
+    </div>
+  </div>
+
+  <!-- Slide 2: Problem -->
+  <div class="slide" id="slide-2">
+    <h2>The Problem</h2>
+    <div class="problem-box">
+      <h3 style="color: #ef4444;">$1.38B+ Lost to MEV in 2024</h3>
+      <p>Every swap you make is visible to bots who front-run and sandwich your trades.</p>
+    </div>
+    <div class="comparison">
+      <div class="comparison-col bad">
+        <h3>Traditional DEX</h3>
+        <ul>
+          <li>LP deposits visible to whale watchers</li>
+          <li>Swap amounts exposed on-chain</li>
+          <li>MEV bots extract value from every trade</li>
+          <li>Token launches get front-run</li>
+        </ul>
+      </div>
+      <div class="comparison-col good">
+        <h3>What Users Need</h3>
+        <ul>
+          <li>Hidden LP position sizes</li>
+          <li>Encrypted swap amounts</li>
+          <li>MEV-impossible trading</li>
+          <li>Fair token launches</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Solution -->
+  <div class="slide" id="slide-3">
+    <h2>The Solution: DarkFlow</h2>
+    <p>A privacy-preserving AMM that brings institutional-grade dark pool mechanics to Solana.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>🔒 Dark Swaps</h3>
+        <p>Swap amounts encrypted with ZK proofs. MEV bots can't see what you're trading.</p>
+      </div>
+      <div class="card">
+        <h3>🌊 Hidden Liquidity</h3>
+        <p>LP positions encrypted. Nobody knows your deposit size except you.</p>
+      </div>
+      <div class="card">
+        <h3>🚀 Confidential Launches</h3>
+        <p>Private bonding curves. Early buyers can't front-run each other.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Public Aggregates</h3>
+        <p>Pool TVL and volume are public. Only individual positions are private.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: How It Works -->
+  <div class="slide" id="slide-4">
+    <h2>How It Works</h2>
+    <div class="grid">
+      <div>
+        <h3>Dark Swap Flow</h3>
+        <ul>
+          <li>User encrypts swap order with NaCl</li>
+          <li>ZK proof verifies order validity</li>
+          <li>Nullifier prevents replay attacks</li>
+          <li>Solver executes without seeing amounts</li>
+          <li>User receives tokens privately</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Encrypted LP Flow</h3>
+        <ul>
+          <li>Deposit amount encrypted on-chain</li>
+          <li>Pedersen commitment for verification</li>
+          <li>Position stored in encrypted state</li>
+          <li>Withdraw with ZK proof of ownership</li>
+          <li>Only aggregate TVL is public</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Architecture -->
+  <div class="slide" id="slide-5">
+    <h2>Architecture</h2>
+    <div class="architecture">
+┌─────────────────────────────────────────────────────────────────┐
+│                         DARKFLOW                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │  Dark AMM Pool │  │ Confidential   │  │  ZK Swap       │    │
+│  │  (Hidden LP)   │  │ Token Launch   │  │  Verifier      │    │
+│  └───────┬────────┘  └───────┬────────┘  └───────┬────────┘    │
+│          │                   │                   │              │
+│          └───────────────────┼───────────────────┘              │
+│                              │                                  │
+│              ┌───────────────▼───────────────┐                  │
+│              │      Arcium Encrypted         │                  │
+│              │      Shared State (MPC)       │                  │
+│              └───────────────┬───────────────┘                  │
+│                              │                                  │
+│              ┌───────────────▼───────────────┐                  │
+│              │   NaCl Encryption + Noir ZK   │                  │
+│              └───────────────────────────────┘                  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘</div>
+  </div>
+
+  <!-- Slide 6: Tech Stack -->
+  <div class="slide" id="slide-6">
+    <h2>Tech Stack</h2>
+    <div class="tech-stack">
+      <div class="tech-item">Solana</div>
+      <div class="tech-item">Anchor 0.30</div>
+      <div class="tech-item">Arcium MPC</div>
+      <div class="tech-item">Noir ZK</div>
+      <div class="tech-item">NaCl Encryption</div>
+      <div class="tech-item">Next.js</div>
+    </div>
+    <div class="code">
+<span class="comment">// Dark swap - amounts never revealed</span>
+<span class="keyword">await</span> darkflow.darkSwap({
+  inputMint: SOL_MINT,
+  outputMint: USDC_MINT,
+  inputAmount: <span class="string">BigInt(5_000_000_000)</span>,    <span class="comment">// Encrypted</span>
+  minOutputAmount: <span class="string">BigInt(500_000_000)</span>,  <span class="comment">// Encrypted</span>
+});</div>
+  </div>
+
+  <!-- Slide 7: Target Bounties -->
+  <div class="slide" id="slide-7">
+    <h2>Target Bounties</h2>
+    <div class="grid-3">
+      <div class="bounty-card">
+        <h3>Arcium</h3>
+        <div class="amount">$10,000</div>
+        <p>Encrypted shared state via MPC for dark pools</p>
+      </div>
+      <div class="bounty-card">
+        <h3>Anoncoin</h3>
+        <div class="amount">$10,000</div>
+        <p>Dark liquidity pools & confidential launches</p>
+      </div>
+      <div class="bounty-card">
+        <h3>Aztec/Noir</h3>
+        <div class="amount">$10,000</div>
+        <p>ZK proofs for swap validity verification</p>
+      </div>
+    </div>
+    <div class="bounty-card" style="margin-top: 40px; max-width: 400px;">
+      <h3>Open Track</h3>
+      <div class="amount">$18,000</div>
+      <p>Novel privacy DeFi infrastructure</p>
+    </div>
+    <div class="center">
+      <div class="total-bounty">Total: $48,000+</div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Demo & Links -->
+  <div class="slide" id="slide-8">
+    <h2>Demo & Links</h2>
+    <div class="links">
+      <div class="link-item">
+        <span>Program ID:</span>
+        <code>8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U</code>
+      </div>
+      <div class="link-item">
+        <span>Network:</span>
+        <code>Devnet</code>
+      </div>
+      <div class="link-item">
+        <span>GitHub:</span>
+        <a href="https://github.com/psyto/veil">github.com/psyto/veil</a>
+      </div>
+      <div class="link-item">
+        <span>Explorer:</span>
+        <a href="https://explorer.solana.com/address/8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U?cluster=devnet">View on Solana Explorer</a>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 40px;">
+      <h3>What's Implemented</h3>
+      <ul>
+        <li>Anchor program with encrypted LP positions</li>
+        <li>Dark swap with nullifier tracking</li>
+        <li>Confidential token launch structure</li>
+        <li>TypeScript SDK</li>
+        <li>Next.js frontend with wallet integration</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Slide 9: Thank You -->
+  <div class="slide" id="slide-9">
+    <div class="center">
+      <div class="logo">🌑</div>
+      <h1>DarkFlow</h1>
+      <p class="subtitle">"Trade without a trace. Lend without a ledger."</p>
+      <div class="tech-stack" style="margin-top: 60px;">
+        <div class="tech-item">github.com/psyto/veil</div>
+      </div>
+      <p style="margin-top: 60px; font-size: 24px; color: #64748b;">
+        Built for Solana PrivacyHack 2026
+      </p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <button onclick="prevSlide()">← Prev</button>
+    <button onclick="nextSlide()">Next →</button>
+  </div>
+
+  <div class="slide-counter">
+    <span id="current">1</span> / <span id="total">9</span>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 9;
+
+    function showSlide(n) {
+      const slides = document.querySelectorAll('.slide');
+      slides.forEach(slide => slide.classList.remove('active'));
+
+      if (n > totalSlides) currentSlide = 1;
+      if (n < 1) currentSlide = totalSlides;
+
+      document.getElementById(`slide-${currentSlide}`).classList.add('active');
+      document.getElementById('current').textContent = currentSlide;
+    }
+
+    function nextSlide() {
+      currentSlide++;
+      showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide--;
+      showSlide(currentSlide);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    // Touch navigation
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+    document.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) nextSlide();
+        else prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>
