@@ -279,6 +279,78 @@
       font-family: monospace;
     }
 
+    /* Speaker Notes Styles */
+    .speaker-notes-panel {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: rgba(15, 23, 42, 0.98);
+      border-top: 2px solid #a855f7;
+      padding: 20px 40px;
+      overflow-y: auto;
+      z-index: 200;
+    }
+
+    .speaker-notes-panel.visible {
+      display: block;
+    }
+
+    .speaker-notes-panel h4 {
+      color: #a855f7;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .speaker-notes-panel p {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+
+    .speaker-notes-panel ul {
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .speaker-notes-panel li {
+      padding-left: 24px;
+      font-size: 16px;
+    }
+
+    .speaker-notes-panel li::before {
+      color: #22c55e;
+    }
+
+    .notes-toggle {
+      position: fixed;
+      bottom: 40px;
+      left: 120px;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    body.notes-visible .slide {
+      height: calc(100vh - 200px);
+    }
+
+    body.notes-visible .nav {
+      bottom: 230px;
+    }
+
+    body.notes-visible .slide-counter {
+      bottom: 240px;
+    }
+
+    body.notes-visible .notes-toggle {
+      bottom: 240px;
+    }
+
     .comparison {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -298,7 +370,7 @@
 <body>
 
   <!-- Slide 1: Title -->
-  <div class="slide active" id="slide-1">
+  <div class="slide active" id="slide-1" data-notes="Welcome to DarkFlow! This is a Confidential AMM - think of it as bringing Wall Street's dark pool mechanics to DeFi. Our tagline: 'Trade without a trace. Lend without a ledger.' We're targeting the privacy track of Solana PrivacyHack 2026.">
     <div class="center">
       <div class="logo">🌑</div>
       <h1>DarkFlow</h1>
@@ -308,7 +380,7 @@
   </div>
 
   <!-- Slide 2: Problem -->
-  <div class="slide" id="slide-2">
+  <div class="slide" id="slide-2" data-notes="MEV is a massive problem - over $1.38 billion extracted in 2024 alone. Every time you swap on a traditional DEX, bots see your transaction in the mempool and front-run you. They buy before you, driving up the price, then sell after your trade. This sandwich attack costs users an average of 1-5% per trade. LPs also suffer - whale watchers track large deposits and manipulate prices accordingly.">
     <h2>The Problem</h2>
     <div class="problem-box">
       <h3 style="color: #ef4444;">$1.38B+ Lost to MEV in 2024</h3>
@@ -337,7 +409,7 @@
   </div>
 
   <!-- Slide 3: Solution -->
-  <div class="slide" id="slide-3">
+  <div class="slide" id="slide-3" data-notes="DarkFlow solves this with four key features: (1) Dark Swaps - your swap amounts are encrypted, so MEV bots literally cannot see what you're trading. (2) Hidden Liquidity - LP positions are encrypted on-chain, protecting large depositors from being targeted. (3) Confidential Launches - token launches use private bonding curves, preventing the usual front-running that plagues fair launches. (4) Public Aggregates - we maintain transparency where it matters (total TVL, volume) while protecting individual privacy.">
     <h2>The Solution: DarkFlow</h2>
     <p>A privacy-preserving AMM that brings institutional-grade dark pool mechanics to Solana.</p>
     <div class="grid">
@@ -361,7 +433,7 @@
   </div>
 
   <!-- Slide 4: How It Works -->
-  <div class="slide" id="slide-4">
+  <div class="slide" id="slide-4" data-notes="Let me walk through the technical flow. For Dark Swaps: the user encrypts their order using NaCl box encryption, generates a ZK proof that the order is valid (correct amounts, sufficient balance), and includes a nullifier to prevent replay attacks. The solver can execute the swap without ever seeing the actual amounts. For LPs: deposit amounts are encrypted and stored on-chain with Pedersen commitments for later verification. Only the aggregate TVL is revealed publicly.">
     <h2>How It Works</h2>
     <div class="grid">
       <div>
@@ -388,7 +460,7 @@
   </div>
 
   <!-- Slide 5: Architecture -->
-  <div class="slide" id="slide-5">
+  <div class="slide" id="slide-5" data-notes="Here's our architecture. At the top layer, we have three main components: the Dark AMM Pool for hidden liquidity provision, the Confidential Token Launch system, and the ZK Swap Verifier. These all connect to Arcium's MPC layer, which handles encrypted shared state computation - this is key for computing on encrypted data without decryption. At the base, we use NaCl for encryption and Noir for ZK proofs. The elegance is that we can prove swap validity without revealing amounts.">
     <h2>Architecture</h2>
     <div class="architecture">
 ┌─────────────────────────────────────────────────────────────────┐
@@ -415,7 +487,7 @@
   </div>
 
   <!-- Slide 6: Tech Stack -->
-  <div class="slide" id="slide-6">
+  <div class="slide" id="slide-6" data-notes="Our tech stack is built on battle-tested technologies. Solana for high-throughput, low-cost transactions. Anchor 0.30 for secure smart contract development. Arcium MPC for encrypted state computation without revealing data. Noir from Aztec for ZK proofs - it's Rust-like syntax makes it developer-friendly. NaCl (TweetNaCl) for fast, audited encryption. And Next.js for a responsive frontend with wallet integration. The code example shows how simple it is to execute a dark swap - the amounts are encrypted before going on-chain.">
     <h2>Tech Stack</h2>
     <div class="tech-stack">
       <div class="tech-item">Solana</div>
@@ -436,7 +508,7 @@
   </div>
 
   <!-- Slide 7: Target Bounties -->
-  <div class="slide" id="slide-7">
+  <div class="slide" id="slide-7" data-notes="We're targeting multiple bounty tracks. Arcium ($10K) - we use their MPC for encrypted shared state, enabling computation on encrypted pool data. Anoncoin ($10K) - our dark liquidity pools and confidential launches align perfectly with their privacy-preserving DeFi focus. Aztec/Noir ($10K) - we leverage Noir for all our ZK proofs. Plus the Open Track ($18K) for novel privacy infrastructure. Total potential: over $48,000. DarkFlow is designed to maximize impact across these privacy-focused bounties.">
     <h2>Target Bounties</h2>
     <div class="grid-3">
       <div class="bounty-card">
@@ -466,7 +538,7 @@
   </div>
 
   <!-- Slide 8: Demo & Links -->
-  <div class="slide" id="slide-8">
+  <div class="slide" id="slide-8" data-notes="The program is deployed and live on Devnet. You can verify the deployment on Solana Explorer. We have a working Anchor program with encrypted LP position structs, dark swap with nullifier tracking to prevent replay attacks, confidential token launch structure for fair launches, a TypeScript SDK for easy integration, and a Next.js frontend with Phantom/Solflare wallet support. Check out the GitHub repo for the full source code and documentation.">
     <h2>Demo & Links</h2>
     <div class="links">
       <div class="link-item">
@@ -479,7 +551,7 @@
       </div>
       <div class="link-item">
         <span>GitHub:</span>
-        <a href="https://github.com/psyto/veil">github.com/psyto/veil</a>
+        <a href="https://github.com/psyto/veil/tree/main/apps/darkflow">github.com/psyto/veil/tree/main/apps/darkflow</a>
       </div>
       <div class="link-item">
         <span>Explorer:</span>
@@ -499,18 +571,24 @@
   </div>
 
   <!-- Slide 9: Thank You -->
-  <div class="slide" id="slide-9">
+  <div class="slide" id="slide-9" data-notes="Thank you for your attention! DarkFlow brings institutional-grade dark pool mechanics to Solana DeFi. We believe privacy is not just a feature but a fundamental right in financial transactions. Happy to take any questions about the architecture, implementation, or potential use cases. Let's make DeFi private again!">
     <div class="center">
       <div class="logo">🌑</div>
       <h1>DarkFlow</h1>
       <p class="subtitle">"Trade without a trace. Lend without a ledger."</p>
       <div class="tech-stack" style="margin-top: 60px;">
-        <div class="tech-item">github.com/psyto/veil</div>
+        <div class="tech-item">github.com/psyto/veil/tree/main/apps/darkflow</div>
       </div>
       <p style="margin-top: 60px; font-size: 24px; color: #64748b;">
         Built for Solana PrivacyHack 2026
       </p>
     </div>
+  </div>
+
+  <!-- Speaker Notes Panel -->
+  <div class="speaker-notes-panel" id="speaker-notes">
+    <h4>Speaker Notes</h4>
+    <div id="notes-content"></div>
   </div>
 
   <!-- Navigation -->
@@ -523,9 +601,20 @@
     <span id="current">1</span> / <span id="total">9</span>
   </div>
 
+  <div class="notes-toggle">
+    Press <strong>N</strong> for speaker notes
+  </div>
+
   <script>
     let currentSlide = 1;
     const totalSlides = 9;
+    let notesVisible = false;
+
+    function updateNotes() {
+      const slide = document.getElementById(`slide-${currentSlide}`);
+      const notes = slide.getAttribute('data-notes') || 'No notes for this slide.';
+      document.getElementById('notes-content').innerHTML = `<p>${notes}</p>`;
+    }
 
     function showSlide(n) {
       const slides = document.querySelectorAll('.slide');
@@ -536,6 +625,7 @@
 
       document.getElementById(`slide-${currentSlide}`).classList.add('active');
       document.getElementById('current').textContent = currentSlide;
+      updateNotes();
     }
 
     function nextSlide() {
@@ -548,10 +638,17 @@
       showSlide(currentSlide);
     }
 
+    function toggleNotes() {
+      notesVisible = !notesVisible;
+      document.body.classList.toggle('notes-visible', notesVisible);
+      document.getElementById('speaker-notes').classList.toggle('visible', notesVisible);
+    }
+
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
       if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'n' || e.key === 'N') toggleNotes();
     });
 
     // Touch navigation
@@ -564,6 +661,9 @@
         else prevSlide();
       }
     });
+
+    // Initialize notes on load
+    updateNotes();
   </script>
 </body>
 </html>
