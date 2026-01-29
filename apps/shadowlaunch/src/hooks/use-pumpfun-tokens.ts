@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   getTrendingTokens,
   getNewTokens,
@@ -39,13 +39,20 @@ export function usePumpFunTokens(
     initialMode
   );
 
+  // Track if initial load has happened to prevent infinite loops
+  const hasLoadedRef = useRef(false);
+
+  // Store options in ref to avoid dependency issues
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   const loadTrending = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setViewMode("trending");
 
     try {
-      const data = await getTrendingTokens(options);
+      const data = await getTrendingTokens(optionsRef.current);
       setTokens(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tokens");
@@ -53,7 +60,7 @@ export function usePumpFunTokens(
     } finally {
       setIsLoading(false);
     }
-  }, [options]);
+  }, []);
 
   const loadNew = useCallback(async () => {
     setIsLoading(true);
@@ -61,7 +68,7 @@ export function usePumpFunTokens(
     setViewMode("new");
 
     try {
-      const data = await getNewTokens(options.limit || 50);
+      const data = await getNewTokens(optionsRef.current.limit || 50);
       setTokens(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tokens");
@@ -69,11 +76,22 @@ export function usePumpFunTokens(
     } finally {
       setIsLoading(false);
     }
-  }, [options.limit]);
+  }, []);
 
   const search = useCallback(async (query: string) => {
     if (!query.trim()) {
-      await loadTrending();
+      setIsLoading(true);
+      setError(null);
+      setViewMode("trending");
+      try {
+        const data = await getTrendingTokens(optionsRef.current);
+        setTokens(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load tokens");
+        setTokens([]);
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
 
@@ -90,7 +108,7 @@ export function usePumpFunTokens(
     } finally {
       setIsLoading(false);
     }
-  }, [loadTrending]);
+  }, []);
 
   const refresh = useCallback(async () => {
     if (viewMode === "trending") {
@@ -101,8 +119,11 @@ export function usePumpFunTokens(
     // For search, user needs to re-search manually
   }, [viewMode, loadTrending, loadNew]);
 
-  // Load initial data
+  // Load initial data only once
   useEffect(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     if (initialMode === "new") {
       loadNew();
     } else {

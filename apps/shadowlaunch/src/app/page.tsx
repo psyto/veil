@@ -83,13 +83,15 @@ export default function HomePage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline">
-              Learn More
-            </Button>
+            <a href="#features">
+              <Button size="lg" variant="outline">
+                Learn More
+              </Button>
+            </a>
           </div>
 
           {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mt-16">
+          <div id="features" className="grid md:grid-cols-3 gap-6 mt-16 scroll-mt-8">
             <FeatureCard
               icon={<EyeOff className="h-8 w-8 text-emerald-500" />}
               title="Ephemeral Addresses"

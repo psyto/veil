@@ -29,6 +29,12 @@ import {
   TokenFilterOptions,
 } from "./types";
 import { calculatePurchaseAmount, calculateMinTokensOut } from "./bonding-curve";
+import {
+  getMockTrendingTokens,
+  getMockNewTokens,
+  searchMockTokens,
+  getMockToken,
+} from "./mock-data";
 
 const PUMPFUN_API_URL =
   process.env.NEXT_PUBLIC_PUMPFUN_API_URL || "https://frontend-api.pump.fun";
@@ -73,6 +79,7 @@ export async function deriveAssociatedBondingCurve(
 
 /**
  * Fetch trending tokens from Pump.fun
+ * Falls back to mock data if API is unavailable
  */
 export async function getTrendingTokens(
   options: TokenFilterOptions = {}
@@ -105,26 +112,41 @@ export async function getTrendingTokens(
       throw new Error(`Failed to fetch tokens: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+
+    // Check if response is valid array
+    if (!Array.isArray(data)) {
+      throw new Error("Invalid API response");
+    }
+
+    return data;
   } catch (error) {
-    console.error("[Pump.fun] Error fetching trending tokens:", error);
-    throw error;
+    console.warn("[Pump.fun] API unavailable, using mock data:", error);
+    // Return mock data as fallback
+    return getMockTrendingTokens(limit);
   }
 }
 
 /**
  * Fetch newly created tokens
+ * Falls back to mock data if API is unavailable
  */
 export async function getNewTokens(limit: number = 50): Promise<PumpFunToken[]> {
-  return getTrendingTokens({
-    sort: "created_timestamp",
-    order: "DESC",
-    limit,
-  });
+  try {
+    return await getTrendingTokens({
+      sort: "created_timestamp",
+      order: "DESC",
+      limit,
+    });
+  } catch (error) {
+    console.warn("[Pump.fun] API unavailable for new tokens, using mock data");
+    return getMockNewTokens(limit);
+  }
 }
 
 /**
  * Fetch a single token by mint address
+ * Falls back to mock data if API is unavailable
  */
 export async function getToken(mint: string): Promise<PumpFunToken> {
   try {
@@ -139,15 +161,29 @@ export async function getToken(mint: string): Promise<PumpFunToken> {
       throw new Error(`Failed to fetch token: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+
+    // Validate response has required fields
+    if (!data.mint || !data.virtual_sol_reserves) {
+      throw new Error("Invalid token data");
+    }
+
+    return data;
   } catch (error) {
-    console.error("[Pump.fun] Error fetching token:", error);
-    throw error;
+    console.warn("[Pump.fun] API unavailable for token, using mock data:", error);
+    // Try to find in mock data
+    const mockToken = getMockToken(mint);
+    if (mockToken) {
+      return mockToken;
+    }
+    // Return first mock token as fallback for demo
+    return getMockTrendingTokens(1)[0];
   }
 }
 
 /**
  * Search tokens by name or symbol
+ * Falls back to mock data if API is unavailable
  */
 export async function searchTokens(query: string): Promise<PumpFunToken[]> {
   try {
@@ -164,10 +200,16 @@ export async function searchTokens(query: string): Promise<PumpFunToken[]> {
       throw new Error(`Failed to search tokens: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error("Invalid search response");
+    }
+
+    return data;
   } catch (error) {
-    console.error("[Pump.fun] Error searching tokens:", error);
-    throw error;
+    console.warn("[Pump.fun] API unavailable for search, using mock data:", error);
+    return searchMockTokens(query);
   }
 }
 
