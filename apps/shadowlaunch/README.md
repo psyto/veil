@@ -4,6 +4,31 @@
 
 ShadowLaunch breaks the on-chain link between your wallet and your Pump.fun purchases. Accumulate without being tracked. Trade without being front-run.
 
+## Powered By
+
+<table>
+  <tr>
+    <td align="center" width="200">
+      <a href="https://quicknode.com">
+        <strong>QuickNode</strong><br/>
+        High-Performance RPC
+      </a>
+    </td>
+    <td align="center" width="200">
+      <a href="https://helius.dev">
+        <strong>Helius</strong><br/>
+        Enhanced Solana APIs
+      </a>
+    </td>
+    <td align="center" width="200">
+      <a href="https://lightprotocol.com">
+        <strong>Light Protocol</strong><br/>
+        ZK Compression
+      </a>
+    </td>
+  </tr>
+</table>
+
 ## Features
 
 - **Shadow Mode**: Toggle between standard and private purchases
@@ -45,7 +70,7 @@ ShadowLaunch breaks the on-chain link between your wallet and your Pump.fun purc
 
 - Node.js 18+
 - Yarn (workspace managed by monorepo root)
-- Helius API key (get one at https://helius.dev)
+- RPC endpoint from [QuickNode](https://quicknode.com) (recommended) or [Helius](https://helius.dev)
 
 ### Setup
 
@@ -61,7 +86,14 @@ cd apps/shadowlaunch
 cp .env.example .env
 ```
 
-3. Add your Helius API key to `.env`:
+3. Add your RPC endpoint to `.env`:
+
+**Option A: QuickNode (Recommended)**
+```env
+NEXT_PUBLIC_QUICKNODE_RPC_URL=https://your-endpoint.solana-mainnet.quiknode.pro/YOUR_API_KEY/
+```
+
+**Option B: Helius**
 ```env
 NEXT_PUBLIC_HELIUS_RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
 ```
@@ -115,13 +147,28 @@ apps/shadowlaunch/
 | `next` | React framework with App Router |
 | `tailwindcss` | Styling |
 
+## RPC Providers
+
+ShadowLaunch supports multiple RPC providers for maximum flexibility and reliability:
+
+| Provider | Environment Variable | Features |
+|----------|---------------------|----------|
+| **[QuickNode](https://quicknode.com)** | `NEXT_PUBLIC_QUICKNODE_RPC_URL` | High-performance, global edge network, excellent uptime |
+| **[Helius](https://helius.dev)** | `NEXT_PUBLIC_HELIUS_RPC_URL` | Enhanced APIs, webhooks, DAS support |
+| **Custom** | `NEXT_PUBLIC_SOLANA_RPC_URL` | Any Solana RPC endpoint |
+
+We recommend **QuickNode** for production deployments due to their exceptional performance and reliability on Solana.
+
 ## Environment Variables
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `NEXT_PUBLIC_HELIUS_RPC_URL` | Helius RPC endpoint | Yes |
-| `NEXT_PUBLIC_SOLANA_RPC_URL` | Alternative RPC endpoint | No |
+| `NEXT_PUBLIC_QUICKNODE_RPC_URL` | QuickNode RPC endpoint (recommended) | No* |
+| `NEXT_PUBLIC_HELIUS_RPC_URL` | Helius RPC endpoint | No* |
+| `NEXT_PUBLIC_SOLANA_RPC_URL` | Alternative RPC endpoint | No* |
 | `NEXT_PUBLIC_PUMPFUN_API_URL` | Pump.fun API (defaults to official) | No |
+
+*At least one RPC endpoint is required for mainnet operation.
 
 ## Scripts
 
@@ -168,6 +215,14 @@ Shadow mode costs more due to the privacy pool operations, but provides transact
 
 $3M in funding, 12 winners, $250k per project.
 
+## Acknowledgments
+
+Special thanks to our infrastructure partners:
+
+- **[QuickNode](https://quicknode.com)** - For providing high-performance Solana RPC infrastructure
+- **[Helius](https://helius.dev)** - For enhanced Solana APIs and developer tools
+- **[Light Protocol](https://lightprotocol.com)** - For ZK compression technology
+
 ## License
 
 MIT
@@ -176,4 +231,6 @@ MIT
 
 - [Pump.fun](https://pump.fun)
 - [Veil Privacy Suite](https://github.com/psyto/veil)
-- [Helius RPC](https://helius.dev)
+- [QuickNode](https://quicknode.com)
+- [Helius](https://helius.dev)
+- [Light Protocol](https://lightprotocol.com)
