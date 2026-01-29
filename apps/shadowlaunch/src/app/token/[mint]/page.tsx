@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { ConnectWalletButton } from "@/components/wallet/connect-button";
 import { useShadowMode } from "@/hooks/use-shadow-mode";
 import { useEphemeralWallet } from "@/hooks/use-ephemeral-wallet";
 import { usePumpFunToken } from "@/hooks/use-pumpfun-tokens";
+import { useShadowPurchase, PurchaseStep } from "@/hooks/use-shadow-purchase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
+  Copy,
+  Wallet,
 } from "lucide-react";
 import {
   formatMarketCap,
@@ -31,72 +33,60 @@ import {
   calculatePurchaseAmount,
 } from "@/lib/pumpfun/bonding-curve";
 import { truncateAddress, formatSol } from "@/lib/utils/format";
-import {
-  executeShadowPurchase,
-  executeStandardPurchase,
-  estimatePurchaseCosts,
-} from "@/lib/shadow/shadow-purchase";
+import { estimatePurchaseCosts } from "@/lib/shadow/shadow-purchase";
+
+// Step display labels
+const stepLabels: Record<PurchaseStep, string> = {
+  idle: "",
+  preparing: "Preparing transaction...",
+  funding_ephemeral: "Creating ephemeral wallet...",
+  awaiting_confirmation: "Please confirm in your wallet...",
+  purchasing: "Executing purchase...",
+  complete: "Purchase complete!",
+  error: "Purchase failed",
+};
 
 export default function TokenPage() {
   const params = useParams();
   const mint = params.mint as string;
 
-  const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey } = useWallet();
   const { mode, setMode, isShadowMode, setIsShielding } = useShadowMode();
-  const { wallet: ephemeralWallet, createWallet, balance: ephemeralBalance } = useEphemeralWallet();
+  const { wallet: ephemeralWallet } = useEphemeralWallet();
   const { token, isLoading, error, refresh } = usePumpFunToken(mint);
+  const { state: purchaseState, purchase, reset: resetPurchase } = useShadowPurchase();
 
   const [amount, setAmount] = useState("0.1");
-  const [isPurchasing, setIsPurchasing] = useState(false);
-  const [purchaseResult, setPurchaseResult] = useState<{
-    success: boolean;
-    message: string;
-    signature?: string;
-  } | null>(null);
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const amountNum = parseFloat(amount) || 0;
   const calculation = token ? calculatePurchaseAmount(token, amountNum) : null;
   const costs = estimatePurchaseCosts(amountNum);
   const curveState = token ? getBondingCurveState(token) : null;
 
+  // Update shielding state based on purchase state
+  useEffect(() => {
+    if (purchaseState.step === "funding_ephemeral" || purchaseState.step === "purchasing") {
+      setIsShielding(true);
+    } else {
+      setIsShielding(false);
+    }
+  }, [purchaseState.step, setIsShielding]);
+
   const handlePurchase = async () => {
     if (!token || !publicKey || amountNum <= 0) return;
 
-    setIsPurchasing(true);
-    setPurchaseResult(null);
+    resetPurchase();
+    await purchase(mint, amountNum, isShadowMode ? "shadow" : "standard");
+  };
 
-    try {
-      if (isShadowMode) {
-        setIsShielding(true);
-
-        // For shadow mode, we need the actual keypair
-        // In production, this would use wallet adapter signing
-        // For now, this is a placeholder
-        console.log("[Shadow] Initiating shadow purchase...");
-
-        // Placeholder - in production, use proper wallet signing
-        setPurchaseResult({
-          success: true,
-          message: "Shadow purchase initiated! Check your ephemeral wallet.",
-        });
-      } else {
-        // Standard purchase
-        console.log("[Standard] Initiating standard purchase...");
-
-        setPurchaseResult({
-          success: true,
-          message: "Standard purchase initiated!",
-        });
-      }
-    } catch (err) {
-      setPurchaseResult({
-        success: false,
-        message: err instanceof Error ? err.message : "Purchase failed",
-      });
-    } finally {
-      setIsPurchasing(false);
-      setIsShielding(false);
+  const handleCopyEphemeralAddress = () => {
+    if (purchaseState.result?.ephemeralWallet) {
+      navigator.clipboard.writeText(
+        purchaseState.result.ephemeralWallet.publicKey.toBase58()
+      );
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
     }
   };
 
@@ -352,7 +342,7 @@ export default function TokenPage() {
                 )}
 
                 {/* Shadow Mode Info */}
-                {isShadowMode && (
+                {isShadowMode && purchaseState.step === "idle" && (
                   <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-sm">
                     <p className="text-emerald-300">
                       Your purchase will be routed through the privacy pool.
@@ -362,22 +352,74 @@ export default function TokenPage() {
                   </div>
                 )}
 
-                {/* Purchase Result */}
-                {purchaseResult && (
-                  <div
-                    className={`p-3 rounded-lg text-sm ${
-                      purchaseResult.success
-                        ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
-                        : "bg-destructive/10 border border-destructive/20 text-destructive"
-                    }`}
-                  >
+                {/* Purchase Progress */}
+                {purchaseState.isLoading && (
+                  <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700 text-sm">
                     <div className="flex items-center gap-2">
-                      {purchaseResult.success ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4" />
+                      <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
+                      <span>{stepLabels[purchaseState.step]}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Purchase Result */}
+                {purchaseState.step === "complete" && purchaseState.result && (
+                  <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-sm space-y-3">
+                    <div className="flex items-center gap-2 text-emerald-300">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Purchase successful!</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-400">Tokens received:</span>
+                        <span className="text-white font-mono">
+                          {Number(purchaseState.result.tokenAmount).toLocaleString()}
+                        </span>
+                      </div>
+                      {purchaseState.result.ephemeralWallet && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-zinc-400">Ephemeral wallet:</span>
+                            <button
+                              onClick={handleCopyEphemeralAddress}
+                              className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300"
+                            >
+                              <span className="font-mono">
+                                {truncateAddress(
+                                  purchaseState.result.ephemeralWallet.publicKey.toBase58()
+                                )}
+                              </span>
+                              {copiedAddress ? (
+                                <CheckCircle className="h-3 w-3" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </button>
+                          </div>
+                          <p className="text-zinc-500 text-xs">
+                            Tokens are in this wallet with no link to your main address.
+                          </p>
+                        </div>
                       )}
-                      {purchaseResult.message}
+                      <a
+                        href={`https://solscan.io/tx/${purchaseState.result.signature}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-emerald-400 hover:underline"
+                      >
+                        View transaction
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Purchase Error */}
+                {purchaseState.step === "error" && purchaseState.error && (
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm">
+                    <div className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>{purchaseState.error}</span>
                     </div>
                   </div>
                 )}
@@ -386,14 +428,19 @@ export default function TokenPage() {
                 {publicKey ? (
                   <Button
                     onClick={handlePurchase}
-                    disabled={isPurchasing || amountNum <= 0}
+                    disabled={purchaseState.isLoading || amountNum <= 0}
                     className="w-full"
                     size="lg"
                   >
-                    {isPurchasing ? (
+                    {purchaseState.isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {isShadowMode ? "Shielding..." : "Purchasing..."}
+                        {stepLabels[purchaseState.step]}
+                      </>
+                    ) : purchaseState.step === "complete" ? (
+                      <>
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Buy Again
                       </>
                     ) : isShadowMode ? (
                       <>
