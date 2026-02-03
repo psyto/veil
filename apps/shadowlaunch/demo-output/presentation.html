@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadowLaunch - Pump.fun Hackathon Presentation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      padding: 60px 80px;
+      position: relative;
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Slide 1: Title */
+    .slide-title {
+      text-align: center;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    }
+
+    .slide-title h1 {
+      font-size: 72px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-title .tagline {
+      font-size: 32px;
+      color: #a1a1aa;
+      margin-bottom: 60px;
+    }
+
+    .slide-title .hackathon-badge {
+      display: inline-block;
+      padding: 12px 24px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      color: #10b981;
+      font-size: 18px;
+    }
+
+    /* Slide 2: Founder */
+    .slide-founder {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    }
+
+    .founder-content {
+      display: flex;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .founder-avatar {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .founder-info h2 {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .founder-info .role {
+      font-size: 24px;
+      color: #10b981;
+      margin-bottom: 24px;
+    }
+
+    .founder-info .bio {
+      font-size: 20px;
+      color: #a1a1aa;
+      line-height: 1.6;
+    }
+
+    .founder-info .credentials {
+      margin-top: 24px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .credential-badge {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      font-size: 14px;
+      color: #d4d4d8;
+    }
+
+    /* Slide 3: Problem */
+    .slide-problem {
+      background: linear-gradient(135deg, #1a0a0a 0%, #2a1a1a 100%);
+    }
+
+    .slide-problem h2 {
+      font-size: 56px;
+      color: #ef4444;
+      margin-bottom: 48px;
+    }
+
+    .problem-list {
+      list-style: none;
+      font-size: 28px;
+      line-height: 2;
+    }
+
+    .problem-list li {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .problem-list .icon {
+      color: #ef4444;
+      font-size: 32px;
+    }
+
+    /* Slide 4: Solution */
+    .slide-solution {
+      background: linear-gradient(135deg, #0a1a0a 0%, #1a2a1a 100%);
+    }
+
+    .slide-solution h2 {
+      font-size: 56px;
+      color: #10b981;
+      margin-bottom: 48px;
+    }
+
+    .solution-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .flow-step {
+      text-align: center;
+      padding: 24px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      width: 180px;
+    }
+
+    .flow-step .number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #10b981;
+    }
+
+    .flow-step .label {
+      font-size: 16px;
+      color: #a1a1aa;
+      margin-top: 8px;
+    }
+
+    .flow-arrow {
+      font-size: 32px;
+      color: #10b981;
+    }
+
+    /* Slide 5: Who It's For */
+    .slide-audience {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2a 100%);
+    }
+
+    .slide-audience h2 {
+      font-size: 56px;
+      margin-bottom: 48px;
+    }
+
+    .audience-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .audience-card {
+      padding: 32px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+    }
+
+    .audience-card .emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .audience-card h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .audience-card p {
+      font-size: 16px;
+      color: #a1a1aa;
+      line-height: 1.5;
+    }
+
+    /* Slide 6: Why It Matters */
+    .slide-why {
+      background: linear-gradient(135deg, #1a0a1a 0%, #2a1a2a 100%);
+    }
+
+    .slide-why h2 {
+      font-size: 56px;
+      margin-bottom: 48px;
+    }
+
+    .why-content {
+      font-size: 28px;
+      line-height: 1.8;
+      max-width: 900px;
+    }
+
+    .highlight {
+      color: #10b981;
+      font-weight: 600;
+    }
+
+    /* Slide 7: Core Thesis */
+    .slide-thesis {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      text-align: center;
+    }
+
+    .slide-thesis h2 {
+      font-size: 48px;
+      margin-bottom: 48px;
+      color: #a1a1aa;
+    }
+
+    .thesis-statement {
+      font-size: 42px;
+      line-height: 1.5;
+      max-width: 1000px;
+      margin: 0 auto;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Slide 8: Unique Approach */
+    .slide-unique {
+      background: linear-gradient(135deg, #0a1a1a 0%, #1a2a2a 100%);
+    }
+
+    .slide-unique h2 {
+      font-size: 56px;
+      margin-bottom: 48px;
+    }
+
+    .unique-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .unique-item {
+      display: flex;
+      gap: 20px;
+      padding: 24px;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+    }
+
+    .unique-item .icon {
+      font-size: 36px;
+      flex-shrink: 0;
+    }
+
+    .unique-item h3 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .unique-item p {
+      font-size: 16px;
+      color: #a1a1aa;
+    }
+
+    /* Slide 9: Progress */
+    .slide-progress {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2a 100%);
+    }
+
+    .slide-progress h2 {
+      font-size: 56px;
+      margin-bottom: 48px;
+    }
+
+    .progress-list {
+      list-style: none;
+      font-size: 24px;
+    }
+
+    .progress-list li {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .check {
+      width: 32px;
+      height: 32px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* Slide 10: Roadmap */
+    .slide-roadmap {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    }
+
+    .slide-roadmap h2 {
+      font-size: 56px;
+      margin-bottom: 48px;
+    }
+
+    .roadmap-timeline {
+      display: flex;
+      gap: 24px;
+    }
+
+    .roadmap-phase {
+      flex: 1;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    .roadmap-phase.current {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .roadmap-phase h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #10b981;
+    }
+
+    .roadmap-phase ul {
+      list-style: none;
+      font-size: 15px;
+      color: #a1a1aa;
+    }
+
+    .roadmap-phase ul li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .roadmap-phase ul li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #10b981;
+    }
+
+    /* Slide 11: CTA */
+    .slide-cta {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      text-align: center;
+    }
+
+    .slide-cta h2 {
+      font-size: 64px;
+      margin-bottom: 32px;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-cta .links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .slide-cta .link-item {
+      padding: 16px 32px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      font-size: 18px;
+    }
+
+    .slide-cta .link-item .label {
+      color: #a1a1aa;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .slide-cta .link-item .value {
+      color: #10b981;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav button {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav button:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      font-size: 16px;
+      color: #52525b;
+    }
+
+    /* Speaker Notes */
+    .speaker-notes {
+      display: none;
+    }
+
+    .notes-panel {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      left: 32px;
+      right: 32px;
+      max-height: 200px;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 200;
+    }
+
+    .notes-panel.visible {
+      display: block;
+    }
+
+    .notes-panel h4 {
+      color: #10b981;
+      font-size: 14px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .notes-panel .notes-content {
+      color: #d4d4d8;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .notes-panel .notes-content li {
+      margin-bottom: 8px;
+    }
+
+    .notes-hint {
+      position: fixed;
+      bottom: 32px;
+      left: 32px;
+      font-size: 12px;
+      color: #52525b;
+    }
+
+    /* Logo */
+    .logo {
+      position: fixed;
+      top: 32px;
+      left: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    ShadowLaunch
+  </div>
+
+  <!-- Slide 1: Title -->
+  <div class="slide slide-title active" data-slide="1">
+    <h1>ShadowLaunch</h1>
+    <p class="tagline">Privacy-First Token Purchases on Pump.fun</p>
+    <span class="hackathon-badge">Pump.fun Build In Public Hackathon 2026 - MVP Track</span>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Welcome everyone to the ShadowLaunch presentation</li>
+        <li>We're building privacy-first infrastructure for Pump.fun</li>
+        <li>This is our submission for the MVP Track of the Build In Public Hackathon</li>
+        <li>The core idea: buy tokens without anyone knowing it was you</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 2: Founder -->
+  <div class="slide slide-founder" data-slide="2">
+    <div class="founder-content">
+      <div class="founder-avatar">HS</div>
+      <div class="founder-info">
+        <h2>Hiroyuki Saito</h2>
+        <p class="role">Founder & Developer</p>
+        <p class="bio">
+          Full-stack developer based in Tokyo with expertise in blockchain technology,
+          cloud architecture, and financial systems. Passionate about building privacy-preserving
+          infrastructure that empowers individual traders.
+        </p>
+        <div class="credentials">
+          <span class="credential-badge">Stanford Blockchain Certificate</span>
+          <span class="credential-badge">AWS Solutions Architect Associate</span>
+          <span class="credential-badge">Salesforce Developer</span>
+          <span class="credential-badge">Banking Domain Expert</span>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Quick introduction - I'm Hiroyuki, solo founder building ShadowLaunch</li>
+        <li>Based in Tokyo, been in tech for over a decade</li>
+        <li>Background in both traditional finance (banking systems) and crypto</li>
+        <li>Stanford blockchain certification gives me deep understanding of privacy tech</li>
+        <li>Building this because I've personally felt the pain of being front-run</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 3: The Problem -->
+  <div class="slide slide-problem" data-slide="3">
+    <h2>The Problem</h2>
+    <ul class="problem-list">
+      <li><span class="icon">⚠️</span> Every Pump.fun trade is PUBLIC and visible to anyone</li>
+      <li><span class="icon">👁️</span> Wallet trackers monitor profitable traders 24/7</li>
+      <li><span class="icon">🤖</span> Copy trading bots front-run your purchases within seconds</li>
+      <li><span class="icon">📊</span> Your trading patterns reveal your alpha to competitors</li>
+      <li><span class="icon">💸</span> Information asymmetry costs retail traders real money</li>
+    </ul>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Let's talk about the elephant in the room - total transparency is NOT always good</li>
+        <li>Solana explorer shows every transaction - great for trust, terrible for privacy</li>
+        <li>Tools like Birdeye, DEXScreener show whale wallets - anyone can stalk you</li>
+        <li>Copy bots on Pump.fun can execute in 200ms - before your TX even confirms</li>
+        <li>Example: You find a gem early, buy 5 SOL, bots see and pump it before you can accumulate</li>
+        <li>This isn't theoretical - it's happening thousands of times per day</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 4: The Solution -->
+  <div class="slide slide-solution" data-slide="4">
+    <h2>The Solution</h2>
+    <p style="font-size: 24px; color: #a1a1aa; margin-bottom: 20px;">
+      ShadowLaunch breaks the on-chain link between your wallet and your purchases
+    </p>
+    <div class="solution-flow">
+      <div class="flow-step">
+        <div class="number">1</div>
+        <div class="label">Your Wallet</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">
+        <div class="number">2</div>
+        <div class="label">Privacy Layer</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">
+        <div class="number">3</div>
+        <div class="label">Ephemeral Wallet</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step">
+        <div class="number">4</div>
+        <div class="label">Token Purchase</div>
+      </div>
+    </div>
+    <p style="font-size: 28px; color: #10b981; margin-top: 48px; text-align: center;">
+      Result: Tokens with ZERO connection to you
+    </p>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Here's how ShadowLaunch works - simple 4-step process</li>
+        <li>Step 1: Connect your main wallet (Phantom, Solflare, etc.)</li>
+        <li>Step 2: SOL goes through our privacy layer - breaks the chain</li>
+        <li>Step 3: Fresh ephemeral wallet is created - no history, no connection to you</li>
+        <li>Step 4: That new wallet makes the purchase on Pump.fun</li>
+        <li>Key insight: trackers can see the purchase but have NO idea who did it</li>
+        <li>The ephemeral wallet has zero on-chain history - it's a ghost</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 5: Who It's For -->
+  <div class="slide slide-audience" data-slide="5">
+    <h2>Who It's For</h2>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="emoji">🐋</div>
+        <h3>Whale Traders</h3>
+        <p>Accumulate positions without moving the market or revealing your strategy to competitors.</p>
+      </div>
+      <div class="audience-card">
+        <div class="emoji">🔍</div>
+        <h3>Alpha Hunters</h3>
+        <p>Protect your edge. Buy early without copy traders immediately front-running your finds.</p>
+      </div>
+      <div class="audience-card">
+        <div class="emoji">🛡️</div>
+        <h3>Privacy-Conscious Users</h3>
+        <p>Keep your financial activity private. Your portfolio is your business.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Three main user segments we're targeting</li>
+        <li>WHALES: Big traders who move markets - when they buy, price jumps. Privacy = better entries</li>
+        <li>ALPHA HUNTERS: Researchers who find gems early - their edge disappears when bots copy them</li>
+        <li>PRIVACY USERS: People who simply don't want their portfolio public - basic financial privacy</li>
+        <li>All three share the same need: the ability to transact without surveillance</li>
+        <li>Market size: millions of Pump.fun users, all facing this same problem</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 6: Why It Matters -->
+  <div class="slide slide-why" data-slide="6">
+    <h2>Why It Matters</h2>
+    <div class="why-content">
+      <p style="margin-bottom: 32px;">
+        <span class="highlight">Privacy isn't about hiding — it's about fairness.</span>
+      </p>
+      <p style="margin-bottom: 32px;">
+        Today's crypto markets are rigged against retail. Bots and sophisticated traders have
+        information advantages that regular users can't compete with.
+      </p>
+      <p style="margin-bottom: 32px;">
+        When someone can see your every move, they can always stay one step ahead.
+      </p>
+      <p>
+        <span class="highlight">ShadowLaunch levels the playing field.</span> Your trades are your business.
+      </p>
+    </div>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Let's address the elephant in the room - isn't privacy for criminals?</li>
+        <li>NO. Privacy is a fundamental right. Your bank account isn't public. Why should your crypto be?</li>
+        <li>The current system favors those with resources to build bots and tracking tools</li>
+        <li>Regular traders are at a structural disadvantage - that's not fair</li>
+        <li>We're not hiding illegal activity - we're restoring a level playing field</li>
+        <li>Just like you wouldn't announce your stock purchases on Twitter before buying</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 7: Core Thesis -->
+  <div class="slide slide-thesis" data-slide="7">
+    <h2>Core Thesis</h2>
+    <p class="thesis-statement">
+      "In a transparent blockchain, true edge comes from privacy.
+      The traders who can act without being watched will outperform
+      those who trade in the open."
+    </p>
+    <aside class="speaker-notes">
+      <ul>
+        <li>This is the core insight driving ShadowLaunch</li>
+        <li>Blockchains are transparent by design - everyone sees everything</li>
+        <li>But in transparent markets, the watchers have the advantage</li>
+        <li>Think about it: if everyone can see your trades, you have zero edge</li>
+        <li>The solution isn't less blockchain - it's a privacy layer on top</li>
+        <li>Those who can trade privately will consistently outperform</li>
+        <li>We're building that privacy layer for Pump.fun traders</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 8: What Makes Us Unique -->
+  <div class="slide slide-unique" data-slide="8">
+    <h2>What Makes Us Unique</h2>
+    <div class="unique-grid">
+      <div class="unique-item">
+        <span class="icon">🔑</span>
+        <div>
+          <h3>Ephemeral Wallets</h3>
+          <p>Fresh keypairs for every purchase. No history, no pattern, no seed phrase.</p>
+        </div>
+      </div>
+      <div class="unique-item">
+        <span class="icon">🌊</span>
+        <div>
+          <h3>Privacy Layer</h3>
+          <p>Shielded transfers break the on-chain link between source and destination.</p>
+        </div>
+      </div>
+      <div class="unique-item">
+        <span class="icon">⚡</span>
+        <div>
+          <h3>Same Speed</h3>
+          <p>Privacy doesn't mean slow. Transactions confirm in seconds.</p>
+        </div>
+      </div>
+      <div class="unique-item">
+        <span class="icon">🎯</span>
+        <div>
+          <h3>Pump.fun Native</h3>
+          <p>Built specifically for Pump.fun. Seamless integration with bonding curves.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      <ul>
+        <li>What makes us different from other privacy solutions?</li>
+        <li>EPHEMERAL WALLETS: Not just mixing - completely new wallets each time. No history = nothing to trace</li>
+        <li>PRIVACY LAYER: Uses cryptographic techniques to break the link - not just obscuring, actually unlinking</li>
+        <li>SPEED: Privacy solutions are often slow. We're optimized for Pump.fun's fast-moving markets</li>
+        <li>PUMP.FUN NATIVE: We're not a generic tool - we understand bonding curves, slippage, everything specific to Pump.fun</li>
+        <li>Combined, these features make ShadowLaunch the go-to privacy solution for Pump.fun</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 9: Current Progress -->
+  <div class="slide slide-progress" data-slide="9">
+    <h2>Current Progress</h2>
+    <ul class="progress-list">
+      <li><span class="check">✓</span> Full UI/UX with token browser and purchase flow</li>
+      <li><span class="check">✓</span> Pump.fun API integration with real token data</li>
+      <li><span class="check">✓</span> Bonding curve buy/sell instruction implementation</li>
+      <li><span class="check">✓</span> Ephemeral wallet generation and management</li>
+      <li><span class="check">✓</span> Shadow mode toggle with privacy layer simulation</li>
+      <li><span class="check">✓</span> QuickNode RPC integration for high performance</li>
+      <li><span class="check">✓</span> Open source codebase on GitHub</li>
+    </ul>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Let me show you what we've built - this is real, working code</li>
+        <li>UI/UX: Complete token browser, search, and purchase interface - you saw this in the demo</li>
+        <li>API: We pull live data from Pump.fun - real tokens, real prices, real bonding curves</li>
+        <li>BONDING CURVE: We've implemented the exact math for Pump.fun's bonding curve</li>
+        <li>EPHEMERAL WALLETS: One-click generation, secure key management in memory only</li>
+        <li>SHADOW MODE: Toggle between normal and private mode with one click</li>
+        <li>QuickNode: Premium RPC for reliability and speed - no more dropped transactions</li>
+        <li>OPEN SOURCE: Check it yourself - github.com/psyto/veil/tree/main/apps/shadowlaunch</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 10: What's Next -->
+  <div class="slide slide-roadmap" data-slide="10">
+    <h2>What We're Building Next</h2>
+    <div class="roadmap-timeline">
+      <div class="roadmap-phase current">
+        <h3>Now</h3>
+        <ul>
+          <li>Launch $SHADOW token</li>
+          <li>Deploy to production</li>
+          <li>Community building</li>
+          <li>Daily build streams</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h3>Next 2 Weeks</h3>
+        <ul>
+          <li>Production privacy pool</li>
+          <li>Token holder dashboard</li>
+          <li>Ephemeral wallet export</li>
+          <li>Mobile responsive UI</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h3>Future</h3>
+        <ul>
+          <li>Batch purchases</li>
+          <li>Multi-token privacy</li>
+          <li>Mobile app</li>
+          <li>Cross-chain support</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Here's what's coming next - aggressive timeline</li>
+        <li>NOW: Launching $SHADOW token for early supporters, deploying the MVP, building community</li>
+        <li>DAILY STREAMS: Building in public - you can watch development happen live</li>
+        <li>NEXT 2 WEEKS: Production-ready privacy pool with real cryptographic privacy</li>
+        <li>Token holder perks: reduced fees, priority access, governance</li>
+        <li>WALLET EXPORT: Let users export ephemeral wallet keys if they want to manage tokens themselves</li>
+        <li>FUTURE: Batch purchases (buy multiple tokens in one private transaction), mobile app, other chains</li>
+        <li>We're moving fast - hackathon energy doesn't stop after the hackathon</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Slide 11: CTA -->
+  <div class="slide slide-cta" data-slide="11">
+    <h2>ShadowLaunch</h2>
+    <p style="font-size: 32px; color: #a1a1aa;">Privacy-first trading on Pump.fun</p>
+    <div class="links">
+      <div class="link-item">
+        <div class="label">GitHub</div>
+        <div class="value">github.com/psyto/veil/tree/main/apps/shadowlaunch</div>
+      </div>
+      <div class="link-item">
+        <div class="label">Twitter</div>
+        <div class="value">@psyto</div>
+      </div>
+      <div class="link-item">
+        <div class="label">Token</div>
+        <div class="value">pump.fun/SHADOW</div>
+      </div>
+    </div>
+    <p style="margin-top: 64px; font-size: 24px; color: #10b981;">
+      Your alpha stays yours.
+    </p>
+    <aside class="speaker-notes">
+      <ul>
+        <li>Thank you for your time - here's how to stay connected</li>
+        <li>GitHub: Full source code, star the repo, contributions welcome</li>
+        <li>Twitter: Follow for daily updates, building in public</li>
+        <li>$SHADOW token: Support the project and get early access benefits</li>
+        <li>Questions? Happy to dive deeper into any technical aspects</li>
+        <li>Remember: Your alpha stays yours. That's the promise of ShadowLaunch.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Speaker Notes Panel -->
+  <div class="notes-panel" id="notesPanel">
+    <h4>Speaker Notes</h4>
+    <div class="notes-content" id="notesContent"></div>
+  </div>
+
+  <div class="nav">
+    <button onclick="prevSlide()">← Previous</button>
+    <button onclick="nextSlide()">Next →</button>
+  </div>
+
+  <div class="slide-counter">
+    <span id="currentSlide">1</span> / <span id="totalSlides">11</span>
+  </div>
+
+  <div class="notes-hint">Press 'S' for speaker notes</div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 11;
+    let notesVisible = false;
+
+    function showSlide(n) {
+      const slides = document.querySelectorAll('.slide');
+      slides.forEach(slide => slide.classList.remove('active'));
+
+      if (n > totalSlides) currentSlide = 1;
+      if (n < 1) currentSlide = totalSlides;
+
+      document.querySelector(`[data-slide="${currentSlide}"]`).classList.add('active');
+      document.getElementById('currentSlide').textContent = currentSlide;
+
+      // Update speaker notes
+      updateNotes();
+    }
+
+    function nextSlide() {
+      currentSlide++;
+      showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide--;
+      showSlide(currentSlide);
+    }
+
+    function toggleNotes() {
+      notesVisible = !notesVisible;
+      const notesPanel = document.getElementById('notesPanel');
+      if (notesVisible) {
+        notesPanel.classList.add('visible');
+        updateNotes();
+      } else {
+        notesPanel.classList.remove('visible');
+      }
+    }
+
+    function updateNotes() {
+      const currentSlideEl = document.querySelector(`[data-slide="${currentSlide}"]`);
+      const notesEl = currentSlideEl.querySelector('.speaker-notes');
+      const notesContent = document.getElementById('notesContent');
+
+      if (notesEl) {
+        notesContent.innerHTML = notesEl.innerHTML;
+      } else {
+        notesContent.innerHTML = '<p>No notes for this slide.</p>';
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      }
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        toggleNotes();
+      }
+    });
+
+    // Click navigation
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('.notes-panel')) {
+        const x = e.clientX;
+        if (x > window.innerWidth / 2) nextSlide();
+        else prevSlide();
+      }
+    });
+
+    // Initialize notes on load
+    updateNotes();
+  </script>
+</body>
+</html>
