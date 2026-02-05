@@ -1,0 +1,237 @@
+# Umbra - Reputation-Gated Privacy DeFi
+
+> **"Stop losing money to MEV bots. Earn privacy through your on-chain reputation."**
+
+Umbra is a privacy-first DEX aggregator on Solana that uses FairScale's FairScore to unlock execution quality tiers. Higher reputation = lower fees, better MEV protection, and access to advanced order types.
+
+## The Problem
+
+DeFi traders lose **$500M+ annually** to MEV extraction. Front-running, sandwich attacks, and other forms of value extraction hurt users and create an unfair trading environment.
+
+Current solutions (like private mempools) treat all users equally, which:
+- Enables sybil attacks
+- Doesn't reward good actors
+- Provides no incentive to build reputation
+
+## The Solution
+
+Umbra introduces **reputation-gated privacy**: your FairScore unlocks execution quality tiers.
+
+| FairScore | Tier | Fee | MEV Protection | Order Types |
+|-----------|------|-----|----------------|-------------|
+| < 20 | None | 0.50% | None | Market only |
+| 20-39 | Bronze | 0.30% | Basic | + Limit |
+| 40-59 | Silver | 0.15% | Full encryption | + TWAP |
+| 60-79 | Gold | 0.08% | Full + Priority | + All advanced |
+| 80+ | Diamond | 0.05% | VIP routing | + Dark pool |
+
+## FairScore Integration
+
+FairScore is **core** to Umbra's product logic:
+
+1. **Fee Determination**: Your FairScore directly determines your trading fee (5-50 bps)
+2. **MEV Protection Level**: Higher scores unlock stronger privacy guarantees
+3. **Feature Access**: Order types and derivatives gated by reputation tier
+4. **Risk Management**: Reputation serves as "soft collateral" for advanced features
+
+Without FairScore, Umbra cannot function - it's not decorative, it's essential.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER FRONTEND                           │
+│  (Connect Wallet → Check FairScore → Show Available Features)   │
+└─────────────────────────────────┬───────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    FAIRSCORE MIDDLEWARE                         │
+│    API Client  →  Tier Calculator  →  Feature Gate              │
+└─────────────────────────────────┬───────────────────────────────┘
+                                  │
+        ┌─────────────────────────┼─────────────────────────┐
+        ▼                         ▼                         ▼
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│  CONFIDENTIAL │       │   TIERED      │       │  DERIVATIVES  │
+│  SWAP ROUTER  │       │   FEE VAULT   │       │    ACCESS     │
+│               │       │               │       │               │
+│ • Encrypted   │       │ • Tier-based  │       │ • Perps       │
+│   orders      │       │   fees        │       │ • Variance    │
+│ • MEV shield  │       │ • Revenue     │       │ • Exotics     │
+└───────────────┘       └───────────────┘       └───────────────┘
+```
+
+## Technical Implementation
+
+### Smart Contracts (Anchor/Rust)
+
+- **TierConfig**: Stores tier definitions and fee structure
+- **TieredOrder**: Order with embedded FairScore tier information
+- **Fee collection**: Automatic tier-based fee deduction
+
+### SDK (TypeScript)
+
+```typescript
+import { UmbraClient } from '@umbra/sdk';
+
+const client = new UmbraClient(connection, wallet, {
+  apiKey: 'YOUR_FAIRSCALE_API_KEY',
+});
+
+// Get user's tier info
+const tierInfo = await client.getUserTierInfo();
+console.log(`Tier: ${tierInfo.tierName}, Fee: ${tierInfo.feeBps} bps`);
+
+// Submit a tiered order
+const tx = await client.submitOrder({
+  orderId: new BN(1),
+  inputMint: USDC_MINT,
+  outputMint: SOL_MINT,
+  inputAmount: new BN(1000000), // 1 USDC
+  minOutputAmount: new BN(5000000), // Min SOL
+  slippageBps: 50,
+  deadlineSeconds: 300,
+});
+```
+
+### FairScore Middleware
+
+```typescript
+import { FairScoreClient, TierCalculator } from '@umbra/fairscore-middleware';
+
+const client = new FairScoreClient({ apiKey: 'YOUR_API_KEY' });
+const score = await client.getFairScore(walletAddress);
+
+// Calculate tier benefits
+const benefits = TierCalculator.getBenefitsFromScore(score.score);
+console.log(`Fee: ${benefits.feeBps} bps`);
+console.log(`MEV Protection: ${benefits.mevProtection}`);
+```
+
+## Business Model
+
+| Revenue Stream | Description | Monthly Potential |
+|----------------|-------------|-------------------|
+| Trading Fees | 0.05-0.50% tiered by reputation | $15-50K |
+| MEV Recapture | 30% of saved MEV | $4-12K |
+| Derivatives | Premium tier access | $2-8K |
+| B2B API | Execution-as-a-service | $5-15K |
+
+## Philosophy
+
+**"Privacy is a privilege you earn through good behavior."**
+
+This inverts the typical narrative that privacy enables bad actors. Instead, Umbra rewards users who demonstrate legitimate on-chain behavior with better privacy guarantees.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- Yarn
+- Rust + Anchor
+- Solana CLI
+
+### Installation
+
+```bash
+# Clone the repo
+cd veil/apps/umbra
+
+# Install dependencies
+yarn install
+
+# Build the smart contracts
+anchor build
+
+# Deploy to devnet
+anchor deploy --provider.cluster devnet
+
+# Start the solver
+cd solver && yarn dev
+
+# Start the frontend
+cd app && yarn dev
+```
+
+### Environment Variables
+
+```bash
+# .env
+RPC_URL=https://api.devnet.solana.com
+FAIRSCALE_API_KEY=your_api_key
+SOLVER_KEYPAIR_PATH=~/.config/solana/id.json
+```
+
+## Project Structure
+
+```
+umbra/
+├── programs/umbra-swap/     # Anchor smart contracts
+│   └── src/
+│       ├── lib.rs           # Main program
+│       └── state/           # Account structures
+├── sdk/                     # TypeScript SDK
+│   └── src/
+│       ├── client.ts        # UmbraClient
+│       └── encryption.ts    # Order encryption
+├── solver/                  # Order execution service
+│   └── src/
+│       ├── solver.ts        # Main solver
+│       ├── jupiter.ts       # Jupiter integration
+│       └── api.ts           # REST API
+└── app/                     # Next.js frontend
+```
+
+## API Endpoints
+
+### Solver API
+
+- `GET /api/health` - Health check
+- `GET /api/solver-pubkey` - Get encryption public key
+- `GET /api/tiers` - Get tier configuration
+- `GET /api/fee/:fairscore` - Calculate fee for a FairScore
+
+## Hackathon Submission
+
+### FairScore Integration (30%)
+
+- ✅ FairScore determines trading fees (core logic)
+- ✅ FairScore gates MEV protection levels
+- ✅ FairScore unlocks order types and derivatives
+- ✅ Real-time FairScore verification on order submission
+
+### Technical Quality (25%)
+
+- ✅ Production-ready Anchor smart contracts
+- ✅ Full TypeScript SDK
+- ✅ Jupiter aggregator integration
+- ✅ Comprehensive error handling
+
+### Traction & Users (20%)
+
+- 🔄 Twitter: [@UmbraFinance](https://twitter.com/UmbraFinance)
+- 🔄 Live demo: [umbra.finance](https://umbra.finance)
+- 🔄 Discord community
+
+### Business Viability (15%)
+
+- ✅ Clear revenue model (tier-based fees)
+- ✅ Path to profitability
+- ✅ Competitive moat (reputation data)
+
+## Resources
+
+- [FairScale API](https://swagger.api.fairscale.xyz/)
+- [FairScale Website](https://fairscale.xyz/)
+- [Solana Docs](https://docs.solana.com/)
+- [Anchor Framework](https://www.anchor-lang.com/)
+
+## License
+
+MIT
+
+---
+
+Built for the FairScale Hackathon 2026
