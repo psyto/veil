@@ -1,7 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useState, useEffect } from 'react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import {
+  fetchSovereignIdentity,
+  getTierName,
+  getFeeBps,
+  getMevProtection,
+} from '@/lib/sovereign';
 
 const TOKENS = [
   { symbol: 'SOL', name: 'Solana', icon: 'S' },
@@ -11,15 +17,51 @@ const TOKENS = [
 ];
 
 export function SwapInterface() {
-  const { connected } = useWallet();
+  const { connected, publicKey } = useWallet();
+  const { connection } = useConnection();
   const [inputToken, setInputToken] = useState(TOKENS[1]); // USDC
   const [outputToken, setOutputToken] = useState(TOKENS[0]); // SOL
   const [inputAmount, setInputAmount] = useState('');
   const [outputAmount, setOutputAmount] = useState('');
   const [slippage, setSlippage] = useState('0.5');
 
-  // Mock fee based on tier
-  const feeBps = 15; // Silver tier
+  // SOVEREIGN tier-based values
+  const [tier, setTier] = useState(0);
+  const [tierName, setTierName] = useState('None');
+  const [feeBps, setFeeBps] = useState(50);
+  const [mevProtection, setMevProtection] = useState('None');
+
+  useEffect(() => {
+    async function loadTierInfo() {
+      if (!publicKey) {
+        setTier(0);
+        setTierName('None');
+        setFeeBps(50);
+        setMevProtection('None');
+        return;
+      }
+
+      try {
+        const identity = await fetchSovereignIdentity(connection, publicKey);
+        if (identity) {
+          setTier(identity.tier);
+          setTierName(getTierName(identity.tier));
+          setFeeBps(getFeeBps(identity.tier));
+          setMevProtection(getMevProtection(identity.tier));
+        } else {
+          setTier(0);
+          setTierName('None');
+          setFeeBps(getFeeBps(0));
+          setMevProtection(getMevProtection(0));
+        }
+      } catch (error) {
+        console.error('Error loading SOVEREIGN tier:', error);
+      }
+    }
+
+    loadTierInfo();
+  }, [publicKey, connection]);
+
   const feePercent = feeBps / 100;
 
   const handleSwap = async () => {
@@ -115,17 +157,32 @@ export function SwapInterface() {
       {/* Swap Details */}
       <div className="mt-4 p-3 bg-white/5 rounded-lg space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-400">Your Fee (Silver)</span>
+          <span className="text-gray-400">Your Fee ({tierName})</span>
           <span className="text-green-400">{feePercent}%</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">MEV Protection</span>
-          <span className="text-cyan-400">Full</span>
+          <span className="text-cyan-400">{mevProtection}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-gray-400">Slippage</span>
           <span>{slippage}%</span>
         </div>
+        {tier > 0 && (
+          <div className="flex justify-between items-center pt-1 border-t border-white/10">
+            <span className="text-gray-400">SOVEREIGN Tier</span>
+            <span className="flex items-center gap-1">
+              <svg className="w-3 h-3 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-purple-400">{tierName}</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Swap Button */}
