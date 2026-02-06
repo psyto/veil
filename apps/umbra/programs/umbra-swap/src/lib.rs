@@ -11,7 +11,7 @@ use error::UmbraError;
 use state::*;
 use sovereign::*;
 
-declare_id!("CqcA7CXYLLGcGCSTYPbN8iKruXJu38kZNciH86CVhewr");
+declare_id!("41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr");
 
 #[program]
 pub mod umbra_swap {

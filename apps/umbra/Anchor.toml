@@ -10,7 +10,7 @@ skip-lint = false
 umbra_swap = "CqcA7CXYLLGcGCSTYPbN8iKruXJu38kZNciH86CVhewr"
 
 [programs.devnet]
-umbra_swap = "CqcA7CXYLLGcGCSTYPbN8iKruXJu38kZNciH86CVhewr"
+umbra_swap = "41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr"
 
 [programs.mainnet]
 umbra_swap = "CqcA7CXYLLGcGCSTYPbN8iKruXJu38kZNciH86CVhewr"
