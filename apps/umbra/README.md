@@ -2,7 +2,11 @@
 
 > **"Stop losing money to MEV bots. Earn privacy through your on-chain reputation."**
 
-Umbra is a privacy-first DEX aggregator on Solana that uses FairScale's FairScore to unlock execution quality tiers. Higher reputation = lower fees, better MEV protection, and access to advanced order types.
+Umbra is a privacy-first DEX aggregator on Solana that uses on-chain reputation to unlock execution quality tiers. Higher reputation = lower fees, better MEV protection, and access to advanced order types.
+
+Umbra supports two reputation systems:
+- **SOVEREIGN** - Universal on-chain identity with multi-dimensional reputation (recommended)
+- **FairScore** - External API-based reputation score (legacy)
 
 ## The Problem
 
@@ -25,7 +29,62 @@ Umbra introduces **reputation-gated privacy**: your FairScore unlocks execution 
 | 60-79 | Gold | 0.08% | Full + Priority | + All advanced |
 | 80+ | Diamond | 0.05% | VIP routing | + Dark pool |
 
-## FairScore Integration
+## SOVEREIGN Integration
+
+Umbra integrates with [SOVEREIGN](https://github.com/psyto/sovereign), a universal identity and multi-dimensional reputation protocol on Solana. Your SOVEREIGN identity provides portable reputation that works across multiple applications.
+
+### How It Works
+
+```
+SOVEREIGN Identity                    Umbra Benefits
+──────────────────                    ──────────────
+Tier 1 (Bronze)     ───────────────►  0.50% fee, No MEV protection
+Tier 2 (Silver)     ───────────────►  0.30% fee + 5% discount, Basic MEV
+Tier 3 (Gold)       ───────────────►  0.15% fee + 15% discount, Full MEV
+Tier 4 (Platinum)   ───────────────►  0.08% fee + 30% discount, Dark pool access
+Tier 5 (Diamond)    ───────────────►  0.05% fee + 50% discount, Priority execution
+```
+
+### Benefits Over FairScore
+
+| Feature | SOVEREIGN | FairScore |
+|---------|-----------|-----------|
+| On-chain verification | ✅ Direct PDA read | ❌ Requires signature |
+| Portable reputation | ✅ Cross-app | ❌ Umbra only |
+| Multi-dimensional | ✅ Trading, Civic, Dev, Infra | ❌ Single score |
+| Fee discounts | ✅ Up to 50% | ❌ None |
+| No API dependency | ✅ Fully on-chain | ❌ External API |
+
+### Using SOVEREIGN
+
+```typescript
+import { UmbraClient } from '@umbra/sdk';
+
+const client = new UmbraClient(connection, wallet);
+
+// Submit order using SOVEREIGN identity (no API key needed)
+const tx = await client.submitOrderWithSovereign({
+  orderId: new BN(1),
+  inputMint: USDC_MINT,
+  outputMint: SOL_MINT,
+  inputAmount: new BN(1000000),
+  // SOVEREIGN identity is read directly from chain
+});
+```
+
+### Tier Benefits
+
+| SOVEREIGN Tier | Fee Discount | Max Order Size | Dark Pool | Priority MEV |
+|----------------|--------------|----------------|-----------|--------------|
+| Bronze (1) | 0% | 1,000 USDC | ❌ | ❌ |
+| Silver (2) | 5% | 10,000 USDC | ❌ | ❌ |
+| Gold (3) | 15% | 100,000 USDC | ❌ | ❌ |
+| Platinum (4) | 30% | 1,000,000 USDC | ✅ | ❌ |
+| Diamond (5) | 50% | Unlimited | ✅ | ✅ |
+
+---
+
+## FairScore Integration (Legacy)
 
 FairScore is **core** to Umbra's product logic:
 
@@ -34,32 +93,45 @@ FairScore is **core** to Umbra's product logic:
 3. **Feature Access**: Order types and derivatives gated by reputation tier
 4. **Risk Management**: Reputation serves as "soft collateral" for advanced features
 
-Without FairScore, Umbra cannot function - it's not decorative, it's essential.
+FairScore is still supported for backward compatibility, but SOVEREIGN is recommended for new integrations.
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         USER FRONTEND                           │
-│  (Connect Wallet → Check FairScore → Show Available Features)   │
+│  (Connect Wallet → Check Reputation → Show Available Features)  │
 └─────────────────────────────────┬───────────────────────────────┘
                                   │
-                                  ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    FAIRSCORE MIDDLEWARE                         │
-│    API Client  →  Tier Calculator  →  Feature Gate              │
-└─────────────────────────────────┬───────────────────────────────┘
-                                  │
-        ┌─────────────────────────┼─────────────────────────┐
-        ▼                         ▼                         ▼
-┌───────────────┐       ┌───────────────┐       ┌───────────────┐
-│  CONFIDENTIAL │       │   TIERED      │       │  DERIVATIVES  │
-│  SWAP ROUTER  │       │   FEE VAULT   │       │    ACCESS     │
-│               │       │               │       │               │
-│ • Encrypted   │       │ • Tier-based  │       │ • Perps       │
-│   orders      │       │   fees        │       │ • Variance    │
-│ • MEV shield  │       │ • Revenue     │       │ • Exotics     │
-└───────────────┘       └───────────────┘       └───────────────┘
+                    ┌─────────────┴─────────────┐
+                    ▼                           ▼
+┌───────────────────────────┐     ┌───────────────────────────────┐
+│   SOVEREIGN PROTOCOL      │     │    FAIRSCORE MIDDLEWARE       │
+│   (On-chain identity)     │     │    (Legacy API-based)         │
+│                           │     │                               │
+│ • Direct PDA read         │     │ • API Client                  │
+│ • Multi-dimensional score │     │ • Signature verification      │
+│ • Portable reputation     │     │ • Single score                │
+└─────────────┬─────────────┘     └───────────────┬───────────────┘
+              │                                   │
+              └─────────────┬─────────────────────┘
+                            ▼
+        ┌─────────────────────────────────────────────────┐
+        │              TIER CALCULATOR                     │
+        │  SOVEREIGN tier (1-5) or FairScore (0-100)      │
+        │         → Umbra tier index (0-4)                │
+        └─────────────────────┬───────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────────┐
+        ▼                     ▼                         ▼
+┌───────────────┐     ┌───────────────┐       ┌───────────────┐
+│  CONFIDENTIAL │     │   TIERED      │       │  DERIVATIVES  │
+│  SWAP ROUTER  │     │   FEE VAULT   │       │    ACCESS     │
+│               │     │               │       │               │
+│ • Encrypted   │     │ • Tier-based  │       │ • Perps       │
+│   orders      │     │   fees        │       │ • Variance    │
+│ • MEV shield  │     │ • Revenue     │       │ • Exotics     │
+└───────────────┘     └───────────────┘       └───────────────┘
 ```
 
 ## Technical Implementation
@@ -67,8 +139,25 @@ Without FairScore, Umbra cannot function - it's not decorative, it's essential.
 ### Smart Contracts (Anchor/Rust)
 
 - **TierConfig**: Stores tier definitions and fee structure
-- **TieredOrder**: Order with embedded FairScore tier information
+- **TieredOrder**: Order with embedded tier information
 - **Fee collection**: Automatic tier-based fee deduction
+- **SOVEREIGN module**: Cross-program account reading for on-chain reputation
+
+#### SOVEREIGN Integration
+
+```rust
+use umbra_swap::sovereign::*;
+
+// Read SOVEREIGN tier directly from chain
+let sovereign_tier = read_sovereign_tier(&sovereign_identity_account);
+
+// Map to Umbra tier index
+let umbra_tier = sovereign_tier_to_umbra_index(sovereign_tier);
+
+// Get tier-specific benefits
+let benefits = get_privacy_benefits(sovereign_tier);
+// benefits.fee_discount_bps, benefits.dark_pool_access, etc.
+```
 
 ### SDK (TypeScript)
 
@@ -171,7 +260,9 @@ umbra/
 ├── programs/umbra-swap/     # Anchor smart contracts
 │   └── src/
 │       ├── lib.rs           # Main program
-│       └── state/           # Account structures
+│       ├── state/           # Account structures
+│       └── sovereign/       # SOVEREIGN integration
+│           └── mod.rs       # Identity reading, tier mapping
 ├── sdk/                     # TypeScript SDK
 │   └── src/
 │       ├── client.ts        # UmbraClient
@@ -223,7 +314,8 @@ umbra/
 
 ## Resources
 
-- [FairScale API](https://swagger.api.fairscale.xyz/)
+- [SOVEREIGN Protocol](https://github.com/psyto/sovereign) - Universal identity & reputation
+- [FairScale API](https://swagger.api.fairscale.xyz/) - Legacy reputation API
 - [FairScale Website](https://fairscale.xyz/)
 - [Solana Docs](https://docs.solana.com/)
 - [Anchor Framework](https://www.anchor-lang.com/)
