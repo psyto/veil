@@ -71,4 +71,11 @@ pub enum UmbraError {
 
     #[msg("Invalid fee vault")]
     InvalidFeeVault,
+
+    // SOVEREIGN integration errors
+    #[msg("Invalid SOVEREIGN identity: PDA mismatch")]
+    InvalidSovereignIdentity,
+
+    #[msg("Order size exceeds SOVEREIGN tier limit")]
+    OrderExceedsTierLimit,
 }

@@ -4,10 +4,12 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer, CloseAccount, Mint}
 pub mod constants;
 pub mod error;
 pub mod state;
+pub mod sovereign;
 
 use constants::*;
 use error::UmbraError;
 use state::*;
+use sovereign::*;
 
 declare_id!("CqcA7CXYLLGcGCSTYPbN8iKruXJu38kZNciH86CVhewr");
 
@@ -352,6 +354,130 @@ pub mod umbra_swap {
         msg!("Protocol active status: {}", is_active);
         Ok(())
     }
+
+    /// Submit a tiered order using SOVEREIGN identity for tier determination
+    /// This replaces FairScore with on-chain SOVEREIGN reputation
+    pub fn submit_order_with_sovereign(
+        ctx: Context<SubmitOrderWithSovereign>,
+        order_id: u64,
+        input_amount: u64,
+        order_type: u8,
+        encrypted_payload: Vec<u8>,
+        user_encryption_pubkey: Vec<u8>,
+    ) -> Result<()> {
+        // Validate inputs
+        require!(
+            encrypted_payload.len() >= MIN_PAYLOAD_SIZE && encrypted_payload.len() <= MAX_PAYLOAD_SIZE,
+            UmbraError::InvalidPayloadLength
+        );
+        require!(input_amount > 0, UmbraError::InvalidInputAmount);
+
+        let tier_config = &ctx.accounts.tier_config;
+        require!(tier_config.is_active, UmbraError::ProtocolPaused);
+
+        // Validate SOVEREIGN identity PDA belongs to this user
+        require!(
+            validate_sovereign_pda(&ctx.accounts.sovereign_identity, &ctx.accounts.owner.key()),
+            UmbraError::InvalidSovereignIdentity
+        );
+
+        // Read SOVEREIGN tier directly from the identity account
+        let sovereign_tier = read_sovereign_tier(&ctx.accounts.sovereign_identity);
+
+        // Convert SOVEREIGN tier (1-5) to Umbra tier index (0-4)
+        let tier_index = sovereign_tier_to_umbra_index(sovereign_tier);
+        let tier = &tier_config.tiers[tier_index];
+
+        // Get privacy benefits based on SOVEREIGN tier
+        let benefits = get_privacy_benefits(sovereign_tier);
+
+        // Validate order size against tier limit
+        require!(
+            input_amount <= benefits.max_order_size,
+            UmbraError::OrderExceedsTierLimit
+        );
+
+        // Convert order_type u8 to OrderType enum and validate
+        let order_type_enum = match order_type {
+            1 => OrderType::Market,
+            2 => OrderType::Limit,
+            4 => OrderType::Twap,
+            8 => OrderType::Iceberg,
+            16 => OrderType::Dark,
+            _ => return Err(UmbraError::OrderTypeNotAllowed.into()),
+        };
+
+        // Dark pool access requires SOVEREIGN tier 4+
+        if order_type == 16 && !benefits.dark_pool_access {
+            return Err(UmbraError::OrderTypeNotAllowed.into());
+        }
+
+        require!(
+            (tier.allowed_order_types & order_type) != 0,
+            UmbraError::OrderTypeNotAllowed
+        );
+
+        // Transfer input tokens to vault
+        let transfer_ctx = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.user_input_token.to_account_info(),
+                to: ctx.accounts.order_vault.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
+            },
+        );
+        token::transfer(transfer_ctx, input_amount)?;
+
+        let clock = Clock::get()?;
+
+        // Initialize order with tier information
+        let order = &mut ctx.accounts.order;
+        order.owner = ctx.accounts.owner.key();
+        order.order_id = order_id;
+        order.input_mint = ctx.accounts.input_mint.key();
+        order.output_mint = ctx.accounts.output_mint.key();
+        order.input_amount = input_amount;
+        order.min_output_amount = 0;
+        order.output_amount = 0;
+        order.encrypted_payload = encrypted_payload;
+        order.status = OrderStatus::Pending;
+        order.order_type = order_type_enum;
+        order.created_at = clock.unix_timestamp;
+        order.executed_at = 0;
+        order.executed_by = None;
+
+        // Apply SOVEREIGN tier benefits
+        // Calculate fee with potential discount from SOVEREIGN tier
+        let base_fee_bps = tier.fee_bps;
+        let discounted_fee_bps = base_fee_bps
+            .saturating_sub(benefits.fee_discount_bps.min(base_fee_bps));
+
+        // Set tier-specific fields
+        order.user_tier = tier_index as u8;
+        order.fee_bps_applied = discounted_fee_bps;
+        order.fee_amount = 0; // Calculated at execution
+        order.mev_protection_level = if benefits.priority_execution {
+            MevProtectionLevel::Priority
+        } else {
+            tier.mev_protection_level
+        };
+        // Store SOVEREIGN tier as fairscore equivalent for backward compatibility
+        order.fairscore_at_creation = sovereign_tier_to_fairscore(sovereign_tier);
+        order.user_encryption_pubkey = user_encryption_pubkey;
+        order.bump = ctx.bumps.order;
+
+        msg!(
+            "SOVEREIGN Order {} submitted: sovereign_tier={}, umbra_tier={}, fee_bps={} (discount={}bps), mev_protection={:?}",
+            order_id,
+            sovereign_tier,
+            order.get_tier_name(),
+            order.fee_bps_applied,
+            benefits.fee_discount_bps,
+            order.mev_protection_level
+        );
+
+        Ok(())
+    }
 }
 
 // ============ Account Contexts ============
@@ -586,4 +712,60 @@ pub struct SetActive<'info> {
         constraint = tier_config.authority == authority.key() @ UmbraError::UnauthorizedOwner
     )]
     pub tier_config: Account<'info, TierConfig>,
+}
+
+/// Submit order using SOVEREIGN identity instead of FairScore
+#[derive(Accounts)]
+#[instruction(order_id: u64)]
+pub struct SubmitOrderWithSovereign<'info> {
+    #[account(mut)]
+    pub owner: Signer<'info>,
+
+    #[account(
+        seeds = [TIER_CONFIG_SEED],
+        bump = tier_config.bump,
+        constraint = tier_config.is_active @ UmbraError::ProtocolPaused
+    )]
+    pub tier_config: Box<Account<'info, TierConfig>>,
+
+    /// The user's SOVEREIGN identity account
+    /// CHECK: Validated by PDA derivation in instruction logic
+    #[account(
+        seeds = [b"identity", owner.key().as_ref()],
+        seeds::program = SOVEREIGN_PROGRAM_ID,
+        bump,
+    )]
+    pub sovereign_identity: AccountInfo<'info>,
+
+    #[account(
+        init,
+        payer = owner,
+        space = 8 + TieredOrder::INIT_SPACE,
+        seeds = [ORDER_SEED, owner.key().as_ref(), &order_id.to_le_bytes()],
+        bump
+    )]
+    pub order: Box<Account<'info, TieredOrder>>,
+
+    pub input_mint: Box<Account<'info, Mint>>,
+    pub output_mint: Box<Account<'info, Mint>>,
+
+    #[account(
+        mut,
+        constraint = user_input_token.mint == input_mint.key() @ UmbraError::InvalidTokenMint,
+        constraint = user_input_token.owner == owner.key() @ UmbraError::UnauthorizedOwner
+    )]
+    pub user_input_token: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        init,
+        payer = owner,
+        seeds = [ORDER_VAULT_SEED, order.key().as_ref()],
+        bump,
+        token::mint = input_mint,
+        token::authority = order
+    )]
+    pub order_vault: Box<Account<'info, TokenAccount>>,
+
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
