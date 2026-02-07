@@ -213,6 +213,37 @@ console.log(`MEV Protection: ${benefits.mevProtection}`);
 
 This inverts the typical narrative that privacy enables bad actors. Instead, Umbra rewards users who demonstrate legitimate on-chain behavior with better privacy guarantees.
 
+## Deployments
+
+| Network | Program | ID |
+|---------|---------|-----|
+| Devnet | Umbra Swap | `41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr` |
+| Devnet | SOVEREIGN | `2UAZc1jj4QTSkgrC8U9d4a7EM9AQunxMvW5g7rX7Af9T` |
+
+---
+
+## Frontend Features
+
+The Umbra frontend integrates real-time SOVEREIGN identity fetching:
+
+- **SOVEREIGN Tier Display**: Shows composite score and breakdown (Trading, Civic, Developer, Infra)
+- **Dynamic Fees**: Trading fees adjust based on your SOVEREIGN tier
+- **MEV Protection Indicator**: Shows protection level for your tier
+- **Order Type Badges**: Available order types based on tier
+- **Wallet Integration**: Phantom, Solflare support with auto-connect
+
+### Components
+
+```typescript
+// TierDisplay - Shows full SOVEREIGN identity with score breakdown
+<TierDisplay />
+
+// SwapInterface - Dynamic fees based on SOVEREIGN tier
+<SwapInterface />
+```
+
+---
+
 ## Getting Started
 
 ### Prerequisites
