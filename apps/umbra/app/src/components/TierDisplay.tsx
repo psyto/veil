@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import {
   SovereignIdentity,
   fetchSovereignIdentity,
+  createSovereignIdentity,
   getTierName,
   getTierColor,
   getFeeBps,
@@ -38,11 +39,14 @@ const TIER_COLORS: Record<number, { bg: string; border: string; text: string }> 
 };
 
 export function TierDisplay() {
-  const { publicKey } = useWallet();
+  const wallet = useWallet();
+  const { publicKey } = wallet;
   const { connection } = useConnection();
   const [tierInfo, setTierInfo] = useState<TierInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasSovereignId, setHasSovereignId] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTierInfo() {
@@ -115,6 +119,43 @@ export function TierDisplay() {
 
     fetchTierInfo();
   }, [publicKey, connection]);
+
+  const handleCreateIdentity = async () => {
+    if (!publicKey) return;
+
+    setCreating(true);
+    setCreateError(null);
+
+    try {
+      const txId = await createSovereignIdentity(connection, wallet);
+      console.log('SOVEREIGN identity created:', txId);
+
+      // Refetch the identity
+      const identity = await fetchSovereignIdentity(connection, publicKey);
+      if (identity) {
+        setHasSovereignId(true);
+        setTierInfo({
+          compositeScore: identity.compositeScore,
+          tradingScore: identity.tradingScore,
+          civicScore: identity.civicScore,
+          developerScore: identity.developerScore,
+          infraScore: identity.infraScore,
+          tier: identity.tier,
+          tierName: getTierName(identity.tier),
+          tierColor: getTierColor(identity.tier),
+          feeBps: getFeeBps(identity.tier),
+          mevProtection: getMevProtection(identity.tier),
+          orderTypes: getOrderTypes(identity.tier),
+          maxOrderSize: getMaxOrderSize(identity.tier),
+        });
+      }
+    } catch (error) {
+      console.error('Error creating SOVEREIGN identity:', error);
+      setCreateError(error instanceof Error ? error.message : 'Failed to create identity');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -235,10 +276,36 @@ export function TierDisplay() {
 
       {/* No SOVEREIGN ID Notice */}
       {!hasSovereignId && publicKey && (
-        <div className="mt-6 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-          <p className="text-sm text-purple-300">
+        <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+          <p className="text-sm text-purple-300 mb-3">
             Create a SOVEREIGN identity to unlock lower fees and better features!
           </p>
+          {createError && (
+            <p className="text-sm text-red-400 mb-3">{createError}</p>
+          )}
+          <button
+            onClick={handleCreateIdentity}
+            disabled={creating}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors"
+          >
+            {creating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Create SOVEREIGN Identity
+              </>
+            )}
+          </button>
         </div>
       )}
 

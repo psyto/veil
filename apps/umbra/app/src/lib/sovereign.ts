@@ -1,4 +1,11 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  SystemProgram,
+} from '@solana/web3.js';
+import { WalletContextState } from '@solana/wallet-adapter-react';
 
 export const SOVEREIGN_PROGRAM_ID = new PublicKey('2UAZc1jj4QTSkgrC8U9d4a7EM9AQunxMvW5g7rX7Af9T');
 
@@ -121,4 +128,54 @@ export async function fetchSovereignIdentity(
     compositeScore,
     tier,
   };
+}
+
+// Anchor instruction discriminator for create_identity
+// sha256("global:create_identity")[0..8]
+const CREATE_IDENTITY_DISCRIMINATOR = Buffer.from([12, 253, 209, 41, 176, 51, 195, 179]);
+
+export async function createSovereignIdentity(
+  connection: Connection,
+  wallet: WalletContextState
+): Promise<string> {
+  if (!wallet.publicKey || !wallet.signTransaction) {
+    throw new Error('Wallet not connected');
+  }
+
+  const [identityPda] = getIdentityPda(wallet.publicKey);
+
+  // Check if identity already exists
+  const existingAccount = await connection.getAccountInfo(identityPda);
+  if (existingAccount) {
+    throw new Error('SOVEREIGN identity already exists for this wallet');
+  }
+
+  // Build the create_identity instruction
+  const createIdentityIx = new TransactionInstruction({
+    programId: SOVEREIGN_PROGRAM_ID,
+    keys: [
+      { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+      { pubkey: identityPda, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    data: CREATE_IDENTITY_DISCRIMINATOR,
+  });
+
+  // Create and send transaction
+  const transaction = new Transaction().add(createIdentityIx);
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+  transaction.recentBlockhash = blockhash;
+  transaction.feePayer = wallet.publicKey;
+
+  const signedTx = await wallet.signTransaction(transaction);
+  const txId = await connection.sendRawTransaction(signedTx.serialize());
+
+  // Wait for confirmation
+  await connection.confirmTransaction({
+    signature: txId,
+    blockhash,
+    lastValidBlockHeight,
+  });
+
+  return txId;
 }
