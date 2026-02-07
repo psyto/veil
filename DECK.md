@@ -1,6 +1,6 @@
 # Veil - Presentation Deck
 
-## PrivacyHack 2026 Submission
+## PrivacyHack 2026 & Multi-Hackathon Submission
 
 ---
 
@@ -8,10 +8,15 @@
 
 **Veil**
 
-*MEV protection through encryption. Confidentiality through selective disclosure.*
+*Privacy infrastructure for the next era of DeFi*
 
-- Confidential Swap Router (Open Track)
-- RWA Secrets Service (Privacy Tooling Track)
+**Five Applications. One Principle: "MEV bots can't frontrun what they can't read."**
+
+- Confidential Swap Router (PrivacyHack - Open Track)
+- RWA Secrets Service (PrivacyHack - Privacy Tooling Track)
+- Umbra (FairScale Hackathon - Reputation-Gated DEX)
+- DarkFlow (PrivacyHack - Arcium/Noir Bounties)
+- ShadowLaunch (Pump.fun Hackathon - Privacy Purchases)
 
 GitHub: github.com/psyto/veil
 
@@ -142,43 +147,93 @@ Asset registered → Metadata encrypted
 
 ---
 
-## Slide 10: Technical Architecture
+## Slide 10: Solution 3 - Umbra (Reputation-Gated Privacy)
+
+**"Privacy is a privilege you earn through good behavior."**
 
 ```
-┌────────────────────────────────────────────────────────┐
-│              Veil                       │
-├────────────────────────────────────────────────────────┤
-│  ┌──────────────────┐    ┌──────────────────┐         │
-│  │ Confidential     │    │ RWA Secrets      │         │
-│  │ Swap Router      │    │ Service          │         │
-│  │                  │    │                  │         │
-│  │ • MEV Protection │    │ • Encrypted Meta │         │
-│  │ • Jupiter        │    │ • Access Control │         │
-│  │ • Shielded       │    │ • Audit Logging  │         │
-│  └──────────────────┘    └──────────────────┘         │
-│                                                        │
-│  ┌────────────────────────────────────────────────┐   │
-│  │           @veil/crypto                 │   │
-│  │  NaCl Box • Shamir's • ZK Compression          │   │
-│  └────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────┘
+SOVEREIGN Identity                    Umbra Benefits
+──────────────────                    ──────────────
+Tier 1 (Bronze)     ───────────────►  0.50% fee, No MEV protection
+Tier 2 (Silver)     ───────────────►  0.30% fee + 5% discount, Basic MEV
+Tier 3 (Gold)       ───────────────►  0.15% fee + 15% discount, Full MEV
+Tier 4 (Platinum)   ───────────────►  0.08% fee + 30% discount, Dark pool
+Tier 5 (Diamond)    ───────────────►  0.05% fee + 50% discount, VIP routing
+```
+
+**Program ID:** `41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr`
+
+---
+
+## Slide 11: Solution 4 - DarkFlow (Confidential AMM)
+
+**"Trade without a trace. Lend without a ledger."**
+
+| Feature | Traditional AMM | DarkFlow |
+|---------|-----------------|----------|
+| LP deposits | Everyone sees | Encrypted (only owner) |
+| Swap amounts | Everyone sees | ZK verified, hidden |
+| Result | MEV extraction | Value preserved |
+
+**Technologies:** Arcium encrypted state, Noir ZK proofs, NaCl encryption
+
+---
+
+## Slide 12: Solution 5 - ShadowLaunch (Private Pump.fun)
+
+**"Break the link between your wallet and your trades."**
+
+```
+Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
+                  ↓
+          Link broken here
+```
+
+- **Shadow Mode**: Toggle privacy on/off
+- **Ephemeral Wallets**: Fresh keys for each purchase
+- **No History**: Tokens arrive with no trace to you
+
+---
+
+## Slide 13: Technical Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                                   Veil                                    │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │ Swap Router  │  │ RWA Secrets  │  │ Umbra        │  │ DarkFlow     │ │
+│  │ (MEV)        │  │ (Metadata)   │  │ (Reputation) │  │ (Dark AMM)   │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘ │
+│                                                                          │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │                     ShadowLaunch (Pump.fun)                         │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  ┌────────────────────────────────────────────────────────────────────┐ │
+│  │          @privacy-suite/crypto  •  @umbra/fairscore-middleware     │ │
+│  │  NaCl Box • Shamir's • ZK Compression • Shielded • SOVEREIGN       │ │
+│  └────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Slide 11: Bounty Integrations
+## Slide 14: Bounty Integrations
 
-| Partner | Integration | Benefit |
-|---------|-------------|---------|
-| **Light Protocol** | ZK Compression | ~99% storage reduction |
-| **Privacy Cash** | Shielded Transfers | Private token delivery |
-| **Helius** | RPC Provider | ZK compression support |
-| **Quicknode** | RPC Provider | Reliable infrastructure |
-| **Jupiter** | DEX Aggregation | Best execution routing |
+| Partner | Integration | Apps | Prize |
+|---------|-------------|------|-------|
+| **Light Protocol** | ZK Compression | All | Open Track |
+| **Privacy Cash** | Shielded Transfers | Swap, DarkFlow | $15,000 |
+| **Helius** | RPC Provider | All | $5,000 |
+| **Quicknode** | RPC Provider | ShadowLaunch | $3,000 |
+| **Arcium** | Encrypted State | DarkFlow | $10,000 |
+| **Noir/Aztec** | ZK Proofs | DarkFlow | $10,000 |
+| **FairScale** | Reputation | Umbra | Track Prize |
 
 ---
 
-## Slide 12: Code Example - Encrypted Swap
+## Slide 15: Code Example - Encrypted Swap
 
 ```typescript
 import { createEncryptedOrder } from '@confidential-swap/sdk';
@@ -200,7 +255,7 @@ await program.submitEncryptedOrder(encrypted);
 
 ---
 
-## Slide 13: Code Example - Selective Disclosure
+## Slide 16: Code Example - Selective Disclosure
 
 ```typescript
 import { encryptAssetMetadata, grantAccess } from '@rwa-secrets/sdk';
@@ -223,20 +278,21 @@ await grantAccess({
 
 ---
 
-## Slide 14: Why This Matters
+## Slide 17: Why This Matters
 
 | For | Benefit |
 |-----|---------|
 | **Traders** | No more MEV tax on every swap |
 | **Businesses** | Confidential operations on public chains |
+| **High-Rep Users** | Better rates through reputation |
+| **Pump.fun Buyers** | Accumulate without being tracked |
 | **Markets** | Fair price discovery |
-| **Compliance** | Privacy and regulation coexist |
 
 **Privacy isn't a feature. It's infrastructure.**
 
 ---
 
-## Slide 15: The Third Era of Crypto
+## Slide 18: The Third Era of Crypto
 
 | Era | Focus | Privacy |
 |-----|-------|---------|
@@ -248,50 +304,49 @@ await grantAccess({
 
 ---
 
-## Slide 16: Deployed & Tested
+## Slide 19: Deployed & Tested
 
 **Devnet Deployments:**
 
-- Confidential Swap Router: `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM`
-- RWA Secrets Service: `DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam`
+| Program | ID |
+|---------|-----|
+| Confidential Swap Router | `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM` |
+| RWA Secrets Service | `DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam` |
+| Umbra Swap | `41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr` |
 
-**All Tests Passing:**
-- Network connectivity
-- Wallet configuration
-- Program deployment verification
-- PDA derivation
-- Encryption functions
-- Threshold secret sharing
+**All Tests Passing**
 
 ---
 
-## Slide 17: Summary
+## Slide 20: Summary
 
 **Veil**
 
-Two protocols. One principle.
+Five applications. One principle.
 
-| Protocol | Problem | Solution |
-|----------|---------|----------|
-| Confidential Swap Router | MEV extraction | Encrypted orders |
-| RWA Secrets Service | Data exposure | Selective disclosure |
+| Application | Problem | Solution |
+|-------------|---------|----------|
+| Swap Router | MEV extraction | Encrypted orders |
+| RWA Secrets | Data exposure | Selective disclosure |
+| Umbra | Unfair privacy | Reputation-gated access |
+| DarkFlow | LP/Swap visibility | ZK proofs + dark pools |
+| ShadowLaunch | Tracked purchases | Ephemeral wallets |
 
 > "MEV bots can't frontrun what they can't read."
 
-> "Privacy and compliance can coexist."
-
 ---
 
-## Slide 18: Links & Contact
+## Slide 21: Links & Contact
 
 **Repository:** github.com/psyto/veil
 
 **Explorer Links:**
-- [Swap Router Program](https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet)
-- [RWA Secrets Program](https://explorer.solana.com/address/DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam?cluster=devnet)
+- [Swap Router](https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet)
+- [RWA Secrets](https://explorer.solana.com/address/DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam?cluster=devnet)
+- [Umbra Swap](https://explorer.solana.com/address/41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr?cluster=devnet)
 
 **Built with:**
-Light Protocol • Privacy Cash • Jupiter • Helius • Quicknode
+Light Protocol • Privacy Cash • Jupiter • Helius • Quicknode • Arcium • Noir • FairScale • SOVEREIGN
 
 **Developer:** psyto
 
@@ -302,15 +357,16 @@ Light Protocol • Privacy Cash • Jupiter • Helius • Quicknode
 ### Key Messages to Emphasize:
 
 1. **Lead with philosophy** - "MEV bots can't frontrun what they can't read"
-2. **Problem → Solution flow** - Show the pain point before the fix
-3. **Not anti-compliance** - "Not about hiding from regulators"
-4. **Production-ready** - Deployed on devnet, all tests passing
-5. **Bounty integrations** - Mention Light Protocol, Privacy Cash, Helius, Quicknode
+2. **Five apps, one principle** - Unified privacy infrastructure
+3. **Problem → Solution flow** - Show the pain point before the fix
+4. **Not anti-compliance** - "Not about hiding from regulators"
+5. **Production-ready** - 3 programs deployed on devnet, all tests passing
+6. **Multi-hackathon** - PrivacyHack + FairScale + Pump.fun
 
 ### Timing Suggestion:
 - Slides 1-5: Problem & Philosophy (1 min)
-- Slides 6-9: Solutions (1.5 min)
-- Slides 10-13: Technical (1 min)
-- Slides 14-18: Impact & Close (30 sec)
+- Slides 6-12: All 5 Solutions (2.5 min)
+- Slides 13-16: Technical + Code (1 min)
+- Slides 17-21: Impact & Close (30 sec)
 
-**Total: ~4 minutes** (adjust based on submission requirements)
+**Total: ~5 minutes** (adjust based on submission requirements)

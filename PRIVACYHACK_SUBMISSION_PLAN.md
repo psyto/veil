@@ -1,8 +1,13 @@
-# Solana PrivacyHack 2026 - Submission Plan
+# Multi-Hackathon Submission Plan
 
 ## Overview
 
-This document outlines the strategy for submitting **three privacy-focused projects** to the Solana PrivacyHack hackathon (January 12-30, 2026). By leveraging a shared cryptographic library, we can efficiently upgrade multiple projects with ZK proofs and sponsor SDK integrations.
+This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@privacy-suite/crypto`, `@umbra/fairscore-middleware`), we maximize impact while minimizing redundant development.
+
+**Hackathons:**
+- Solana PrivacyHack 2026 (January 12-30, 2026)
+- FairScale Hackathon 2026
+- Pump.fun Build In Public Hackathon 2026
 
 ---
 
@@ -39,35 +44,48 @@ This document outlines the strategy for submitting **three privacy-focused proje
 
 ## Submission Strategy
 
-### Three Projects, Three Tracks
+### Five Apps, Multiple Tracks
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         SUBMISSION STRATEGY                              │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   ┌─────────────┐    ┌─────────────────────┐    ┌───────────────────┐  │
-│   │   Fabcash   │    │ Confidential Swap   │    │   RWA Secrets     │  │
-│   │             │    │      Router         │    │     Service       │  │
-│   └──────┬──────┘    └──────────┬──────────┘    └─────────┬─────────┘  │
-│          │                      │                         │             │
-│          ▼                      ▼                         ▼             │
-│   ┌─────────────┐    ┌─────────────────────┐    ┌───────────────────┐  │
-│   │   Private   │    │     Open Track      │    │  Privacy Tooling  │  │
-│   │  Payments   │    │                     │    │                   │  │
-│   │   $15,000   │    │      $18,000        │    │     $15,000       │  │
-│   └─────────────┘    └─────────────────────┘    └───────────────────┘  │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────┐
+│                              SUBMISSION STRATEGY                                       │
+├───────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│   PRIVACYHACK 2026                                                                     │
+│   ┌────────────────┐    ┌────────────────┐    ┌────────────────┐                      │
+│   │ Confidential   │    │ RWA Secrets    │    │ DarkFlow       │                      │
+│   │ Swap Router    │    │ Service        │    │ (Dark AMM)     │                      │
+│   └───────┬────────┘    └───────┬────────┘    └───────┬────────┘                      │
+│           │                     │                     │                                │
+│           ▼                     ▼                     ▼                                │
+│   ┌────────────────┐    ┌────────────────┐    ┌────────────────┐                      │
+│   │  Open Track    │    │Privacy Tooling │    │ Arcium/Noir    │                      │
+│   │    $18,000     │    │    $15,000     │    │    $20,000     │                      │
+│   └────────────────┘    └────────────────┘    └────────────────┘                      │
+│                                                                                        │
+│   FAIRSCALE HACKATHON                 PUMP.FUN HACKATHON                              │
+│   ┌────────────────┐                  ┌────────────────┐                              │
+│   │ Umbra          │                  │ ShadowLaunch   │                              │
+│   │ (Reputation)   │                  │ (Private Buys) │                              │
+│   └───────┬────────┘                  └───────┬────────┘                              │
+│           │                                   │                                        │
+│           ▼                                   ▼                                        │
+│   ┌────────────────┐                  ┌────────────────┐                              │
+│   │  Track Prize   │                  │   $250,000     │                              │
+│   └────────────────┘                  └────────────────┘                              │
+│                                                                                        │
+└───────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Project Assignments
 
-| Project | Repository | Track | Rationale |
-|---------|------------|-------|-----------|
-| **Fabcash** | psyto/fabcash | Private Payments | Strongest fit - burner wallet with offline payments, already integrates Privacy Cash + Light Protocol |
-| **Confidential Swap Router** | psyto/veil | Open Track | MEV-protected swaps with encrypted orders - unique angle for open track |
-| **RWA Secrets Service** | psyto/veil | Privacy Tooling | Infrastructure for encrypted RWA metadata - clear tooling use case |
+| Project | Hackathon | Track/Bounty | Key Technology |
+|---------|-----------|--------------|----------------|
+| **Confidential Swap Router** | PrivacyHack | Open Track | NaCl + Jupiter + Privacy Cash |
+| **RWA Secrets Service** | PrivacyHack | Privacy Tooling | NaCl + Light Protocol |
+| **DarkFlow** | PrivacyHack | Arcium + Noir | Dark pools + ZK proofs |
+| **Umbra** | FairScale | Reputation Track | SOVEREIGN + FairScore |
+| **ShadowLaunch** | Pump.fun | Main Track | Ephemeral wallets + shielded transfers |
 
 ---
 
@@ -477,11 +495,24 @@ anchor deploy
 │  ├── Day 12: Deploy to devnet                              ✓            │
 │  └── Day 13-15: End-to-end testing                         ✓            │
 │                                                                          │
-│  Jan 27-30: Phase 6 - Demo Videos & Documentation          [IN PROGRESS]│
-│  ├── Day 16-17: Record demo videos                         (pending)    │
-│  └── Day 18-19: Final documentation                        ✓            │
+│  Jan 25-27: Phase 6 - Umbra Development                    [COMPLETED]  │
+│  ├── SOVEREIGN identity integration                        ✓            │
+│  ├── Tiered fee system                                     ✓            │
+│  └── Devnet deployment                                     ✓            │
 │                                                                          │
-│  Feb 1: SUBMISSION DEADLINE                                              │
+│  Jan 27-Feb 5: Phase 7 - Additional Apps                   [COMPLETED]  │
+│  ├── DarkFlow scaffolding                                  ✓            │
+│  ├── ShadowLaunch frontend                                 ✓            │
+│  └── Demo video materials                                  ✓            │
+│                                                                          │
+│  Feb 7: Phase 8 - Documentation Update                     [COMPLETED]  │
+│  ├── README.md updated for all 5 apps                      ✓            │
+│  ├── SUBMISSION.md updated                                 ✓            │
+│  └── DECK.md updated                                       ✓            │
+│                                                                          │
+│  UPCOMING:                                                               │
+│  ├── Record demo videos for all apps                       (pending)    │
+│  └── Submit to hackathons                                  (pending)    │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -492,32 +523,34 @@ anchor deploy
 
 ### Track Prizes
 
-| Project | Track | Prize |
-|---------|-------|-------|
-| Fabcash | Private Payments | $15,000 |
-| Confidential Swap Router | Open Track | $18,000 |
-| RWA Secrets Service | Privacy Tooling | $15,000 |
-| **Subtotal** | | **$48,000** |
+| Project | Hackathon | Track | Prize |
+|---------|-----------|-------|-------|
+| Confidential Swap Router | PrivacyHack | Open Track | $18,000 |
+| RWA Secrets Service | PrivacyHack | Privacy Tooling | $15,000 |
+| DarkFlow | PrivacyHack | Arcium + Noir | $20,000 |
+| Umbra | FairScale | Track Prize | TBD |
+| ShadowLaunch | Pump.fun | Main Track | $250,000 |
+| **Subtotal** | | | **$303,000+** |
 
 ### Bounty Eligibility
 
 | Bounty | Eligible Projects | Prize |
 |--------|-------------------|-------|
-| Privacy Cash - Best Overall | Fabcash, Swap Router | $6,000 |
-| Privacy Cash - Best Integration | Swap Router | $6,000 |
-| Light Protocol | Fabcash, Swap Router, RWA | (Part of Open Track) |
-| Helius - Best Privacy Project | All three | $5,000 |
-| Quicknode - Open Source Tooling | RWA Secrets Service | $3,000 |
-| Range - Compliant Privacy | RWA Secrets Service | $1,500+ |
-| **Subtotal** | | **$21,500+** |
+| Privacy Cash - Best Integration | Swap Router, DarkFlow | $15,000 |
+| Light Protocol | All PrivacyHack projects | (Part of Open Track) |
+| Helius - Best Privacy Project | All | $5,000 |
+| Quicknode - Open Source Tooling | ShadowLaunch, All | $3,000 |
+| Arcium - Encrypted State | DarkFlow | $10,000 |
+| Aztec/Noir - ZK Proofs | DarkFlow | $10,000 |
+| **Subtotal** | | **$43,000** |
 
 ### Total Potential
 
 | Category | Amount |
 |----------|--------|
-| Track Prizes | $48,000 |
-| Bounties | $21,500+ |
-| **Maximum Total** | **$69,500+** |
+| Track Prizes | $303,000+ |
+| Bounties | $43,000 |
+| **Maximum Total** | **$346,000+** |
 
 ---
 
@@ -555,10 +588,20 @@ anchor deploy
 
 ## Conclusion
 
-By leveraging the shared `@veil/crypto` library, we can efficiently upgrade both the Confidential Swap Router and RWA Secrets Service with ZK proofs and sponsor SDK integrations. Combined with Fabcash, this gives us three strong submissions across all three tracks, maximizing our prize potential while minimizing redundant development effort.
+By leveraging shared infrastructure (`@privacy-suite/crypto`, `@umbra/fairscore-middleware`), we've built five privacy-focused applications across three hackathons. Each app targets a different track/hackathon, maximizing prize potential while sharing core cryptographic functionality.
 
 **Key Success Factors:**
-1. Shared library upgrades benefit multiple projects
-2. Each project targets a different track (no self-competition)
+1. Shared library upgrades benefit all five applications
+2. Each project targets a different track/hackathon (no self-competition)
 3. Multiple bounty eligibility per project
-4. Attend relevant workshops for integration support
+4. Three deployed programs on devnet (Swap Router, RWA Secrets, Umbra)
+5. Comprehensive documentation and demo scripts prepared
+
+**Deployed Programs:**
+- Confidential Swap Router: `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM`
+- RWA Secrets Service: `DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam`
+- Umbra Swap: `41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr`
+
+**Remaining Tasks:**
+1. Record demo videos for all 5 applications
+2. Submit to hackathons before deadlines

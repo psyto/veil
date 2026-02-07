@@ -2,16 +2,19 @@
 
 > "MEV bots can't frontrun what they can't read."
 
-Privacy-focused DeFi infrastructure for Solana, featuring encrypted swap orders and confidential RWA (Real World Asset) metadata management with ZK compression and shielded transfers.
+Privacy-focused DeFi infrastructure for Solana, featuring encrypted swap orders, confidential RWA metadata management, reputation-gated privacy, dark liquidity pools, and privacy-first token purchases.
 
 ## Overview
 
-This monorepo contains two privacy-preserving protocols built on Solana:
+This monorepo contains five privacy-preserving applications built on Solana:
 
 1. **Confidential Swap Router** - MEV-protected token swaps with encrypted order payloads
-2. **RWA Secrets Service** - Encrypted metadata management for tokenized real-world assets with selective disclosure
+2. **RWA Secrets Service** - Encrypted metadata management for tokenized real-world assets
+3. **Umbra** - Reputation-gated privacy DEX aggregator with SOVEREIGN identity integration
+4. **DarkFlow** - Confidential AMM with dark liquidity pools and ZK-verified swaps
+5. **ShadowLaunch** - Privacy-first token purchases on Pump.fun with ephemeral wallets
 
-Both protocols share a common encryption library (`@veil/crypto`) that provides:
+All applications share a common encryption library (`@privacy-suite/crypto`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
 - ZK compression via Light Protocol (~99% on-chain storage reduction)
@@ -21,31 +24,33 @@ Both protocols share a common encryption library (`@veil/crypto`) that provides:
 ## Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                                   Veil                                      │
-├────────────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────┐    ┌─────────────────────────────┐       │
-│  │  Confidential Swap Router   │    │    RWA Secrets Service      │       │
-│  │                             │    │                             │       │
-│  │  ┌─────────┐ ┌───────────┐ │    │  ┌─────────┐ ┌───────────┐ │       │
-│  │  │ Program │ │    SDK    │ │    │  │ Program │ │    SDK    │ │       │
-│  │  └─────────┘ └───────────┘ │    │  └─────────┘ └───────────┘ │       │
-│  │  ┌─────────┐ ┌───────────┐ │    │  ┌───────────────────────┐ │       │
-│  │  │ Solver  │ │  Frontend │ │    │  │       Frontend        │ │       │
-│  │  │  + API  │ │           │ │    │  │                       │ │       │
-│  │  └─────────┘ └───────────┘ │    │  └───────────────────────┘ │       │
-│  └─────────────────────────────┘    └─────────────────────────────┘       │
-│                                                                            │
-│  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │                    @veil/crypto                           │   │
-│  │    NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-│                                                                            │
-│  ┌────────────────────────────────────────────────────────────────────┐   │
-│  │                       RPC Providers                                 │   │
-│  │           Helius (ZK support)  •  Quicknode  •  Custom              │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                                         Veil                                              │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐ │
+│  │ Confidential     │  │ RWA Secrets      │  │ Umbra            │  │ DarkFlow         │ │
+│  │ Swap Router      │  │ Service          │  │ (Reputation DEX) │  │ (Dark AMM)       │ │
+│  │                  │  │                  │  │                  │  │                  │ │
+│  │ • MEV Protection │  │ • Encrypted Meta │  │ • SOVEREIGN ID   │  │ • Hidden LP      │ │
+│  │ • Jupiter        │  │ • Access Control │  │ • Tiered Fees    │  │ • ZK Swaps       │ │
+│  │ • Shielded       │  │ • Audit Logging  │  │ • Dark Pool      │  │ • Noir Proofs    │ │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘  └──────────────────┘ │
+│                                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                             ShadowLaunch                                          │   │
+│  │               Privacy-first Pump.fun • Ephemeral Wallets • Shielded Transfers     │   │
+│  └──────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                           @privacy-suite/crypto                                   │   │
+│  │    NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers  •  RPC        │   │
+│  └──────────────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐   │
+│  │                              RPC Providers                                        │   │
+│  │            Helius (ZK support)  •  Quicknode  •  Custom  •  Light Protocol        │   │
+│  └──────────────────────────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Project Structure
@@ -53,30 +58,42 @@ Both protocols share a common encryption library (`@veil/crypto`) that provides:
 ```
 veil/
 ├── packages/
-│   └── crypto/                      # Shared encryption library
-│       ├── src/
-│       │   ├── nacl-box.ts         # NaCl box encryption/decryption
-│       │   ├── threshold.ts        # Shamir's Secret Sharing (M-of-N)
-│       │   ├── payload.ts          # Binary payload serialization
-│       │   ├── zk-compression.ts   # Light Protocol ZK compression
-│       │   ├── shielded.ts         # Privacy Cash shielded transfers
-│       │   └── rpc-providers.ts    # Helius/Quicknode RPC config
-│       └── package.json
+│   ├── crypto/                      # Shared encryption library (@privacy-suite/crypto)
+│   │   ├── src/
+│   │   │   ├── nacl-box.ts         # NaCl box encryption/decryption
+│   │   │   ├── threshold.ts        # Shamir's Secret Sharing (M-of-N)
+│   │   │   ├── payload.ts          # Binary payload serialization
+│   │   │   ├── zk-compression.ts   # Light Protocol ZK compression
+│   │   │   ├── shielded.ts         # Privacy Cash shielded transfers
+│   │   │   └── rpc-providers.ts    # Helius/Quicknode RPC config
+│   │   └── package.json
+│   └── fairscore-middleware/        # FairScore integration (@umbra/fairscore-middleware)
 ├── apps/
 │   ├── confidential-swap-router/    # MEV-protected swap protocol
 │   │   ├── programs/               # Anchor smart contract
 │   │   ├── sdk/                    # TypeScript SDK
 │   │   ├── solver/                 # Jupiter-integrated solver + API
-│   │   │   └── src/
-│   │   │       ├── api.ts          # REST API for key exchange
-│   │   │       ├── solver.ts       # Order execution logic
-│   │   │       └── jupiter.ts      # Jupiter aggregator client
 │   │   └── app/                    # Next.js frontend
-│   └── rwa-secrets-service/         # RWA secrets protocol
-│       ├── programs/               # Anchor smart contract
-│       ├── sdk/                    # TypeScript SDK
-│       ├── tests/                  # Integration tests
-│       └── app/                    # Next.js frontend
+│   ├── rwa-secrets-service/         # RWA secrets protocol
+│   │   ├── programs/               # Anchor smart contract
+│   │   ├── sdk/                    # TypeScript SDK
+│   │   └── app/                    # Next.js frontend
+│   ├── umbra/                       # Reputation-gated privacy DEX
+│   │   ├── programs/umbra-swap/    # Anchor smart contract
+│   │   ├── sdk/                    # TypeScript SDK (SOVEREIGN + FairScore)
+│   │   ├── solver/                 # Order execution service
+│   │   └── app/                    # Next.js frontend
+│   ├── darkflow/                    # Confidential AMM with dark pools
+│   │   ├── programs/darkflow/      # Anchor smart contract
+│   │   ├── sdk/                    # TypeScript SDK
+│   │   ├── solver/                 # Order execution service
+│   │   └── app/                    # Next.js frontend
+│   └── shadowlaunch/                # Privacy-first Pump.fun purchases
+│       └── src/
+│           ├── app/                # Next.js App Router
+│           ├── components/         # UI components
+│           ├── hooks/              # React hooks
+│           └── lib/                # Shadow purchase logic
 ├── package.json                     # Workspace configuration
 └── yarn.lock
 ```
@@ -167,6 +184,73 @@ Asset metadata is encrypted on-chain, with selective disclosure through encrypte
 - `log_access` - Record access for audit trail
 - `update_metadata` - Update encrypted metadata (issuer only)
 - `deactivate_asset` - Deactivate an asset
+
+## Umbra - Reputation-Gated Privacy DEX
+
+### Problem
+Current privacy solutions treat all users equally, enabling sybil attacks and providing no incentive to build reputation. Traders lose $500M+ annually to MEV extraction.
+
+### Solution
+Umbra uses on-chain reputation (via SOVEREIGN protocol or FairScore) to unlock execution quality tiers. Higher reputation = lower fees, better MEV protection, and access to dark pools.
+
+### Key Features
+- **SOVEREIGN Integration**: Universal on-chain identity with multi-dimensional reputation
+- **Tiered Fees**: 0.05% - 0.50% based on reputation tier
+- **MEV Protection Levels**: From none to VIP routing
+- **Dark Pool Access**: High-tier users can access confidential liquidity
+- **Priority Execution**: Diamond tier gets VIP order routing
+
+### Reputation Tiers (SOVEREIGN)
+| Tier | Fee Discount | MEV Protection | Dark Pool |
+|------|--------------|----------------|-----------|
+| Bronze (1) | 0% | None | No |
+| Silver (2) | 5% | Basic | No |
+| Gold (3) | 15% | Full encryption | No |
+| Platinum (4) | 30% | Full + Priority | Yes |
+| Diamond (5) | 50% | VIP routing | Yes |
+
+## DarkFlow - Confidential AMM
+
+### Problem
+Traditional AMMs expose LP positions and swap amounts, enabling whale watchers and MEV bots to target users.
+
+### Solution
+DarkFlow brings institutional-grade dark pool mechanics to Solana with encrypted LP positions and ZK-verified swaps.
+
+### Key Features
+- **Hidden LP Positions**: Nobody knows how much you deposited
+- **Dark Swaps**: MEV-impossible trades with Noir ZK proofs
+- **Confidential Token Launches**: Private bonding curves prevent front-running
+- **Arcium Integration**: Encrypted shared state for dark pools
+
+### Privacy Model
+| Data | Visibility |
+|------|------------|
+| Individual LP amounts | Encrypted (only owner sees) |
+| Swap amounts | ZK verified, never revealed |
+| Order parameters | Encrypted (only solver sees) |
+| Launch purchases | Encrypted (only buyer sees) |
+
+## ShadowLaunch - Privacy-First Pump.fun
+
+### Problem
+On-chain purchases on Pump.fun are fully transparent, allowing whale watchers to track your accumulation and front-run your trades.
+
+### Solution
+ShadowLaunch breaks the on-chain link between your wallet and your purchases using ephemeral wallets and shielded transfers.
+
+### Key Features
+- **Shadow Mode**: Toggle between standard and private purchases
+- **Ephemeral Wallets**: Each purchase uses a fresh wallet with no history
+- **Shielded Transfers**: Funds route through privacy pool
+- **Token Browser**: Real-time bonding curve data from Pump.fun
+
+### How Shadow Mode Works
+```
+Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
+                 ↓
+         Link broken here
+```
 
 ## Getting Started
 
@@ -386,18 +470,31 @@ We believe financial privacy is a fundamental human right. Read our full philoso
 
 > "Privacy is not about having something to hide. Privacy is about having something to protect."
 
+## Deployed Programs (Devnet)
+
+| Program | Program ID | Explorer |
+|---------|-----------|----------|
+| Confidential Swap Router | `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM` | [View](https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet) |
+| RWA Secrets Service | `DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam` | [View](https://explorer.solana.com/address/DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam?cluster=devnet) |
+| Umbra Swap | `41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr` | [View](https://explorer.solana.com/address/41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr?cluster=devnet) |
+
 ## Built For
 
-[Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Privacy Infrastructure on Solana
+- [Solana PrivacyHack 2026](https://www.colosseum.org/privacyhack) - Privacy Infrastructure on Solana
+- [FairScale Hackathon 2026](https://fairscale.xyz/) - Reputation-based applications (Umbra)
+- [Pump.fun Build In Public Hackathon 2026](https://pump.fun) - Privacy-first token purchases (ShadowLaunch)
 
 ### Bounty Eligibility
 
-| Bounty | Technology Used |
-|--------|-----------------|
-| Light Protocol | ZK compression for order payloads and metadata |
-| Privacy Cash | Shielded settlement for swap outputs |
-| Helius | RPC provider with ZK compression support |
-| Quicknode | RPC provider integration |
+| Bounty | Technology Used | Apps |
+|--------|-----------------|------|
+| Light Protocol | ZK compression for payloads and metadata | All |
+| Privacy Cash | Shielded settlement for swap outputs | Swap Router, DarkFlow |
+| Helius | RPC provider with ZK compression support | All |
+| Quicknode | RPC provider integration | ShadowLaunch, All |
+| Arcium | Encrypted shared state for dark pools | DarkFlow |
+| Aztec/Noir | ZK proofs for swap validity | DarkFlow |
+| FairScale | Reputation-gated trading | Umbra |
 
 ## License
 
@@ -415,3 +512,7 @@ Contributions are welcome! Please open an issue or submit a pull request.
 - ZK compression by [Light Protocol](https://lightprotocol.com/)
 - Shielded transfers by [Privacy Cash](https://privacycash.io/)
 - RPC infrastructure by [Helius](https://helius.dev/) and [Quicknode](https://www.quicknode.com/)
+- Reputation by [SOVEREIGN Protocol](https://github.com/psyto/sovereign) and [FairScale](https://fairscale.xyz/)
+- Token launches by [Pump.fun](https://pump.fun)
+- Encrypted state by [Arcium](https://arcium.com/)
+- ZK proofs by [Noir](https://noir-lang.org/)
