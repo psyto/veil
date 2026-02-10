@@ -18,6 +18,8 @@ import {
 } from '@confidential-swap/sdk';
 import { JupiterClient, findOptimalRoute } from './jupiter';
 import { getAssociatedTokenAddress, getAccount, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { shouldUseCompliantRouting, getCompliantQuote, type CompliantModeConfig } from './compliant-mode';
+import { TierCalculator } from '@umbra/fairscore-middleware';
 
 // In-memory registry for user encryption pubkeys
 // Key: user wallet address (base58), Value: encryption pubkey (Uint8Array)
@@ -203,15 +205,41 @@ export class ConfidentialSwapSolver {
         return result;
       }
 
-      // Step 3: Find optimal route via Jupiter
-      const route = await findOptimalRoute(
-        this.jupiterClient,
-        order.inputMint,
-        order.outputMint,
-        order.inputAmount,
-        decryptedPayload.minOutputAmount,
-        decryptedPayload.slippageBps
-      );
+      // Step 3: Find optimal route via Jupiter (or compliant route for Gold+ tiers)
+      // Check if this order should use compliant routing based on FairScore
+      const fairScore = (order as any).fairscoreAtCreation ?? 0;
+      const tierLevel = TierCalculator.getTierFromScore(fairScore);
+      const useCompliant = shouldUseCompliantRouting(tierLevel) &&
+        (this as any).compliantConfig?.whitelistedPools?.size > 0;
+
+      let route;
+      if (useCompliant) {
+        const compliantQuote = await getCompliantQuote(
+          this.jupiterClient,
+          order.inputMint,
+          order.outputMint,
+          order.inputAmount,
+          decryptedPayload.slippageBps,
+          (this as any).compliantConfig.whitelistedPools
+        );
+        if (!compliantQuote) {
+          result.error = 'No compliant route found';
+          return result;
+        }
+        route = {
+          isViable: true,
+          expectedProfit: new BN(compliantQuote.outAmount).sub(decryptedPayload.minOutputAmount),
+        };
+      } else {
+        route = await findOptimalRoute(
+          this.jupiterClient,
+          order.inputMint,
+          order.outputMint,
+          order.inputAmount,
+          decryptedPayload.minOutputAmount,
+          decryptedPayload.slippageBps
+        );
+      }
 
       if (!route.isViable) {
         result.error = 'No viable route found';

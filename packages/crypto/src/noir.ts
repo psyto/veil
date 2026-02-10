@@ -154,6 +154,12 @@ export class NoirProver {
     this.circuits.set('balance_proof', {
       name: 'balance_proof',
     });
+
+    // KYC compliance circuit — proves trader meets KYC requirements
+    // without revealing identity, exact KYC level, or jurisdiction
+    this.circuits.set('kyc_compliance', {
+      name: 'kyc_compliance',
+    });
   }
 
   /**
