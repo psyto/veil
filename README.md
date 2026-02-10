@@ -20,6 +20,7 @@ All applications share a common encryption library (`@privacy-suite/crypto`) tha
 - ZK compression via Light Protocol (~99% on-chain storage reduction)
 - Shielded transfers via Privacy Cash SDK
 - RPC provider configuration (Helius, Quicknode)
+- Noir ZK proofs (swap validity, position ownership, range proofs, KYC compliance)
 
 ## Architecture
 
@@ -65,7 +66,8 @@ veil/
 │   │   │   ├── payload.ts          # Binary payload serialization
 │   │   │   ├── zk-compression.ts   # Light Protocol ZK compression
 │   │   │   ├── shielded.ts         # Privacy Cash shielded transfers
-│   │   │   └── rpc-providers.ts    # Helius/Quicknode RPC config
+│   │   │   ├── rpc-providers.ts    # Helius/Quicknode RPC config
+│   │   │   └── noir.ts             # Noir ZK proofs (swap, range, KYC compliance)
 │   │   └── package.json
 │   └── fairscore-middleware/        # FairScore integration (@umbra/fairscore-middleware)
 ├── apps/
@@ -73,6 +75,9 @@ veil/
 │   │   ├── programs/               # Anchor smart contract
 │   │   ├── sdk/                    # TypeScript SDK
 │   │   ├── solver/                 # Jupiter-integrated solver + API
+│   │   │   └── src/
+│   │   │       ├── solver.ts       # Main solver (with compliant routing branch)
+│   │   │       └── compliant-mode.ts # Tier-gated compliance routing adapter
 │   │   └── app/                    # Next.js frontend
 │   ├── rwa-secrets-service/         # RWA secrets protocol
 │   │   ├── programs/               # Anchor smart contract
@@ -120,6 +125,9 @@ Users encrypt their order parameters (minimum output, slippage tolerance, deadli
 3. Order is submitted on-chain with input tokens locked
 4. Solver decrypts and executes via Jupiter aggregator
 5. User claims output tokens
+
+### Compliant Routing Mode
+For traders with FairScore Gold tier or above, the solver automatically routes through compliance-aware pools using Meridian's `@meridian/compliant-router`. This enables institutional traders to use encrypted swaps while staying within KYC-whitelisted pool infrastructure. The compliant routing mode is transparent to the user — the solver checks the trader's FairScore tier and selects the appropriate routing strategy.
 
 ### Solver API Endpoints
 
@@ -493,7 +501,7 @@ We believe financial privacy is a fundamental human right. Read our full philoso
 | Helius | RPC provider with ZK compression support | All |
 | Quicknode | RPC provider integration | ShadowLaunch, All |
 | Arcium | Encrypted shared state for dark pools | DarkFlow |
-| Aztec/Noir | ZK proofs for swap validity | DarkFlow |
+| Aztec/Noir | ZK proofs for swap validity and KYC compliance | DarkFlow, Swap Router |
 | FairScale | Reputation-gated trading | Umbra |
 
 ## License
