@@ -60,18 +60,6 @@ All applications share a common encryption library (`@privacy-suite/crypto`) tha
 
 ```
 veil/
-├── packages/
-│   ├── crypto/                      # Shared encryption library (@privacy-suite/crypto)
-│   │   ├── src/
-│   │   │   ├── nacl-box.ts         # NaCl box encryption/decryption
-│   │   │   ├── threshold.ts        # Shamir's Secret Sharing (M-of-N)
-│   │   │   ├── payload.ts          # Binary payload serialization
-│   │   │   ├── zk-compression.ts   # Light Protocol ZK compression
-│   │   │   ├── shielded.ts         # Privacy Cash shielded transfers
-│   │   │   ├── rpc-providers.ts    # Helius/Quicknode RPC config
-│   │   │   └── noir.ts             # Noir ZK proofs (swap, range, KYC compliance)
-│   │   └── package.json
-│   └── fairscore-middleware/        # FairScore integration (@umbra/fairscore-middleware)
 ├── apps/
 │   ├── confidential-swap-router/    # MEV-protected swap protocol
 │   │   ├── programs/               # Anchor smart contract
@@ -273,16 +261,21 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 
 ### Installation
 
+This project depends on [`veil-sdk`](https://github.com/psyto/veil-sdk), which must be cloned as a sibling directory:
+
 ```bash
-# Clone the repository
+# Clone both repos side by side
+git clone https://github.com/psyto/veil-sdk.git
 git clone https://github.com/psyto/veil.git
-cd veil
 
-# Install dependencies
+# Install and build the SDK first
+cd veil-sdk
 yarn install
-
-# Build all packages
 yarn build
+
+# Then install the project
+cd ../veil
+yarn install
 ```
 
 ### Building Anchor Programs
