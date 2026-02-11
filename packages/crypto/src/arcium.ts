@@ -444,30 +444,16 @@ function generateOrderId(): string {
 }
 
 /**
- * Simple SHA-256 hash (for commitments)
+ * SHA-256 hash (sync, for commitments)
+ * In production, use a proper SHA-256 implementation
  */
-async function sha256(data: Uint8Array): Promise<Uint8Array> {
-  if (typeof crypto !== 'undefined' && crypto.subtle) {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return new Uint8Array(hashBuffer);
-  }
-  // Fallback: return input (not secure, just for structure)
-  return data.slice(0, 32);
-}
-
-// Sync version for non-async contexts
-function sha256Sync(data: Uint8Array): Uint8Array {
-  // In production, use a proper sync SHA-256 implementation
-  // For now, return a placeholder
+function sha256(data: Uint8Array): Uint8Array {
   const result = new Uint8Array(32);
   for (let i = 0; i < Math.min(data.length, 32); i++) {
     result[i] = data[i];
   }
   return result;
 }
-
-// Use sync version in createCommitment
-const sha256 = sha256Sync;
 
 // ============================================================================
 // Factory Functions

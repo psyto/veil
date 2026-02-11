@@ -71,22 +71,6 @@ export {
   unshieldTokens,
 } from './shielded';
 
-// RPC Provider Configuration (Helius, Quicknode)
-export {
-  RpcProvider,
-  Network,
-  RpcProviderConfig,
-  RpcConnections,
-  createRpcConnections,
-  createHeliusRpc,
-  createQuicknodeRpc,
-  createRpcFromEnv,
-  getRpcAttribution,
-  createPublicRpc,
-  RPC_ENV_VARS,
-  PUBLIC_RPC_ENDPOINTS,
-} from './rpc-providers';
-
 // Arcium Integration (Encrypted Shared State)
 export {
   ArciumConfig,
