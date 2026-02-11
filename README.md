@@ -14,6 +14,8 @@ This monorepo contains five privacy-preserving applications built on Solana:
 4. **DarkFlow** - Confidential AMM with dark liquidity pools and ZK-verified swaps
 5. **ShadowLaunch** - Privacy-first token purchases on Pump.fun with ephemeral wallets
 
+> **Note:** SDK packages (`@privacy-suite/crypto`, `@privacy-suite/orders`, `@umbra/fairscore-middleware`) have been extracted to [`veil-sdk`](https://github.com/psyto/veil-sdk).
+
 All applications share a common encryption library (`@privacy-suite/crypto`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption

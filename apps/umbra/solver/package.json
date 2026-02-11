@@ -14,8 +14,8 @@
     "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.0",
     "@umbra/sdk": "*",
-    "@umbra/fairscore-middleware": "*",
-    "@privacy-suite/crypto": "*",
+    "@umbra/fairscore-middleware": "file:../../../../veil-sdk/packages/fairscore-middleware",
+    "@privacy-suite/crypto": "file:../../../../veil-sdk/packages/crypto",
     "bn.js": "^5.2.1",
     "express": "^4.18.0",
     "dotenv": "^16.0.0"

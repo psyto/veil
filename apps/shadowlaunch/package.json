@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@privacy-suite/crypto": "*",
+    "@privacy-suite/crypto": "file:../../../veil-sdk/packages/crypto",
     "@coral-xyz/anchor": "^0.30.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",

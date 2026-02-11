@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@privacy-suite/crypto": "*",
+    "@privacy-suite/crypto": "file:../../../../veil-sdk/packages/crypto",
     "@coral-xyz/anchor": "^0.30.0",
     "@solana/web3.js": "^1.95.0",
     "bn.js": "^5.2.1",

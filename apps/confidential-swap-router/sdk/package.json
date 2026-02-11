@@ -9,8 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@privacy-suite/orders": "*",
-    "@privacy-suite/crypto": "*",
+    "@privacy-suite/orders": "file:../../../../veil-sdk/packages/orders",
+    "@privacy-suite/crypto": "file:../../../../veil-sdk/packages/crypto",
     "@coral-xyz/anchor": "^0.30.0",
     "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.0",

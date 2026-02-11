@@ -4,7 +4,6 @@
   "private": true,
   "description": "Veil - Privacy-focused DeFi infrastructure for Solana",
   "workspaces": [
-    "packages/*",
     "apps/*",
     "apps/*/sdk",
     "apps/*/app",

@@ -16,7 +16,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.0",
     "@umbra/sdk": "*",
-    "@umbra/fairscore-middleware": "*",
+    "@umbra/fairscore-middleware": "file:../../../../veil-sdk/packages/fairscore-middleware",
     "next": "14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
