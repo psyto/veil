@@ -856,7 +856,7 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@privacy-suite/crypto@*", "@privacy-suite/crypto@file:/Users/hiroyusai/src/veil/packages/crypto":
+"@privacy-suite/crypto@*", "@privacy-suite/crypto@file:../crypto", "@privacy-suite/crypto@file:/Users/hiroyusai/src/veil/packages/crypto":
   version "0.2.0"
   resolved "file:packages/crypto"
   dependencies:
@@ -866,6 +866,13 @@
     privacycash "^1.1.7"
     tweetnacl "^1.0.3"
     tweetnacl-util "^0.15.1"
+
+"@privacy-suite/orders@file:/Users/hiroyusai/src/veil/packages/orders":
+  version "0.1.0"
+  resolved "file:packages/orders"
+  dependencies:
+    "@privacy-suite/crypto" "file:../crypto"
+    bn.js "^5.2.1"
 
 "@project-serum/sol-wallet-adapter@^0.2.6":
   version "0.2.6"
