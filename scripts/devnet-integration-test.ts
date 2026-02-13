@@ -25,7 +25,7 @@ async function main() {
   console.log('='.repeat(60));
   console.log('');
 
-  const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+  const connection = new Connection(process.env.RPC_URL || 'https://api.devnet.solana.com', 'confirmed');
 
   // Check balance
   const balance = await connection.getBalance(walletKeypair.publicKey);

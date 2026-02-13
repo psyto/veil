@@ -28,7 +28,7 @@ async function main() {
   console.log('='.repeat(70));
   console.log('');
 
-  const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+  const connection = new Connection(process.env.RPC_URL || 'https://api.devnet.solana.com', 'confirmed');
   let passed = 0;
   let failed = 0;
 

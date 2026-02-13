@@ -12,7 +12,7 @@ describe('Solver API', () => {
   before(() => {
     // Create a mock solver with test keypair
     const testKeypair = Keypair.generate();
-    const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+    const connection = new Connection(process.env.RPC_URL || 'https://api.devnet.solana.com', 'confirmed');
 
     const config: SolverConfig = {
       connection,
