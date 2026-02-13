@@ -68,7 +68,7 @@ pub fn add_liquidity_encrypted(
         commitment,
         nullifier,
         bump,
-    );
+    )?;
 
     // Update pool state
     pool.increment_position_count();

@@ -57,7 +57,7 @@ pub fn buy_from_launch(
     let launch = &mut ctx.accounts.launch;
 
     // Validate launch is active
-    require!(launch.is_active(), DarkFlowError::LaunchNotActive);
+    require!(launch.is_active()?, DarkFlowError::LaunchNotActive);
 
     // Validate payment
     require!(payment_amount > 0, DarkFlowError::InvalidAmount);

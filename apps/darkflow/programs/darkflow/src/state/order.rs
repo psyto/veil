@@ -78,8 +78,8 @@ impl DarkOrder {
         input_amount: u64,
         deadline: i64,
         bump: u8,
-    ) -> Self {
-        Self {
+    ) -> Result<Self> {
+        Ok(Self {
             maker,
             pool,
             input_mint,
@@ -92,28 +92,29 @@ impl DarkOrder {
             executed_by: None,
             executed_at: None,
             encrypted_output: Vec::new(),
-            created_at: Clock::get().unwrap().unix_timestamp,
+            created_at: Clock::get()?.unix_timestamp,
             bump,
-        }
+        })
     }
 
     /// Check if order is expired
-    pub fn is_expired(&self) -> bool {
-        let now = Clock::get().unwrap().unix_timestamp;
-        now > self.deadline
+    pub fn is_expired(&self) -> Result<bool> {
+        let now = Clock::get()?.unix_timestamp;
+        Ok(now > self.deadline)
     }
 
     /// Check if order can be executed
-    pub fn can_execute(&self) -> bool {
-        self.status == OrderStatus::Pending && !self.is_expired()
+    pub fn can_execute(&self) -> Result<bool> {
+        Ok(self.status == OrderStatus::Pending && !self.is_expired()?)
     }
 
     /// Mark order as filled
-    pub fn fill(&mut self, solver: Pubkey, encrypted_output: Vec<u8>) {
+    pub fn fill(&mut self, solver: Pubkey, encrypted_output: Vec<u8>) -> Result<()> {
         self.status = OrderStatus::Filled;
         self.executed_by = Some(solver);
-        self.executed_at = Some(Clock::get().unwrap().unix_timestamp);
+        self.executed_at = Some(Clock::get()?.unix_timestamp);
         self.encrypted_output = encrypted_output;
+        Ok(())
     }
 
     /// Mark order as cancelled

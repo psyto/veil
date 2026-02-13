@@ -47,9 +47,9 @@ impl EncryptedPosition {
         commitment: [u8; 32],
         nullifier: [u8; 32],
         bump: u8,
-    ) -> Self {
-        let now = Clock::get().unwrap().unix_timestamp;
-        Self {
+    ) -> Result<Self> {
+        let now = Clock::get()?.unix_timestamp;
+        Ok(Self {
             owner,
             pool,
             encrypted_data,
@@ -59,19 +59,21 @@ impl EncryptedPosition {
             updated_at: now,
             is_active: true,
             bump,
-        }
+        })
     }
 
     /// Mark position as withdrawn
-    pub fn deactivate(&mut self) {
+    pub fn deactivate(&mut self) -> Result<()> {
         self.is_active = false;
-        self.updated_at = Clock::get().unwrap().unix_timestamp;
+        self.updated_at = Clock::get()?.unix_timestamp;
+        Ok(())
     }
 
     /// Update encrypted data (for partial withdrawals)
-    pub fn update_encrypted_data(&mut self, new_data: Vec<u8>, new_commitment: [u8; 32]) {
+    pub fn update_encrypted_data(&mut self, new_data: Vec<u8>, new_commitment: [u8; 32]) -> Result<()> {
         self.encrypted_data = new_data;
         self.commitment = new_commitment;
-        self.updated_at = Clock::get().unwrap().unix_timestamp;
+        self.updated_at = Clock::get()?.unix_timestamp;
+        Ok(())
     }
 }

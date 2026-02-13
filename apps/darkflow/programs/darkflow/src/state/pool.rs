@@ -72,9 +72,10 @@ pub struct PoolAggregates {
 
 impl DarkPool {
     /// Update the state commitment after position changes
-    pub fn update_state_commitment(&mut self, new_commitment: [u8; 32]) {
+    pub fn update_state_commitment(&mut self, new_commitment: [u8; 32]) -> Result<()> {
         self.state_commitment = new_commitment;
-        self.last_update = Clock::get().unwrap().unix_timestamp;
+        self.last_update = Clock::get()?.unix_timestamp;
+        Ok(())
     }
 
     /// Increment position count

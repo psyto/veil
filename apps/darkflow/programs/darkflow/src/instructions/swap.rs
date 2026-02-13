@@ -102,7 +102,7 @@ pub fn submit_dark_order(
         input_amount,
         deadline,
         bump,
-    );
+    )?;
 
     // Update pool order count
     pool.increment_order_count();
@@ -127,7 +127,7 @@ pub fn execute_dark_order(
     require!(pool.is_active, DarkFlowError::PoolNotActive);
 
     // Validate order can be executed
-    require!(order.can_execute(), DarkFlowError::OrderNotPending);
+    require!(order.can_execute()?, DarkFlowError::OrderNotPending);
 
     // Validate execution proof
     require!(
@@ -178,7 +178,7 @@ pub fn execute_dark_order(
     let encrypted_output = encrypt_for_maker(output_amount, &order.maker);
 
     // Mark order as filled
-    order.fill(ctx.accounts.solver.key(), encrypted_output);
+    order.fill(ctx.accounts.solver.key(), encrypted_output)?;
 
     // Update volume
     pool.add_volume(input_amount, output_amount);

@@ -75,24 +75,24 @@ pub struct ConfidentialLaunch {
 
 impl ConfidentialLaunch {
     /// Check if launch is active
-    pub fn is_active(&self) -> bool {
+    pub fn is_active(&self) -> Result<bool> {
         if self.status != LaunchStatus::Active {
-            return false;
+            return Ok(false);
         }
 
-        let now = Clock::get().unwrap().unix_timestamp;
+        let now = Clock::get()?.unix_timestamp;
 
         // Check if started
         if now < self.start_time {
-            return false;
+            return Ok(false);
         }
 
         // Check if ended
         if self.end_time > 0 && now > self.end_time {
-            return false;
+            return Ok(false);
         }
 
-        true
+        Ok(true)
     }
 
     /// Record a purchase
