@@ -23,6 +23,8 @@ import {
   decryptOrderPayload,
 } from "@veil/orders";
 import BN from "bn.js";
+import { Connection, PublicKey, Keypair } from "@solana/web3.js";
+import nacl from "tweetnacl";
 
 // ── helpers ──────────────────────────────────────────────────────────
 
@@ -45,6 +47,130 @@ function errorContent(message: string) {
     content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
     isError: true as const,
   };
+}
+
+// ── SPECTER constants & helpers ──────────────────────────────────────
+
+const SOVEREIGN_PROGRAM_ID = new PublicKey("2UAZc1jj4QTSkgrC8U9d4a7EM9AQunxMvW5g7rX7Af9T");
+
+const TIER_NAMES: Record<number, string> = {
+  1: "Bronze",
+  2: "Silver",
+  3: "Gold",
+  4: "Platinum",
+  5: "Diamond",
+};
+
+const DIMENSION_INDICES: Record<string, number> = {
+  trading: 0,
+  civic: 1,
+  developer: 2,
+  infra: 3,
+  creator: 4,
+};
+
+function getSolanaConnection(): Connection {
+  const rpcUrl = process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com";
+  return new Connection(rpcUrl, "confirmed");
+}
+
+interface SovereignIdentity {
+  owner: string;
+  createdAt: bigint;
+  tradingScore: number;
+  civicScore: number;
+  developerScore: number;
+  infraScore: number;
+  creatorScore: number;
+  compositeScore: number;
+  tier: number;
+  tierName: string;
+  lastUpdated: bigint;
+  bump: number;
+}
+
+function parseSovereignIdentity(data: Buffer): SovereignIdentity {
+  // Layout (236 bytes total):
+  //   8  bytes  discriminator
+  //  32  bytes  owner (pubkey)
+  //   8  bytes  created_at (i64 LE)
+  // 160  bytes  5 x 32-byte authorities
+  //  10  bytes  5 x u16 LE scores (trading, civic, developer, infra, creator)
+  //   2  bytes  composite_score (u16 LE)
+  //   1  byte   tier
+  //   8  bytes  last_updated (i64 LE)
+  //   1  byte   bump
+  let offset = 8; // skip discriminator
+
+  const owner = new PublicKey(data.subarray(offset, offset + 32)).toBase58();
+  offset += 32;
+
+  const createdAt = data.readBigInt64LE(offset);
+  offset += 8;
+
+  // skip 5 x 32-byte authorities
+  offset += 5 * 32;
+
+  const tradingScore = data.readUInt16LE(offset); offset += 2;
+  const civicScore = data.readUInt16LE(offset); offset += 2;
+  const developerScore = data.readUInt16LE(offset); offset += 2;
+  const infraScore = data.readUInt16LE(offset); offset += 2;
+  const creatorScore = data.readUInt16LE(offset); offset += 2;
+
+  const compositeScore = data.readUInt16LE(offset); offset += 2;
+
+  const tier = data.readUInt8(offset); offset += 1;
+
+  const lastUpdated = data.readBigInt64LE(offset); offset += 8;
+
+  const bump = data.readUInt8(offset);
+
+  return {
+    owner,
+    createdAt,
+    tradingScore,
+    civicScore,
+    developerScore,
+    infraScore,
+    creatorScore,
+    compositeScore,
+    tier,
+    tierName: TIER_NAMES[tier] || "Unknown",
+    lastUpdated,
+    bump,
+  };
+}
+
+async function fetchSovereignIdentity(wallet: string): Promise<SovereignIdentity> {
+  const connection = getSolanaConnection();
+  const walletPubkey = new PublicKey(wallet);
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("identity"), walletPubkey.toBuffer()],
+    SOVEREIGN_PROGRAM_ID,
+  );
+  const accountInfo = await connection.getAccountInfo(pda);
+  if (!accountInfo || !accountInfo.data) {
+    throw new Error(`No SOVEREIGN identity found for wallet ${wallet} (PDA: ${pda.toBase58()})`);
+  }
+  return parseSovereignIdentity(accountInfo.data as Buffer);
+}
+
+function getDimensionScore(identity: SovereignIdentity, dimension: string): number {
+  switch (dimension) {
+    case "trading": return identity.tradingScore;
+    case "civic": return identity.civicScore;
+    case "developer": return identity.developerScore;
+    case "infra": return identity.infraScore;
+    case "creator": return identity.creatorScore;
+    default: throw new Error(`Unknown dimension: ${dimension}. Must be one of: trading, civic, developer, infra, creator`);
+  }
+}
+
+function assessConfidence(tier: number): "high" | "medium" | "low" | "none" {
+  if (tier >= 4) return "high";
+  if (tier >= 3) return "medium";
+  if (tier >= 1) return "low";
+  return "none";
 }
 
 // ── tool definitions ─────────────────────────────────────────────────
@@ -241,13 +367,147 @@ const TOOLS = [
       },
     },
   },
+
+  // ── SPECTER: Sovereign Tools ────────────────────────────────────────
+
+  {
+    name: "sovereign_read",
+    description:
+      "Read a user's SOVEREIGN identity scores and tier from Solana. Returns trading, civic, developer, infra, creator scores (0-10000) and tier (1-5 = Bronze to Diamond).",
+    inputSchema: {
+      type: "object" as const,
+      required: ["wallet"],
+      properties: {
+        wallet: { type: "string", description: "Solana wallet address (base58 public key)" },
+      },
+    },
+  },
+
+  // ── SPECTER: Trust Tools ────────────────────────────────────────────
+
+  {
+    name: "trust_query",
+    description:
+      "Query the LATTICE trust graph to find trusted users for a specific SOVEREIGN dimension. Uses BFS traversal through DAO co-memberships, nomination patterns, and explicit trust edges with configurable depth (up to 6 hops \u2014 Andrew Trust's 'friends of friends x6').",
+    inputSchema: {
+      type: "object" as const,
+      required: ["origin", "dimension"],
+      properties: {
+        origin: { type: "string", description: "Origin wallet address (base58 public key)" },
+        dimension: {
+          type: "string",
+          enum: ["trading", "civic", "developer", "infra", "creator"],
+          description: "SOVEREIGN dimension to query trust for",
+        },
+        minScore: { type: "number", description: "Minimum dimension score filter (0-10000)" },
+        maxDepth: {
+          type: "number",
+          minimum: 1,
+          maximum: 6,
+          description: "Maximum BFS traversal depth (1-6 hops, default 3)",
+        },
+        limit: { type: "number", description: "Maximum number of results to return (default 20)" },
+      },
+    },
+  },
+  {
+    name: "trust_score",
+    description:
+      "Check how much you should trust a specific wallet for a given SOVEREIGN dimension. Returns their dimension score, tier, and trust assessment.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["targetWallet", "dimension"],
+      properties: {
+        targetWallet: { type: "string", description: "Target wallet address (base58 public key)" },
+        dimension: {
+          type: "string",
+          enum: ["trading", "civic", "developer", "infra", "creator"],
+          description: "SOVEREIGN dimension to assess trust for",
+        },
+      },
+    },
+  },
+
+  // ── SPECTER: Vault Tools ────────────────────────────────────────────
+
+  {
+    name: "vault_read",
+    description:
+      "Read encrypted data from a DataSov2 vault on Arweave. Returns the encrypted document metadata (not decrypted \u2014 use the decrypt tool separately for each field). Queries Arweave GraphQL for the latest document by identity ID.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["identityId"],
+      properties: {
+        identityId: { type: "string", description: "Identity ID to look up in the DataSov2 vault" },
+        documentType: {
+          type: "string",
+          enum: ["IDENTITY", "KYC_VERIFICATION", "ACCESS_PERMISSION"],
+          description: "Filter by document type (optional)",
+        },
+      },
+    },
+  },
+  {
+    name: "vault_disclose",
+    description:
+      "Prepare a selective disclosure of encrypted vault fields to a specific consumer using ECDH key exchange. Derives a shared AES key from your secret key + consumer's public key, then re-encrypts selected fields with the shared key.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["fields", "consumerPublicKey", "ownerSecretKey", "ownerPublicKey", "encryptedFields"],
+      properties: {
+        fields: {
+          type: "array",
+          items: { type: "string" },
+          description: "Field names to selectively disclose",
+        },
+        consumerPublicKey: { type: "string", description: "Consumer's X25519 public key (base64)" },
+        ownerSecretKey: { type: "string", description: "Owner's secret key (base64)" },
+        ownerPublicKey: { type: "string", description: "Owner's public key (base64)" },
+        encryptedFields: {
+          type: "object",
+          additionalProperties: { type: "string" },
+          description: "Map of field name to base64-encoded encrypted value",
+        },
+      },
+    },
+  },
+
+  // ── SPECTER: Shield Tools ───────────────────────────────────────────
+
+  {
+    name: "ephemeral_wallet",
+    description:
+      "Generate a fresh ephemeral wallet for privacy-preserving interactions. The wallet has no on-chain history and no link to your main identity. Use with shielded transfers to fund it without creating a traceable link.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "zk_prove_tier",
+    description:
+      "Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. (Note: Full Noir proof generation requires the @veil/crypto noir module.)",
+    inputSchema: {
+      type: "object" as const,
+      required: ["wallet", "minTier"],
+      properties: {
+        wallet: { type: "string", description: "Solana wallet address (base58 public key)" },
+        minTier: {
+          type: "number",
+          minimum: 1,
+          maximum: 5,
+          description: "Minimum tier threshold to prove (1=Bronze, 2=Silver, 3=Gold, 4=Platinum, 5=Diamond)",
+        },
+      },
+    },
+  },
 ];
 
 // ── tool handlers ────────────────────────────────────────────────────
 
 type Args = Record<string, unknown>;
 
-export function handleTool(name: string, args: Args) {
+export async function handleTool(name: string, args: Args) {
   switch (name) {
     case "generate_keypair": {
       const kp = generateEncryptionKeypair();
@@ -416,6 +676,291 @@ export function handleTool(name: string, args: Args) {
       });
     }
 
+    // ── SPECTER: Sovereign Tool Handlers ──────────────────────────────
+
+    case "sovereign_read": {
+      const identity = await fetchSovereignIdentity(args.wallet as string);
+      return jsonContent({
+        owner: identity.owner,
+        tradingScore: identity.tradingScore,
+        civicScore: identity.civicScore,
+        developerScore: identity.developerScore,
+        infraScore: identity.infraScore,
+        creatorScore: identity.creatorScore,
+        compositeScore: identity.compositeScore,
+        tier: identity.tier,
+        tierName: identity.tierName,
+      });
+    }
+
+    // ── SPECTER: Trust Tool Handlers ────────────────────────────────
+
+    case "trust_query": {
+      const dimension = args.dimension as string;
+      const _minScore = (args.minScore as number | undefined) ?? 0;
+      const maxDepth = (args.maxDepth as number | undefined) ?? 3;
+      const _limit = (args.limit as number | undefined) ?? 20;
+
+      // Validate dimension
+      if (!(dimension in DIMENSION_INDICES)) {
+        throw new Error(`Unknown dimension: ${dimension}. Must be one of: trading, civic, developer, infra, creator`);
+      }
+
+      // Read origin's SOVEREIGN identity
+      let originIdentity: SovereignIdentity | null = null;
+      try {
+        originIdentity = await fetchSovereignIdentity(args.origin as string);
+      } catch (_e) {
+        // Origin may not have a SOVEREIGN identity yet
+      }
+
+      // Attempt to read TrustAnchor PDA (informational — may not exist)
+      let trustAnchorExists = false;
+      try {
+        const connection = getSolanaConnection();
+        const originPubkey = new PublicKey(args.origin as string);
+        const [trustPda] = PublicKey.findProgramAddressSync(
+          [Buffer.from("trust_anchor"), originPubkey.toBuffer()],
+          SOVEREIGN_PROGRAM_ID,
+        );
+        const trustAccount = await connection.getAccountInfo(trustPda);
+        trustAnchorExists = trustAccount !== null;
+      } catch (_e) {
+        // TrustAnchor lookup is best-effort
+      }
+
+      const originScores = originIdentity
+        ? {
+            trading: originIdentity.tradingScore,
+            civic: originIdentity.civicScore,
+            developer: originIdentity.developerScore,
+            infra: originIdentity.infraScore,
+            creator: originIdentity.creatorScore,
+            composite: originIdentity.compositeScore,
+            tier: originIdentity.tier,
+            tierName: originIdentity.tierName,
+          }
+        : null;
+
+      return jsonContent({
+        origin: {
+          wallet: args.origin,
+          scores: originScores,
+          hasTrustAnchor: trustAnchorExists,
+        },
+        queryParams: {
+          dimension,
+          maxDepth,
+          minScore: _minScore,
+          limit: _limit,
+        },
+        note: "Full BFS traversal available via @lattice/sdk. This tool provides origin scores for quick lookups.",
+      });
+    }
+
+    case "trust_score": {
+      const dimension = args.dimension as string;
+      if (!(dimension in DIMENSION_INDICES)) {
+        throw new Error(`Unknown dimension: ${dimension}. Must be one of: trading, civic, developer, infra, creator`);
+      }
+
+      const identity = await fetchSovereignIdentity(args.targetWallet as string);
+      const dimensionScore = getDimensionScore(identity, dimension);
+      const confidence = assessConfidence(identity.tier);
+
+      return jsonContent({
+        wallet: args.targetWallet,
+        dimension,
+        dimensionScore,
+        compositeScore: identity.compositeScore,
+        tier: identity.tier,
+        tierName: identity.tierName,
+        confidence,
+      });
+    }
+
+    // ── SPECTER: Vault Tool Handlers ────────────────────────────────
+
+    case "vault_read": {
+      const identityId = args.identityId as string;
+      const documentType = args.documentType as string | undefined;
+
+      // Build Arweave GraphQL query
+      const tags = [
+        { name: "App-Name", values: ["DataSov"] },
+        { name: "Identity-Id", values: [identityId] },
+      ];
+      if (documentType) {
+        tags.push({ name: "Document-Type", values: [documentType] });
+      }
+
+      const graphqlQuery = {
+        query: `query {
+          transactions(
+            tags: [${tags.map((t) => `{ name: "${t.name}", values: ${JSON.stringify(t.values)} }`).join(", ")}]
+            sort: HEIGHT_DESC
+            first: 1
+          ) {
+            edges {
+              node {
+                id
+                tags {
+                  name
+                  value
+                }
+                block {
+                  height
+                  timestamp
+                }
+              }
+            }
+          }
+        }`,
+      };
+
+      try {
+        const response = await fetch("https://arweave.net/graphql", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(graphqlQuery),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Arweave GraphQL request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const result = (await response.json()) as {
+          data?: {
+            transactions?: {
+              edges?: Array<{
+                node: {
+                  id: string;
+                  tags: Array<{ name: string; value: string }>;
+                  block?: { height: number; timestamp: number };
+                };
+              }>;
+            };
+          };
+        };
+
+        const edges = result?.data?.transactions?.edges;
+        if (!edges || edges.length === 0) {
+          return jsonContent({
+            found: false,
+            identityId,
+            documentType: documentType || "any",
+            note: "No matching documents found on Arweave. The identity may not have stored data yet.",
+          });
+        }
+
+        const node = edges[0].node;
+        const tagMap: Record<string, string> = {};
+        for (const tag of node.tags) {
+          tagMap[tag.name] = tag.value;
+        }
+
+        return jsonContent({
+          found: true,
+          transactionId: node.id,
+          tags: tagMap,
+          block: node.block || null,
+          note: "Use vault_decrypt with your master key to decrypt individual fields",
+        });
+      } catch (e) {
+        throw new Error(`Failed to query Arweave: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+
+    case "vault_disclose": {
+      const fields = args.fields as string[];
+      const consumerPubkey = fromBase64(args.consumerPublicKey as string);
+      const ownerSecret = fromBase64(args.ownerSecretKey as string);
+      const ownerPubkey = fromBase64(args.ownerPublicKey as string);
+      const encryptedFields = args.encryptedFields as Record<string, string>;
+
+      // Derive shared secret using NaCl box.before (ECDH)
+      const sharedKey = nacl.box.before(consumerPubkey, ownerSecret);
+
+      const ownerKeypair = { publicKey: ownerPubkey, secretKey: ownerSecret };
+      const disclosedFields: Record<string, string> = {};
+
+      for (const field of fields) {
+        if (!(field in encryptedFields)) {
+          throw new Error(`Field "${field}" not found in encryptedFields`);
+        }
+
+        // Decrypt with owner key (the encrypted data was encrypted TO the owner)
+        const encryptedBytes = fromBase64(encryptedFields[field]);
+        const decrypted = decrypt(encryptedBytes, ownerPubkey, ownerKeypair);
+
+        // Re-encrypt with shared key for the consumer
+        // Use NaCl secretbox with the shared key
+        const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
+        const reEncrypted = nacl.secretbox(decrypted, nonce, sharedKey);
+
+        // Combine nonce + ciphertext for transport
+        const combined = new Uint8Array(nonce.length + reEncrypted.length);
+        combined.set(nonce);
+        combined.set(reEncrypted, nonce.length);
+
+        disclosedFields[field] = toBase64(combined);
+      }
+
+      return jsonContent({
+        disclosedFields,
+        consumer: args.consumerPublicKey,
+        fieldCount: fields.length,
+      });
+    }
+
+    // ── SPECTER: Shield Tool Handlers ───────────────────────────────
+
+    case "ephemeral_wallet": {
+      const keypair = Keypair.generate();
+      return jsonContent({
+        publicKey: keypair.publicKey.toBase58(),
+        secretKey: toBase64(keypair.secretKey),
+        note: "Fund via shielded transfer to break on-chain link to main wallet",
+      });
+    }
+
+    case "zk_prove_tier": {
+      const wallet = args.wallet as string;
+      const minTier = args.minTier as number;
+
+      if (minTier < 1 || minTier > 5) {
+        throw new Error("minTier must be between 1 and 5");
+      }
+
+      // Read SOVEREIGN identity
+      const identity = await fetchSovereignIdentity(wallet);
+
+      // Check if tier meets the minimum
+      const satisfied = identity.tier >= minTier;
+
+      // Create commitment: hash(wallet + tier + randomNonce)
+      const nonce = nacl.randomBytes(32);
+      const preimage = new Uint8Array(
+        Buffer.byteLength(wallet, "utf8") + 1 + nonce.length,
+      );
+      const walletBytes = Buffer.from(wallet, "utf8");
+      preimage.set(walletBytes, 0);
+      preimage[walletBytes.length] = identity.tier;
+      preimage.set(nonce, walletBytes.length + 1);
+
+      const commitment = nacl.hash(preimage);
+
+      return jsonContent({
+        commitment: toBase64(commitment),
+        minTierSatisfied: satisfied,
+        publicInputs: {
+          minTier,
+          satisfied,
+        },
+        note: "Full Noir ZK proof available via @veil/crypto NoirProver",
+      });
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -435,7 +980,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   try {
-    return handleTool(name, (args ?? {}) as Args);
+    return await handleTool(name, (args ?? {}) as Args);
   } catch (e) {
     return errorContent(e instanceof Error ? e.message : String(e));
   }

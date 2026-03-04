@@ -26,8 +26,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@solana/web3.js": "^1.95.0",
     "@veil/crypto": "file:../crypto",
     "@veil/orders": "file:../orders",
+    "tweetnacl": "^1.0.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {
