@@ -1,7 +1,7 @@
 {
   "name": "@veil/qn-addon",
   "version": "0.1.0",
-  "description": "QuickNode Marketplace REST Add-On wrapping Veil privacy primitives",
+  "description": "QuickNode Marketplace REST Add-On wrapping Veil chain-agnostic privacy primitives with optional Solana-specific extensions",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

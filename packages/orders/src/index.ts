@@ -10,11 +10,20 @@ import {
 import BN from 'bn.js';
 
 /**
+ * Supported address formats for chain-agnostic order payloads.
+ * - 'base58': Solana, Bitcoin, and other base58-encoded addresses
+ * - 'hex': EVM-compatible 0x-prefixed hex addresses (Ethereum, Polygon, Arbitrum, etc.)
+ * - 'bytes': Raw 32-byte public key (chain-agnostic default)
+ */
+export type AddressFormat = 'base58' | 'hex' | 'bytes';
+
+/**
  * Order payload structure to be encrypted.
+ * Chain-agnostic — works with any DEX swap order, not just Solana.
  * Contains sensitive order details that should not be visible to MEV searchers.
  */
 export interface OrderPayload {
-  /** Minimum output amount the user expects */
+  /** Minimum output amount the user expects (in smallest token unit) */
   minOutputAmount: BN;
   /** Slippage tolerance in basis points (e.g., 50 = 0.5%) */
   slippageBps: number;
@@ -61,10 +70,11 @@ export function deserializeOrderPayload(bytes: Uint8Array): OrderPayload {
 }
 
 /**
- * Encrypt an order payload using NaCl box
+ * Encrypt an order payload using NaCl box.
+ * Chain-agnostic — works with any DEX or exchange that uses encrypted order flow.
  *
  * @param payload - The order payload to encrypt
- * @param solverPublicKey - The solver's X25519 public key (32 bytes)
+ * @param solverPublicKey - The solver/relayer's X25519 public key (32 bytes)
  * @param userKeypair - The user's encryption keypair
  * @returns Encrypted payload with nonce
  */
@@ -83,11 +93,12 @@ export function encryptOrderPayload(
 }
 
 /**
- * Decrypt an order payload using NaCl box
+ * Decrypt an order payload using NaCl box.
+ * Chain-agnostic — works with any DEX or exchange that uses encrypted order flow.
  *
- * @param encryptedBytes - The combined nonce + ciphertext from on-chain
+ * @param encryptedBytes - The combined nonce + ciphertext (from on-chain or off-chain transport)
  * @param userPublicKey - The user's X25519 public key (32 bytes)
- * @param solverKeypair - The solver's encryption keypair
+ * @param solverKeypair - The solver/relayer's encryption keypair
  * @returns Decrypted order payload
  */
 export function decryptOrderPayload(
@@ -100,8 +111,9 @@ export function decryptOrderPayload(
 }
 
 /**
- * Create an encrypted order payload ready for on-chain submission.
- * Convenience function that handles all encryption steps.
+ * Create an encrypted order payload ready for submission.
+ * Chain-agnostic convenience function that handles all encryption steps.
+ * Works with Solana, EVM chains, or any blockchain using encrypted order flow.
  */
 export function createEncryptedOrder(
   minOutputAmount: BN | number | string,
@@ -139,11 +151,41 @@ export function getEncryptionPublicKey(keypair: EncryptionKeypair): Uint8Array {
   return keypair.publicKey;
 }
 
-// Re-export commonly needed crypto types
+// Re-export commonly needed crypto types and address conversion utilities
 export type { EncryptionKeypair } from '@veil/crypto';
 export {
   generateEncryptionKeypair,
   deriveEncryptionKeypair,
+  // Base58 address conversion (Solana, Bitcoin, etc.)
   encryptionKeyToBase58,
   base58ToEncryptionKey,
+  // EVM hex address conversion (Ethereum, Polygon, Arbitrum, etc.)
+  encryptionKeyToHex,
+  hexToEncryptionKey,
 } from '@veil/crypto';
+
+/**
+ * Detect the address format of a string.
+ * Returns 'hex' for 0x-prefixed strings, 'base58' otherwise.
+ */
+export function detectAddressFormat(address: string): AddressFormat {
+  if (address.startsWith('0x') || address.startsWith('0X')) {
+    return 'hex';
+  }
+  return 'base58';
+}
+
+/**
+ * Convert an address string to raw bytes, auto-detecting the format.
+ * Supports both EVM hex (0x...) and base58 (Solana/Bitcoin) addresses.
+ */
+export function addressToBytes(address: string): Uint8Array {
+  const format = detectAddressFormat(address);
+  if (format === 'hex') {
+    const cleaned = address.slice(2);
+    return new Uint8Array(Buffer.from(cleaned, 'hex'));
+  }
+  // base58
+  const { base58ToEncryptionKey: fromBase58 } = require('@veil/crypto');
+  return fromBase58(address);
+}

@@ -14,6 +14,8 @@ import {
   validateEncryptedData,
   encryptionKeyToBase58,
   base58ToEncryptionKey,
+  encryptionKeyToHex,
+  hexToEncryptionKey,
   splitSecret,
   combineShares,
   verifyShares,
@@ -176,10 +178,13 @@ function assessConfidence(tier: number): "high" | "medium" | "low" | "none" {
 // ── tool definitions ─────────────────────────────────────────────────
 
 const TOOLS = [
+  // ── Chain-Agnostic Tools ────────────────────────────────────────────
+  // These tools use pure cryptographic primitives and work on any blockchain.
+
   {
     name: "generate_keypair",
     description:
-      "Generate a new random NaCl Box (Curve25519-XSalsa20-Poly1305) encryption keypair. Returns publicKey and secretKey as base64.",
+      "[Chain-agnostic] Generate a new random NaCl Box (Curve25519-XSalsa20-Poly1305) encryption keypair. Returns publicKey and secretKey as base64. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       properties: {},
@@ -188,7 +193,7 @@ const TOOLS = [
   {
     name: "derive_keypair",
     description:
-      "Derive a deterministic NaCl Box keypair from a 32-byte seed (base64). Same seed always produces the same keypair.",
+      "[Chain-agnostic] Derive a deterministic NaCl Box keypair from a 32-byte seed (base64). Same seed always produces the same keypair. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["seed"],
@@ -200,7 +205,7 @@ const TOOLS = [
   {
     name: "encrypt",
     description:
-      "Encrypt a message using NaCl Box (Curve25519-XSalsa20-Poly1305). Returns nonce, ciphertext, and combined bytes — all base64-encoded.",
+      "[Chain-agnostic] Encrypt a message using NaCl Box (Curve25519-XSalsa20-Poly1305). Returns nonce, ciphertext, and combined bytes — all base64-encoded. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["message", "recipientPublicKey", "senderSecretKey", "senderPublicKey"],
@@ -215,7 +220,7 @@ const TOOLS = [
   {
     name: "decrypt",
     description:
-      "Decrypt NaCl Box ciphertext. Input is the combined nonce+ciphertext bytes (base64). Returns the decrypted plaintext as base64.",
+      "[Chain-agnostic] Decrypt NaCl Box ciphertext. Input is the combined nonce+ciphertext bytes (base64). Returns the decrypted plaintext as base64. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["encrypted", "senderPublicKey", "recipientSecretKey", "recipientPublicKey"],
@@ -230,7 +235,7 @@ const TOOLS = [
   {
     name: "encrypt_multiple",
     description:
-      "Encrypt the same message for multiple recipients. Each recipient gets a unique encrypted copy. Returns a map keyed by recipient public key (hex).",
+      "[Chain-agnostic] Encrypt the same message for multiple recipients. Each recipient gets a unique encrypted copy. Returns a map keyed by recipient public key (hex). Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["message", "recipientPublicKeys", "senderSecretKey", "senderPublicKey"],
@@ -249,7 +254,7 @@ const TOOLS = [
   {
     name: "validate_encrypted",
     description:
-      "Validate that encrypted bytes have the correct NaCl Box structure (nonce + ciphertext) without decrypting. Useful as a pre-flight check.",
+      "[Chain-agnostic] Validate that encrypted bytes have the correct NaCl Box structure (nonce + ciphertext) without decrypting. Useful as a pre-flight check. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["data"],
@@ -263,19 +268,20 @@ const TOOLS = [
   {
     name: "key_convert",
     description:
-      "Convert an encryption public key between raw bytes (base64) and Solana base58 format. Provide either publicKey or base58 and get both formats back.",
+      "[Chain-agnostic] Convert an encryption public key between raw bytes (base64), base58 (Solana/Bitcoin), and hex (EVM/Ethereum) formats. Provide publicKey, base58, or hex and get all formats back.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        publicKey: { type: "string", description: "Public key as base64 (will be converted to base58)" },
-        base58: { type: "string", description: "Public key as Solana base58 (will be converted to raw bytes)" },
+        publicKey: { type: "string", description: "Public key as base64 (will be converted to base58 and hex)" },
+        base58: { type: "string", description: "Public key as base58 (will be converted to raw bytes and hex)" },
+        hex: { type: "string", description: "Public key as hex string, with or without 0x prefix (will be converted to raw bytes and base58)" },
       },
     },
   },
   {
     name: "shamir_split",
     description:
-      "Split a 32-byte secret into N shares using Shamir's Secret Sharing over a 256-bit prime field. Any M (threshold) shares can reconstruct the original.",
+      "[Chain-agnostic] Split a 32-byte secret into N shares using Shamir's Secret Sharing over a 256-bit prime field. Any M (threshold) shares can reconstruct the original. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["secret", "totalShares", "threshold"],
@@ -289,7 +295,7 @@ const TOOLS = [
   {
     name: "shamir_combine",
     description:
-      "Reconstruct a secret from Shamir threshold shares using Lagrange interpolation. Requires at least the threshold number of valid shares.",
+      "[Chain-agnostic] Reconstruct a secret from Shamir threshold shares using Lagrange interpolation. Requires at least the threshold number of valid shares. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["shares"],
@@ -313,7 +319,7 @@ const TOOLS = [
   {
     name: "shamir_verify",
     description:
-      "Verify that a set of Shamir shares are consistent by reconstructing with different subsets and checking they produce the same secret.",
+      "[Chain-agnostic] Verify that a set of Shamir shares are consistent by reconstructing with different subsets and checking they produce the same secret. Works with any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["shares", "threshold"],
@@ -338,12 +344,12 @@ const TOOLS = [
   {
     name: "encrypt_order",
     description:
-      "Encrypt a DEX swap order payload (minOutputAmount, slippageBps, deadline) using NaCl Box. Protects order parameters from MEV bots.",
+      "[Chain-agnostic] Encrypt a DEX swap order payload (minOutputAmount, slippageBps, deadline) using NaCl Box. Protects order parameters from MEV bots on any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["minOutputAmount", "slippageBps", "deadline", "solverPublicKey", "userSecretKey", "userPublicKey"],
       properties: {
-        minOutputAmount: { type: "string", description: "Minimum output amount in lamports/smallest unit (string)" },
+        minOutputAmount: { type: "string", description: "Minimum output amount in smallest token unit (string)" },
         slippageBps: { type: "number", description: "Slippage tolerance in basis points (e.g. 50 = 0.5%)" },
         deadline: { type: "number", description: "Order expiration as Unix timestamp in seconds" },
         solverPublicKey: { type: "string", description: "Solver's X25519 public key (base64)" },
@@ -355,7 +361,7 @@ const TOOLS = [
   {
     name: "decrypt_order",
     description:
-      "Decrypt an encrypted DEX swap order payload. Returns the original order fields: minOutputAmount, slippageBps, deadline.",
+      "[Chain-agnostic] Decrypt an encrypted DEX swap order payload. Returns the original order fields: minOutputAmount, slippageBps, deadline. Works on any blockchain.",
     inputSchema: {
       type: "object" as const,
       required: ["encrypted", "userPublicKey", "solverSecretKey", "solverPublicKey"],
@@ -368,72 +374,13 @@ const TOOLS = [
     },
   },
 
-  // ── SPECTER: Sovereign Tools ────────────────────────────────────────
-
-  {
-    name: "sovereign_read",
-    description:
-      "Read a user's SOVEREIGN identity scores and tier from Solana. Returns trading, civic, developer, infra, creator scores (0-10000) and tier (1-5 = Bronze to Diamond).",
-    inputSchema: {
-      type: "object" as const,
-      required: ["wallet"],
-      properties: {
-        wallet: { type: "string", description: "Solana wallet address (base58 public key)" },
-      },
-    },
-  },
-
-  // ── SPECTER: Trust Tools ────────────────────────────────────────────
-
-  {
-    name: "trust_query",
-    description:
-      "Query the LATTICE trust graph to find trusted users for a specific SOVEREIGN dimension. Uses BFS traversal through DAO co-memberships, nomination patterns, and explicit trust edges with configurable depth (up to 6 hops \u2014 Andrew Trust's 'friends of friends x6').",
-    inputSchema: {
-      type: "object" as const,
-      required: ["origin", "dimension"],
-      properties: {
-        origin: { type: "string", description: "Origin wallet address (base58 public key)" },
-        dimension: {
-          type: "string",
-          enum: ["trading", "civic", "developer", "infra", "creator"],
-          description: "SOVEREIGN dimension to query trust for",
-        },
-        minScore: { type: "number", description: "Minimum dimension score filter (0-10000)" },
-        maxDepth: {
-          type: "number",
-          minimum: 1,
-          maximum: 6,
-          description: "Maximum BFS traversal depth (1-6 hops, default 3)",
-        },
-        limit: { type: "number", description: "Maximum number of results to return (default 20)" },
-      },
-    },
-  },
-  {
-    name: "trust_score",
-    description:
-      "Check how much you should trust a specific wallet for a given SOVEREIGN dimension. Returns their dimension score, tier, and trust assessment.",
-    inputSchema: {
-      type: "object" as const,
-      required: ["targetWallet", "dimension"],
-      properties: {
-        targetWallet: { type: "string", description: "Target wallet address (base58 public key)" },
-        dimension: {
-          type: "string",
-          enum: ["trading", "civic", "developer", "infra", "creator"],
-          description: "SOVEREIGN dimension to assess trust for",
-        },
-      },
-    },
-  },
-
-  // ── SPECTER: Vault Tools ────────────────────────────────────────────
+  // ── Chain-Agnostic: Vault Tools ─────────────────────────────────────
+  // These tools use chain-agnostic encryption for data vaults (Arweave storage).
 
   {
     name: "vault_read",
     description:
-      "Read encrypted data from a DataSov2 vault on Arweave. Returns the encrypted document metadata (not decrypted \u2014 use the decrypt tool separately for each field). Queries Arweave GraphQL for the latest document by identity ID.",
+      "[Chain-agnostic] Read encrypted data from a DataSov2 vault on Arweave. Returns the encrypted document metadata (not decrypted — use the decrypt tool separately for each field). Queries Arweave GraphQL for the latest document by identity ID.",
     inputSchema: {
       type: "object" as const,
       required: ["identityId"],
@@ -450,7 +397,7 @@ const TOOLS = [
   {
     name: "vault_disclose",
     description:
-      "Prepare a selective disclosure of encrypted vault fields to a specific consumer using ECDH key exchange. Derives a shared AES key from your secret key + consumer's public key, then re-encrypts selected fields with the shared key.",
+      "[Chain-agnostic] Prepare a selective disclosure of encrypted vault fields to a specific consumer using ECDH key exchange. Derives a shared AES key from your secret key + consumer's public key, then re-encrypts selected fields with the shared key.",
     inputSchema: {
       type: "object" as const,
       required: ["fields", "consumerPublicKey", "ownerSecretKey", "ownerPublicKey", "encryptedFields"],
@@ -472,12 +419,68 @@ const TOOLS = [
     },
   },
 
-  // ── SPECTER: Shield Tools ───────────────────────────────────────────
+  // ── Solana-Specific Tools ───────────────────────────────────────────
+  // These tools interact with Solana on-chain programs (SOVEREIGN identity,
+  // LATTICE trust graph) and require a Solana RPC connection.
 
+  {
+    name: "sovereign_read",
+    description:
+      "[Solana-specific] Read a user's SOVEREIGN identity scores and tier from Solana. Returns trading, civic, developer, infra, creator scores (0-10000) and tier (1-5 = Bronze to Diamond). Requires Solana RPC.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["wallet"],
+      properties: {
+        wallet: { type: "string", description: "Solana wallet address (base58 public key)" },
+      },
+    },
+  },
+  {
+    name: "trust_query",
+    description:
+      "[Solana-specific] Query the LATTICE trust graph to find trusted users for a specific SOVEREIGN dimension. Uses BFS traversal through DAO co-memberships, nomination patterns, and explicit trust edges with configurable depth (up to 6 hops). Requires Solana RPC.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["origin", "dimension"],
+      properties: {
+        origin: { type: "string", description: "Origin Solana wallet address (base58 public key)" },
+        dimension: {
+          type: "string",
+          enum: ["trading", "civic", "developer", "infra", "creator"],
+          description: "SOVEREIGN dimension to query trust for",
+        },
+        minScore: { type: "number", description: "Minimum dimension score filter (0-10000)" },
+        maxDepth: {
+          type: "number",
+          minimum: 1,
+          maximum: 6,
+          description: "Maximum BFS traversal depth (1-6 hops, default 3)",
+        },
+        limit: { type: "number", description: "Maximum number of results to return (default 20)" },
+      },
+    },
+  },
+  {
+    name: "trust_score",
+    description:
+      "[Solana-specific] Check how much you should trust a specific wallet for a given SOVEREIGN dimension. Returns their dimension score, tier, and trust assessment. Requires Solana RPC.",
+    inputSchema: {
+      type: "object" as const,
+      required: ["targetWallet", "dimension"],
+      properties: {
+        targetWallet: { type: "string", description: "Target Solana wallet address (base58 public key)" },
+        dimension: {
+          type: "string",
+          enum: ["trading", "civic", "developer", "infra", "creator"],
+          description: "SOVEREIGN dimension to assess trust for",
+        },
+      },
+    },
+  },
   {
     name: "ephemeral_wallet",
     description:
-      "Generate a fresh ephemeral wallet for privacy-preserving interactions. The wallet has no on-chain history and no link to your main identity. Use with shielded transfers to fund it without creating a traceable link.",
+      "[Solana-specific] Generate a fresh ephemeral Solana wallet for privacy-preserving interactions. The wallet has no on-chain history and no link to your main identity. Use with shielded transfers to fund it without creating a traceable link.",
     inputSchema: {
       type: "object" as const,
       properties: {},
@@ -486,7 +489,7 @@ const TOOLS = [
   {
     name: "zk_prove_tier",
     description:
-      "Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. (Note: Full Noir proof generation requires the @veil/crypto noir module.)",
+      "[Solana-specific] Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. Requires Solana RPC. (Note: Full Noir proof generation requires the @veil/crypto noir module.)",
     inputSchema: {
       type: "object" as const,
       required: ["wallet", "minTier"],
@@ -591,15 +594,21 @@ export async function handleTool(name: string, args: Args) {
     }
 
     case "key_convert": {
+      let bytes: Uint8Array;
       if (args.publicKey) {
-        const bytes = fromBase64(args.publicKey as string);
-        const b58 = encryptionKeyToBase58(bytes);
-        return jsonContent({ base58: b58, publicKey: toBase64(bytes) });
+        bytes = fromBase64(args.publicKey as string);
       } else if (args.base58) {
-        const bytes = base58ToEncryptionKey(args.base58 as string);
-        return jsonContent({ base58: args.base58, publicKey: toBase64(bytes) });
+        bytes = base58ToEncryptionKey(args.base58 as string);
+      } else if (args.hex) {
+        bytes = hexToEncryptionKey(args.hex as string);
+      } else {
+        throw new Error("Provide one of: 'publicKey' (base64), 'base58', or 'hex'");
       }
-      throw new Error("Provide either 'publicKey' (base64) or 'base58'");
+      return jsonContent({
+        publicKey: toBase64(bytes),
+        base58: encryptionKeyToBase58(bytes),
+        hex: encryptionKeyToHex(bytes),
+      });
     }
 
     case "shamir_split": {

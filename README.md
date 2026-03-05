@@ -1,15 +1,17 @@
 # veil-sdk
 
-Reusable SDK primitives for [Veil](https://github.com/psyto/veil) privacy-focused DeFi infrastructure on Solana.
+Privacy primitives for any blockchain, with optional Solana-specific extensions.
+
+The core modules (NaCl box encryption, Shamir secret sharing, payload serialization, order encryption) are **chain-agnostic** -- pure cryptographic primitives that work with Solana, Ethereum, Polygon, Arbitrum, or any other chain. Solana-specific features (ZK compression, shielded transfers, Arcium MPC, SOVEREIGN identity) are clearly separated and labeled.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| [`@veil/crypto`](#veilcrypto) | Encryption, secret sharing, ZK compression, shielded transfers, Arcium MPC, Noir proofs |
-| [`@veil/orders`](#veilorders) | Encrypt and decrypt swap order payloads for MEV protection |
-| [`@veil/qn-addon`](#veilqn-addon) | QuickNode Marketplace REST Add-On wrapping Veil privacy primitives |
-| [`@veil/mcp-server`](#veilmcp-server) | MCP server exposing Veil privacy primitives for AI agents |
+| [`@veil/crypto`](#veilcrypto) | Chain-agnostic encryption and privacy primitives, plus optional Solana-specific extensions |
+| [`@veil/orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
+| [`@veil/qn-addon`](#veilqn-addon) | QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
+| [`@veil/mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
 
 ## Getting Started
 
@@ -27,12 +29,12 @@ yarn test
 ### Environment Variables
 
 ```bash
-# RPC provider (pick one)
+# Solana-specific RPC provider (only needed for Solana features: ZK compression, shielded transfers)
 HELIUS_API_KEY=your-helius-key          # Recommended — supports ZK compression
 QUICKNODE_ENDPOINT=https://your-qn.url  # Alternative
 RPC_URL=https://custom-rpc.url          # Fallback
 
-# Network
+# Network (Solana-specific)
 SOLANA_NETWORK=devnet                   # mainnet-beta | devnet | testnet
 ```
 
@@ -40,11 +42,23 @@ SOLANA_NETWORK=devnet                   # mainnet-beta | devnet | testnet
 
 ## `@veil/crypto`
 
-Shared encryption and privacy utilities for the entire Privacy Suite.
+Chain-agnostic encryption and privacy primitives for any blockchain, plus optional Solana-specific extensions.
 
-### NaCl Box Encryption
+**Chain-agnostic modules** (no blockchain dependency):
+- NaCl Box encryption (Curve25519-XSalsa20-Poly1305)
+- Shamir's Secret Sharing (M-of-N threshold)
+- Payload serialization
+- Noir ZK proofs
 
-Curve25519-XSalsa20-Poly1305 authenticated encryption for encrypting order payloads, routing hints, and any data that must be kept private from MEV searchers.
+**Solana-specific modules** (require `@solana/web3.js`):
+- ZK Compression (Light Protocol)
+- Shielded Transfers (Privacy Cash)
+- Arcium MPC Integration
+- RPC Provider Configuration
+
+### NaCl Box Encryption (chain-agnostic)
+
+Curve25519-XSalsa20-Poly1305 authenticated encryption for encrypting order payloads, routing hints, and any data that must be kept private from MEV searchers. Works with any blockchain.
 
 ```typescript
 import {
@@ -55,6 +69,8 @@ import {
   encryptForMultiple,
   encryptionKeyToBase58,
   base58ToEncryptionKey,
+  encryptionKeyToHex,
+  hexToEncryptionKey,
   validateEncryptedData,
 } from '@veil/crypto';
 
@@ -78,9 +94,13 @@ const solverKeys = [solver1.publicKey, solver2.publicKey];
 const multiEncrypted = encryptForMultiple(plaintext, solverKeys, alice);
 // Returns Map<hexPubkey, EncryptedData>
 
-// Convert keys to/from base58 for display or storage
+// Convert keys to/from base58 (Solana, Bitcoin)
 const b58 = encryptionKeyToBase58(alice.publicKey); // "7xKX..."
 const bytes = base58ToEncryptionKey(b58);
+
+// Convert keys to/from hex (Ethereum, EVM chains)
+const hex = encryptionKeyToHex(alice.publicKey); // "0xabcd..."
+const bytesFromHex = hexToEncryptionKey(hex);
 
 // Validate encrypted data structure
 const isValid = validateEncryptedData(encrypted.bytes);
@@ -101,9 +121,9 @@ interface EncryptedData {
 }
 ```
 
-### Shamir's Secret Sharing
+### Shamir's Secret Sharing (chain-agnostic)
 
-M-of-N threshold secret splitting for scenarios where multiple parties must cooperate to decrypt (e.g., multi-solver decryption, escrow).
+M-of-N threshold secret splitting for scenarios where multiple parties must cooperate to decrypt (e.g., multi-solver decryption, escrow). Pure math -- works on any blockchain.
 
 ```typescript
 import {
@@ -161,9 +181,9 @@ interface ThresholdConfig {
 - Threshold must be >= 2
 - Total shares must be >= threshold and <= 255
 
-### Payload Serialization
+### Payload Serialization (chain-agnostic)
 
-Type-safe binary serialization for structured data that needs to go on-chain. Includes pre-defined schemas for common Veil payloads.
+Type-safe binary serialization for structured data that needs to go on-chain or be transported off-chain. Includes pre-defined schemas for common Veil payloads.
 
 ```typescript
 import {
@@ -205,12 +225,12 @@ const MY_SCHEMA = {
 | `u32` | 4 bytes | Unsigned 32-bit integer (LE) |
 | `u64` | 8 bytes | Unsigned 64-bit integer (LE) |
 | `i64` | 8 bytes | Signed 64-bit integer (LE) |
-| `pubkey` | 32 bytes | Solana public key |
+| `pubkey` | 32 bytes | 32-byte public key (any chain) |
 | `bytes` | variable | Raw bytes (requires `size` field) |
 
-### ZK Compression (Light Protocol)
+### ZK Compression (Light Protocol) -- Solana-specific
 
-Compress on-chain data using Light Protocol for ~99% cost savings. Includes compressed token operations.
+Compress on-chain data using Light Protocol for ~99% cost savings. Includes compressed token operations. Requires `@solana/web3.js`.
 
 ```typescript
 import {
@@ -253,9 +273,9 @@ const savings = estimateCompressionSavings(1024, 6960);
 // { uncompressedCost, compressedCost, savings, savingsPercent }
 ```
 
-### Shielded Transfers (Privacy Cash)
+### Shielded Transfers (Privacy Cash) -- Solana-specific
 
-Private token transfers where amounts and participants are hidden on-chain.
+Private token transfers where amounts and participants are hidden on-chain. Requires `@solana/web3.js`.
 
 ```typescript
 import {
@@ -300,9 +320,9 @@ await shieldTokens(connection, wallet, 1_000_000n, 'USDC');
 await unshieldTokens(connection, wallet, 500_000n, recipient, 'USDC');
 ```
 
-### Arcium Integration
+### Arcium Integration -- Solana-specific
 
-Encrypted shared state and multi-party computation for dark pools and confidential DeFi.
+Encrypted shared state and multi-party computation for dark pools and confidential DeFi. Requires `@solana/web3.js`.
 
 ```typescript
 import {
@@ -349,9 +369,9 @@ await pool.processDarkSwap(order, proof);
 const poolAggregates = await pool.getAggregates();
 ```
 
-### Noir ZK Proofs
+### Noir ZK Proofs (chain-agnostic)
 
-Generate and verify zero-knowledge proofs for swap validity, range checks, and more.
+Generate and verify zero-knowledge proofs for swap validity, range checks, and more. The proof system is chain-agnostic -- proofs can be verified on any chain.
 
 ```typescript
 import {
@@ -387,9 +407,9 @@ const prover = createNoirProver('./circuits/my_circuit');
 const verifier = createNoirVerifier();
 ```
 
-### RPC Provider Configuration
+### RPC Provider Configuration -- Solana-specific
 
-Unified configuration for connecting to Solana RPC providers with ZK compression support.
+Unified configuration for connecting to Solana RPC providers with ZK compression support. Requires `@solana/web3.js`.
 
 ```typescript
 import {
@@ -428,7 +448,7 @@ const attribution = getRpcAttribution(helius); // "Powered by Helius"
 
 ## `@veil/orders`
 
-Order encryption utilities for Privacy Suite. Wraps `@veil/crypto` to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot.
+Chain-agnostic order encryption utilities for any DEX. Wraps `@veil/crypto` to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot. Works with Solana, Ethereum, and any other blockchain.
 
 ### Quick Start
 
@@ -451,12 +471,12 @@ const encryptedBytes = createEncryptedOrder(
   solverPublicKey,
   userKeypair,
 );
-// encryptedBytes is ready for on-chain submission
+// encryptedBytes is ready for submission (on-chain or off-chain)
 
 // Solver side: decrypt the order
 const order = decryptOrderPayload(
   encryptedBytes,
-  userKeypair.publicKey,   // user's public key (from on-chain order account)
+  userKeypair.publicKey,   // user's public key (from order account or off-chain exchange)
   solverKeypair,
 );
 console.log(order.minOutputAmount.toString()); // "1000000"
@@ -520,7 +540,7 @@ interface EncryptedPayload {
 
 ## `@veil/qn-addon`
 
-QuickNode Marketplace REST Add-On that wraps all Veil privacy primitives as a JSON API. Install it on any QuickNode Solana endpoint to access NaCl encryption, Shamir secret sharing, order encryption, and ZK compression estimation over HTTP.
+QuickNode Marketplace REST Add-On that wraps Veil privacy primitives as a JSON API. The core endpoints (encryption, Shamir, orders, payload serialization) are **chain-agnostic** and work regardless of which blockchain your QuickNode endpoint is connected to. Solana-specific endpoints (ZK compression via Light Protocol) require a Solana QuickNode endpoint.
 
 ### Running
 
@@ -750,6 +770,8 @@ All the same endpoints listed below are available via RapidAPI with your RapidAP
 
 ### API Endpoint Summary
 
+**Chain-agnostic endpoints** (work with any blockchain):
+
 | Method | Path | Description | Auth |
 |--------|------|-------------|------|
 | GET | `/healthcheck` | Health check | None |
@@ -764,7 +786,7 @@ All the same endpoints listed below are available via RapidAPI with your RapidAP
 | POST | `/v1/decrypt` | NaCl box decrypt | None |
 | POST | `/v1/crypto/encrypt-multiple` | Encrypt for multiple recipients | None |
 | POST | `/v1/crypto/validate` | Validate encrypted data structure | None |
-| POST | `/v1/crypto/key-convert` | Convert key between base64 and base58 | None |
+| POST | `/v1/crypto/key-convert` | Convert key between base64, base58, and hex | None |
 | POST | `/v1/threshold/split` | Shamir split secret | None |
 | POST | `/v1/threshold/combine` | Shamir combine shares | None |
 | POST | `/v1/threshold/verify` | Verify shares consistency | None |
@@ -774,6 +796,11 @@ All the same endpoints listed below are available via RapidAPI with your RapidAP
 | POST | `/v1/payload/serialize` | Serialize structured data | None |
 | POST | `/v1/payload/deserialize` | Deserialize structured data | None |
 | GET | `/v1/compression/estimate` | Estimate ZK compression savings | None |
+
+**Solana-specific endpoints** (require Solana QuickNode endpoint):
+
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
 | POST | `/v1/compression/compress` | Compress data via Light Protocol | X-INSTANCE-ID |
 | POST | `/v1/compression/decompress` | Decompress data via Light Protocol | X-INSTANCE-ID |
 
@@ -781,7 +808,7 @@ All the same endpoints listed below are available via RapidAPI with your RapidAP
 
 ## `@veil/mcp-server`
 
-[Model Context Protocol](https://modelcontextprotocol.io/) server that exposes Veil privacy primitives as MCP tools for AI agents (Claude, GPT, etc.). Runs over stdio transport.
+[Model Context Protocol](https://modelcontextprotocol.io/) server that exposes Veil privacy primitives as MCP tools for AI agents (Claude, GPT, etc.). Runs over stdio transport. Each tool is labeled `[Chain-agnostic]` or `[Solana-specific]` so AI agents know which tools work on any chain vs Solana only.
 
 ### Running
 
@@ -814,6 +841,8 @@ Add to your Claude Desktop `claude_desktop_config.json`:
 
 ### Available Tools
 
+#### Chain-agnostic tools (work with any blockchain)
+
 | Tool | Description |
 |------|-------------|
 | `generate_keypair` | Generate a random NaCl Box encryption keypair |
@@ -822,12 +851,24 @@ Add to your Claude Desktop `claude_desktop_config.json`:
 | `decrypt` | Decrypt NaCl Box ciphertext |
 | `encrypt_multiple` | Encrypt for multiple recipients at once |
 | `validate_encrypted` | Validate encrypted data structure without decrypting |
-| `key_convert` | Convert keys between base64 and Solana base58 |
+| `key_convert` | Convert keys between base64, base58 (Solana), and hex (EVM) |
 | `shamir_split` | Split a 32-byte secret into M-of-N Shamir shares |
 | `shamir_combine` | Reconstruct a secret from Shamir shares |
 | `shamir_verify` | Verify that shares are consistent |
 | `encrypt_order` | Encrypt a DEX swap order payload (MEV protection) |
 | `decrypt_order` | Decrypt an encrypted swap order payload |
+| `vault_read` | Read encrypted data from a DataSov2 vault on Arweave |
+| `vault_disclose` | Selective disclosure of encrypted vault fields via ECDH |
+
+#### Solana-specific tools (require Solana RPC)
+
+| Tool | Description |
+|------|-------------|
+| `sovereign_read` | Read SOVEREIGN identity scores and tier from Solana |
+| `trust_query` | Query LATTICE trust graph for a SOVEREIGN dimension |
+| `trust_score` | Check trust level of a wallet for a SOVEREIGN dimension |
+| `ephemeral_wallet` | Generate a fresh ephemeral Solana wallet |
+| `zk_prove_tier` | ZK proof that SOVEREIGN tier meets a minimum threshold |
 
 All binary data (keys, ciphertext, nonces, secrets) is base64-encoded in both inputs and outputs.
 
@@ -846,12 +887,12 @@ Agent calls: encrypt { message: <base64("hello")>, recipientPublicKey: ..., send
 
 ## Dependencies
 
-| Package | Key Dependencies |
-|---------|-----------------|
-| `@veil/crypto` | `@solana/web3.js`, `tweetnacl`, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `privacycash`, `bn.js` |
-| `@veil/orders` | `@veil/crypto`, `bn.js` |
-| `@veil/qn-addon` | `@veil/crypto`, `@veil/orders`, `express`, `better-sqlite3`, `morgan`, `express-rate-limit`, `bn.js` |
-| `@veil/mcp-server` | `@modelcontextprotocol/sdk`, `@veil/crypto`, `@veil/orders`, `zod` |
+| Package | Chain-agnostic deps | Solana-specific deps (optional) |
+|---------|--------------------|---------------------------------|
+| `@veil/crypto` | `tweetnacl`, `bs58`, `bn.js` | `@solana/web3.js`, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `privacycash` |
+| `@veil/orders` | `@veil/crypto`, `bn.js` | -- |
+| `@veil/qn-addon` | `@veil/crypto`, `@veil/orders`, `express`, `better-sqlite3`, `morgan`, `express-rate-limit`, `bn.js` | -- |
+| `@veil/mcp-server` | `@modelcontextprotocol/sdk`, `@veil/crypto`, `@veil/orders`, `zod` | `@solana/web3.js` (for SOVEREIGN/trust tools) |
 
 ## License
 

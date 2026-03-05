@@ -1,7 +1,7 @@
 {
   "name": "@veil/orders",
   "version": "0.1.0",
-  "description": "Order encryption utilities for Privacy Suite — serialize, encrypt, and decrypt swap order payloads",
+  "description": "Chain-agnostic order encryption utilities — serialize, encrypt, and decrypt DEX swap order payloads for MEV protection on any blockchain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

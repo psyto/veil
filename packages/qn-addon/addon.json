@@ -2,7 +2,7 @@
   "name": "Veil Privacy Suite",
   "slug": "veil-privacy-suite",
   "version": "0.1.0",
-  "description": "Privacy primitives for Solana DeFi — NaCl encryption, Shamir secret sharing, encrypted order payloads, and ZK compression. Built on the Veil SDK.",
+  "description": "Chain-agnostic privacy primitives — NaCl encryption, Shamir secret sharing, encrypted order payloads, and payload serialization. Includes Solana-specific ZK compression via Light Protocol. Built on the Veil SDK.",
   "type": "rest",
   "author": "Veil",
   "repository": "https://github.com/psyto/veil-sdk",
@@ -50,126 +50,126 @@
     {
       "method": "POST",
       "path": "/v1/keypair/generate",
-      "description": "Generate a random NaCl X25519 encryption keypair",
+      "description": "[Chain-agnostic] Generate a random NaCl X25519 encryption keypair",
       "sample_url": "https://your-addon.example.com/v1/keypair/generate",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/keypair/derive",
-      "description": "Derive a deterministic encryption keypair from a 32-byte seed",
+      "description": "[Chain-agnostic] Derive a deterministic encryption keypair from a 32-byte seed",
       "sample_url": "https://your-addon.example.com/v1/keypair/derive",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/encrypt",
-      "description": "Encrypt plaintext using NaCl box (Curve25519-XSalsa20-Poly1305)",
+      "description": "[Chain-agnostic] Encrypt plaintext using NaCl box (Curve25519-XSalsa20-Poly1305)",
       "sample_url": "https://your-addon.example.com/v1/encrypt",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/decrypt",
-      "description": "Decrypt NaCl box ciphertext back to plaintext",
+      "description": "[Chain-agnostic] Decrypt NaCl box ciphertext back to plaintext",
       "sample_url": "https://your-addon.example.com/v1/decrypt",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/crypto/encrypt-multiple",
-      "description": "Encrypt plaintext for multiple recipients at once (up to 50)",
+      "description": "[Chain-agnostic] Encrypt plaintext for multiple recipients at once (up to 50)",
       "sample_url": "https://your-addon.example.com/v1/crypto/encrypt-multiple",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/crypto/validate",
-      "description": "Validate that bytes conform to the NaCl box encrypted data structure",
+      "description": "[Chain-agnostic] Validate that bytes conform to the NaCl box encrypted data structure",
       "sample_url": "https://your-addon.example.com/v1/crypto/validate",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/crypto/key-convert",
-      "description": "Convert encryption public key between base64/hex and Solana base58 format",
+      "description": "[Chain-agnostic] Convert encryption public key between base64, hex (EVM), and base58 (Solana) formats",
       "sample_url": "https://your-addon.example.com/v1/crypto/key-convert",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/threshold/split",
-      "description": "Split a 32-byte secret into M-of-N Shamir shares",
+      "description": "[Chain-agnostic] Split a 32-byte secret into M-of-N Shamir shares",
       "sample_url": "https://your-addon.example.com/v1/threshold/split",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/threshold/combine",
-      "description": "Combine Shamir shares to recover the original secret",
+      "description": "[Chain-agnostic] Combine Shamir shares to recover the original secret",
       "sample_url": "https://your-addon.example.com/v1/threshold/combine",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/threshold/verify",
-      "description": "Verify that Shamir shares are consistent with a given threshold",
+      "description": "[Chain-agnostic] Verify that Shamir shares are consistent with a given threshold",
       "sample_url": "https://your-addon.example.com/v1/threshold/verify",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/orders/encrypt",
-      "description": "Encrypt a swap order payload for MEV-protected submission",
+      "description": "[Chain-agnostic] Encrypt a swap order payload for MEV-protected submission on any DEX",
       "sample_url": "https://your-addon.example.com/v1/orders/encrypt",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/orders/decrypt",
-      "description": "Decrypt an encrypted swap order payload",
+      "description": "[Chain-agnostic] Decrypt an encrypted swap order payload",
       "sample_url": "https://your-addon.example.com/v1/orders/decrypt",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/orders/validate",
-      "description": "Validate that bytes conform to an encrypted order payload structure",
+      "description": "[Chain-agnostic] Validate that bytes conform to an encrypted order payload structure",
       "sample_url": "https://your-addon.example.com/v1/orders/validate",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/payload/serialize",
-      "description": "Serialize structured data to binary using a named or custom schema",
+      "description": "[Chain-agnostic] Serialize structured data to binary using a named or custom schema",
       "sample_url": "https://your-addon.example.com/v1/payload/serialize",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/payload/deserialize",
-      "description": "Deserialize binary data back to structured fields",
+      "description": "[Chain-agnostic] Deserialize binary data back to structured fields",
       "sample_url": "https://your-addon.example.com/v1/payload/deserialize",
       "plan": "starter"
     },
     {
       "method": "GET",
       "path": "/v1/compression/estimate",
-      "description": "Estimate ZK compression cost savings for a given data size",
+      "description": "[Chain-agnostic] Estimate ZK compression cost savings for a given data size",
       "sample_url": "https://your-addon.example.com/v1/compression/estimate?size=4096",
       "plan": "starter"
     },
     {
       "method": "POST",
       "path": "/v1/compression/compress",
-      "description": "Compress data on-chain via Light Protocol ZK compression",
+      "description": "[Solana-specific] Compress data on-chain via Light Protocol ZK compression",
       "sample_url": "https://your-addon.example.com/v1/compression/compress",
       "plan": "pro"
     },
     {
       "method": "POST",
       "path": "/v1/compression/decompress",
-      "description": "Decompress Light Protocol ZK-compressed data",
+      "description": "[Solana-specific] Decompress Light Protocol ZK-compressed data",
       "sample_url": "https://your-addon.example.com/v1/compression/decompress",
       "plan": "pro"
     }

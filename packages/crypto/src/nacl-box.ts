@@ -1,8 +1,9 @@
 import nacl from 'tweetnacl';
-import { PublicKey } from '@solana/web3.js';
+import bs58 from 'bs58';
 
 /**
- * Keypair for X25519 encryption operations
+ * Keypair for X25519 encryption operations.
+ * Chain-agnostic — works with any blockchain or off-chain context.
  */
 export interface EncryptionKeypair {
   publicKey: Uint8Array;
@@ -126,17 +127,36 @@ export function encryptForMultiple(
 }
 
 /**
- * Convert encryption public key to base58 string
+ * Convert encryption public key to base58 string.
+ * Chain-agnostic — base58 encoding is used by Solana, Bitcoin, and others.
  */
 export function encryptionKeyToBase58(publicKey: Uint8Array): string {
-  return new PublicKey(publicKey).toBase58();
+  return bs58.encode(publicKey);
 }
 
 /**
- * Convert base58 string to encryption public key bytes
+ * Convert base58 string to encryption public key bytes.
+ * Chain-agnostic — base58 encoding is used by Solana, Bitcoin, and others.
  */
-export function base58ToEncryptionKey(base58: string): Uint8Array {
-  return new PublicKey(base58).toBytes();
+export function base58ToEncryptionKey(base58Str: string): Uint8Array {
+  return bs58.decode(base58Str);
+}
+
+/**
+ * Convert encryption public key to EVM-style hex address (0x-prefixed).
+ * Useful for interoperability with Ethereum, Polygon, Arbitrum, etc.
+ */
+export function encryptionKeyToHex(publicKey: Uint8Array): string {
+  return '0x' + Buffer.from(publicKey).toString('hex');
+}
+
+/**
+ * Convert an EVM-style hex string (0x-prefixed or plain hex) to encryption key bytes.
+ * Useful for interoperability with Ethereum, Polygon, Arbitrum, etc.
+ */
+export function hexToEncryptionKey(hex: string): Uint8Array {
+  const cleaned = hex.startsWith('0x') ? hex.slice(2) : hex;
+  return new Uint8Array(Buffer.from(cleaned, 'hex'));
 }
 
 /**

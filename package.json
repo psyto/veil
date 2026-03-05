@@ -2,7 +2,7 @@
   "name": "veil-sdk",
   "version": "0.1.0",
   "private": true,
-  "description": "Reusable SDK primitives for Veil privacy-focused DeFi infrastructure",
+  "description": "Chain-agnostic privacy primitives for any blockchain, with optional Solana-specific extensions",
   "workspaces": [
     "packages/*"
   ],

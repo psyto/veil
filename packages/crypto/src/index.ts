@@ -1,4 +1,4 @@
-// NaCl Box encryption (Curve25519-XSalsa20-Poly1305)
+// NaCl Box encryption (Curve25519-XSalsa20-Poly1305) — chain-agnostic
 export {
   EncryptionKeypair,
   EncryptedData,
@@ -9,6 +9,8 @@ export {
   encryptForMultiple,
   encryptionKeyToBase58,
   base58ToEncryptionKey,
+  encryptionKeyToHex,
+  hexToEncryptionKey,
   validateEncryptedData,
 } from './nacl-box';
 
