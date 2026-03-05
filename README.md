@@ -1,4 +1,4 @@
-# veil-sdk
+# veil
 
 Privacy primitives for any blockchain, with optional Solana-specific extensions.
 
@@ -833,7 +833,7 @@ Add to your Claude Desktop `claude_desktop_config.json`:
   "mcpServers": {
     "veil-privacy-suite": {
       "command": "node",
-      "args": ["/path/to/veil-sdk/packages/mcp-server/dist/index.js"]
+      "args": ["/path/to/veil/packages/mcp-server/dist/index.js"]
     }
   }
 }

@@ -2,10 +2,10 @@
   "name": "Veil Privacy Suite",
   "slug": "veil-privacy-suite",
   "version": "0.1.0",
-  "description": "Chain-agnostic privacy primitives — NaCl encryption, Shamir secret sharing, encrypted order payloads, and payload serialization. Includes Solana-specific ZK compression via Light Protocol. Built on the Veil SDK.",
+  "description": "Chain-agnostic privacy primitives — NaCl encryption, Shamir secret sharing, encrypted order payloads, and payload serialization. Includes Solana-specific ZK compression via Light Protocol. Built on Veil.",
   "type": "rest",
   "author": "Veil",
-  "repository": "https://github.com/psyto/veil-sdk",
+  "repository": "https://github.com/psyto/veil",
   "healthcheck": "/healthcheck",
   "authentication": "basic",
   "chains": [
