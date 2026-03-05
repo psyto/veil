@@ -20,7 +20,7 @@ initDb(config.dbPath);
 const app = createApp();
 
 const server: http.Server = app.listen(config.port, () => {
-  console.log(`Veil QN Add-On running at http://localhost:${config.port}`);
+  console.log(`Fabrknt Privacy QN Add-On running at http://localhost:${config.port}`);
   console.log(`Health check: http://localhost:${config.port}/healthcheck`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`DB path: ${config.dbPath}`);

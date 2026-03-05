@@ -1,10 +1,10 @@
 {
-  "name": "Veil Privacy Suite",
-  "slug": "veil-privacy-suite",
+  "name": "Fabrknt Privacy",
+  "slug": "fabrknt-privacy",
   "version": "0.1.0",
   "description": "Chain-agnostic privacy primitives — NaCl encryption, Shamir secret sharing, encrypted order payloads, and payload serialization. Includes Solana-specific ZK compression via Light Protocol. Built on Veil.",
   "type": "rest",
-  "author": "Veil",
+  "author": "Fabrknt",
   "repository": "https://github.com/psyto/veil",
   "healthcheck": "/healthcheck",
   "authentication": "basic",

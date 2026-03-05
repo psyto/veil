@@ -35,7 +35,7 @@ export function createApp(): express.Application {
   // Root info endpoint
   app.get('/', (_req, res) => {
     res.json({
-      name: 'Veil Privacy Suite — QuickNode Add-On (chain-agnostic privacy primitives)',
+      name: 'Fabrknt Privacy — QuickNode Add-On',
       version: '0.1.0',
       endpoints: {
         healthcheck: 'GET /healthcheck',
