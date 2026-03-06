@@ -10,7 +10,7 @@ The core modules (NaCl box encryption, Shamir secret sharing, payload serializat
 |---------|-------------|
 | [`@veil/crypto`](#veilcrypto) | Chain-agnostic encryption and privacy primitives, plus optional Solana-specific extensions |
 | [`@veil/orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
-| [`@veil/qn-addon`](#veilqn-addon) | QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
+| [`@veil/qn-addon`](#veilqn-addon) | Fabrknt Privacy — QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
 | [`@veil/mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
 
 ## Getting Started
@@ -540,7 +540,7 @@ interface EncryptedPayload {
 
 ## `@veil/qn-addon`
 
-QuickNode Marketplace REST Add-On that wraps Veil privacy primitives as a JSON API. The core endpoints (encryption, Shamir, orders, payload serialization) are **chain-agnostic** and work regardless of which blockchain your QuickNode endpoint is connected to. Solana-specific endpoints (ZK compression via Light Protocol) require a Solana QuickNode endpoint.
+**Fabrknt Privacy** (slug: `fabrknt-privacy`, author: Fabrknt) — QuickNode Marketplace REST Add-On that wraps Veil privacy primitives as a JSON API. The core endpoints (encryption, Shamir, orders, payload serialization) are **chain-agnostic** and work regardless of which blockchain your QuickNode endpoint is connected to. Solana-specific endpoints (ZK compression via Light Protocol) require a Solana QuickNode endpoint.
 
 ### Running
 
