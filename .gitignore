@@ -31,3 +31,10 @@ yarn-error.log*
 # Coverage
 coverage/
 .nyc_output/
+
+# Solana
+.anchor/
+test-ledger/
+target/
+Cargo.lock
+*.so

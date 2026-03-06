@@ -4,7 +4,11 @@
   "private": true,
   "description": "Chain-agnostic privacy primitives for any blockchain, with optional Solana-specific extensions",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*",
+    "apps/*/sdk",
+    "apps/*/app",
+    "apps/*/solver"
   ],
   "scripts": {
     "build": "yarn workspaces run build",

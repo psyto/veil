@@ -12,6 +12,7 @@ The core modules (NaCl box encryption, Shamir secret sharing, payload serializat
 | [`@veil/orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
 | [`@veil/qn-addon`](#veilqn-addon) | Fabrknt Privacy — QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
 | [`@veil/mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
+| [`apps/*`](#solana-apps) | 5 Solana privacy DeFi apps (confidential swaps, RWA secrets, umbra, darkflow, shadowlaunch) |
 
 ## Getting Started
 
@@ -882,6 +883,24 @@ Agent calls: generate_keypair → gets recipient keys
 Agent calls: encrypt { message: <base64("hello")>, recipientPublicKey: ..., senderSecretKey: ..., senderPublicKey: ... }
 → returns { nonce, ciphertext, bytes } (all base64)
 ```
+
+---
+
+## Solana Apps
+
+Privacy-focused DeFi applications built on Veil primitives, targeting Solana hackathons (PrivacyHack 2026, FairScale 2026, Pump.fun Build In Public 2026).
+
+| App | Description | Program ID |
+|-----|-------------|------------|
+| [`confidential-swap-router`](apps/confidential-swap-router/) | MEV-protected swaps via encrypted order parameters | `v7th...CCRM` |
+| [`rwa-secrets-service`](apps/rwa-secrets-service/) | End-to-end encrypted RWA metadata with role-based access | `DWgi...ySam` |
+| [`umbra`](apps/umbra/) | Reputation-gated privacy via SOVEREIGN tier routing | `41Ps...QXLr` |
+| [`darkflow`](apps/darkflow/) | Encrypted LP positions, ZK-verified swaps, dark pools | `8Uvv...s38U` |
+| [`shadowlaunch`](apps/shadowlaunch/) | Private pump.fun purchases via ephemeral wallets + shielded transfers | -- |
+
+Each app includes an Anchor program (`programs/`), TypeScript SDK (`sdk/`), and Next.js frontend (`app/`). Some include a solver service (`solver/`).
+
+Hackathon documentation is in [`docs/solana/`](docs/solana/).
 
 ---
 
