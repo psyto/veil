@@ -5,7 +5,7 @@
   "license": "ISC",
   "scripts": {
     "build": "echo 'Anchor program build via anchor build'",
-    "test": "anchor test"
+    "test": "echo 'anchor test requires local validator — run manually'"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.0"
