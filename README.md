@@ -8,7 +8,7 @@ The core modules (NaCl box encryption, Shamir secret sharing, payload serializat
 
 | Package | Description |
 |---------|-------------|
-| [`@veil/crypto`](#veilcrypto) | Chain-agnostic encryption and privacy primitives, plus optional Solana-specific extensions |
+| [`@veil/core`](#veilcore) | Chain-agnostic encryption and privacy primitives, plus optional Solana-specific extensions |
 | [`@veil/orders`](#veilorders) | Chain-agnostic encrypted swap order payloads for MEV protection on any DEX |
 | [`@veil/qn-addon`](#veilqn-addon) | Fabrknt Privacy — QuickNode Marketplace REST Add-On serving chain-agnostic privacy primitives |
 | [`@veil/mcp-server`](#veilmcp-server) | MCP server exposing privacy tools for AI agents (chain-agnostic + Solana-specific) |
@@ -18,13 +18,13 @@ The core modules (NaCl box encryption, Shamir secret sharing, payload serializat
 
 ```bash
 # Install dependencies
-yarn install
+pnpm install
 
-# Build all packages
-yarn build
+# Build all packages (uses turbo)
+pnpm build
 
 # Run tests
-yarn test
+pnpm test
 ```
 
 ### Environment Variables
@@ -41,7 +41,7 @@ SOLANA_NETWORK=devnet                   # mainnet-beta | devnet | testnet
 
 ---
 
-## `@veil/crypto`
+## `@veil/core`
 
 Chain-agnostic encryption and privacy primitives for any blockchain, plus optional Solana-specific extensions.
 
@@ -73,7 +73,7 @@ import {
   encryptionKeyToHex,
   hexToEncryptionKey,
   validateEncryptedData,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Generate a random keypair
 const alice = generateEncryptionKeypair();
@@ -133,7 +133,7 @@ import {
   verifyShares,
   createThresholdEncryption,
   decryptWithThreshold,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Split a 32-byte secret into 5 shares, requiring 3 to reconstruct
 const secret = new Uint8Array(32); // your secret key
@@ -194,7 +194,7 @@ import {
   SWAP_ORDER_SCHEMA,
   RWA_ASSET_SCHEMA,
   RWA_ACCESS_GRANT_SCHEMA,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Use a built-in schema
 const size = calculateSchemaSize(SWAP_ORDER_SCHEMA);
@@ -245,7 +245,7 @@ import {
   compressTokenAccount,
   decompressTokenAccount,
   estimateCompressionSavings,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Set up the ZK-enabled RPC
 const rpc = createZkRpc({
@@ -287,7 +287,7 @@ import {
   isPrivacyCashAvailable,
   shieldTokens,
   unshieldTokens,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Check if Privacy Cash is available on the network
 const available = await isPrivacyCashAvailable(connection);
@@ -331,7 +331,7 @@ import {
   DarkPoolStateManager,
   createArciumClient,
   createDarkPoolManager,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Create an Arcium client
 const arcium = createArciumClient(connection, 'devnet', 'YOUR_API_KEY');
@@ -381,7 +381,7 @@ import {
   generateSwapProof,
   verifySwapProof,
   generateRangeProof,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // Generate a swap validity proof
 const swapProof = await generateSwapProof({
@@ -420,7 +420,7 @@ import {
   createRpcFromEnv,
   createPublicRpc,
   getRpcAttribution,
-} from '@veil/crypto';
+} from '@veil/core';
 
 // From explicit config
 const { connection, zkRpc } = createRpcConnections({
@@ -449,7 +449,7 @@ const attribution = getRpcAttribution(helius); // "Powered by Helius"
 
 ## `@veil/orders`
 
-Chain-agnostic order encryption utilities for any DEX. Wraps `@veil/crypto` to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot. Works with Solana, Ethereum, and any other blockchain.
+Chain-agnostic order encryption utilities for any DEX. Wraps `@veil/core` to provide a high-level API for encrypting swap orders that solvers can decrypt but MEV searchers cannot. Works with Solana, Ethereum, and any other blockchain.
 
 ### Quick Start
 
@@ -547,11 +547,11 @@ interface EncryptedPayload {
 
 ```bash
 # From the monorepo root
-yarn install && yarn build
+pnpm install && pnpm build
 
 # Start the add-on server (default port 3030)
 cd packages/qn-addon
-yarn dev
+pnpm dev
 ```
 
 ```bash
@@ -737,7 +737,7 @@ docker run -p 3030:3030 \
 cd packages/qn-addon
 
 # Run all tests (125 tests across 21 suites)
-yarn test
+pnpm test
 
 # End-to-end curl test (server must be running)
 ./scripts/test-qn-cli.sh
@@ -757,7 +757,7 @@ export PAYER_SECRET_KEY="<base64-encoded-solana-keypair>"
 
 ### CI
 
-GitHub Actions runs `yarn build` and `yarn test` on every push and PR to `main`, tested against Node 18 and 20.
+GitHub Actions runs `pnpm build` and `pnpm test` on every push and PR to `main`, tested against Node 18 and 20.
 
 ### RapidAPI
 
@@ -816,7 +816,7 @@ All the same endpoints listed below are available via RapidAPI with your RapidAP
 ```bash
 # Build
 cd packages/mcp-server
-yarn build
+pnpm build
 
 # Run directly
 node dist/index.js
@@ -908,10 +908,10 @@ Hackathon documentation is in [`docs/solana/`](docs/solana/).
 
 | Package | Chain-agnostic deps | Solana-specific deps (optional) |
 |---------|--------------------|---------------------------------|
-| `@veil/crypto` | `tweetnacl`, `bs58`, `bn.js` | `@solana/web3.js`, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `privacycash` |
-| `@veil/orders` | `@veil/crypto`, `bn.js` | -- |
-| `@veil/qn-addon` | `@veil/crypto`, `@veil/orders`, `express`, `better-sqlite3`, `morgan`, `express-rate-limit`, `bn.js` | -- |
-| `@veil/mcp-server` | `@modelcontextprotocol/sdk`, `@veil/crypto`, `@veil/orders`, `zod` | `@solana/web3.js` (for SOVEREIGN/trust tools) |
+| `@veil/core` | `tweetnacl`, `bs58`, `bn.js` | `@solana/web3.js`, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `privacycash` |
+| `@veil/orders` | `@veil/core`, `bn.js` | -- |
+| `@veil/qn-addon` | `@veil/core`, `@veil/orders`, `express`, `better-sqlite3`, `morgan`, `express-rate-limit`, `bn.js` | -- |
+| `@veil/mcp-server` | `@modelcontextprotocol/sdk`, `@veil/core`, `@veil/orders`, `zod` | `@solana/web3.js` (for SOVEREIGN/trust tools) |
 
 ## License
 

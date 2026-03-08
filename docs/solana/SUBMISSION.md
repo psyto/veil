@@ -66,25 +66,25 @@ All applications share a common cryptographic library (`@privacy-suite/crypto`) 
 
 ### Light Protocol (ZK Compression)
 - **Integration:** ZK compression for encrypted order payloads and asset metadata
-- **Files:** `packages/crypto/src/zk-compression.ts`
+- **Files:** `packages/core/src/zk-compression.ts`
 - **Apps:** All five applications
 - **Benefits:** ~99% on-chain storage reduction
 
 ### Privacy Cash SDK (Shielded Transfers) - $15,000
 - **Integration:** Shielded settlement for swap outputs
-- **Files:** `packages/crypto/src/shielded.ts`
+- **Files:** `packages/core/src/shielded.ts`
 - **Apps:** Confidential Swap Router, DarkFlow, ShadowLaunch
 - **Benefits:** Private token transfers with ZK proofs
 
 ### Helius RPC - $5,000
 - **Integration:** RPC provider with ZK compression support
-- **Files:** `packages/crypto/src/rpc-providers.ts`
+- **Files:** `packages/core/src/rpc-providers.ts`
 - **Apps:** All five applications
 - **Configuration:** `NEXT_PUBLIC_HELIUS_API_KEY` / `HELIUS_API_KEY`
 
 ### Quicknode RPC - $3,000
 - **Integration:** RPC provider support
-- **Files:** `packages/crypto/src/rpc-providers.ts`
+- **Files:** `packages/core/src/rpc-providers.ts`
 - **Apps:** ShadowLaunch (primary), all others
 - **Configuration:** `NEXT_PUBLIC_QUICKNODE_ENDPOINT` / `QUICKNODE_ENDPOINT`
 
@@ -267,14 +267,14 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 
 ### Prerequisites
 - Node.js 18+
-- Yarn
+- pnpm (10.31.0+)
 - Solana CLI 1.18+
 
 ### Installation
 ```bash
 git clone https://github.com/psyto/veil.git
 cd veil
-yarn install
+pnpm install
 ```
 
 ### Configuration
@@ -291,18 +291,18 @@ cp apps/rwa-secrets-service/app/.env.example apps/rwa-secrets-service/app/.env.l
 ```bash
 # Terminal 1: Start solver
 cd apps/confidential-swap-router/solver
-yarn dev
+pnpm dev
 
 # Terminal 2: Start frontend
 cd apps/confidential-swap-router/app
-yarn dev
+pnpm dev
 ```
 Open http://localhost:3000
 
 ### Run RWA Secrets Service
 ```bash
 cd apps/rwa-secrets-service/app
-yarn dev
+pnpm dev
 ```
 Open http://localhost:3001
 
@@ -341,7 +341,7 @@ const encrypted = encryptAssetMetadata({
 
 ### ZK Compression
 ```typescript
-import { createHeliusRpc, compressData } from '@veil/crypto';
+import { createHeliusRpc, compressData } from '@veil/core';
 
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
 const compressed = await compressData(zkRpc, data, payer);
@@ -350,7 +350,7 @@ const compressed = await compressData(zkRpc, data, payer);
 
 ### Shielded Transfer
 ```typescript
-import { PrivacyCashClient } from '@veil/crypto';
+import { PrivacyCashClient } from '@veil/core';
 
 const client = new PrivacyCashClient(connection, wallet, 'SOL');
 await client.deposit(1000000n);  // Shield tokens
@@ -364,7 +364,7 @@ await client.withdraw(500000n, recipient);  // Unshield
 ```
 veil/
 ├── packages/
-│   ├── crypto/                     # Shared encryption library (@privacy-suite/crypto)
+│   ├── core/                       # Shared encryption library (@veil/core)
 │   │   └── src/
 │   │       ├── nacl-box.ts        # NaCl box encryption
 │   │       ├── threshold.ts       # Shamir's Secret Sharing

@@ -24,8 +24,8 @@ Guidelines for recording demo videos for PrivacyHack 2026, FairScale Hackathon, 
 **"MEV bots can't frontrun what they can't read."**
 
 ### Setup Before Recording
-1. Start solver: `cd apps/confidential-swap-router/solver && yarn dev`
-2. Start frontend: `cd apps/confidential-swap-router/app && yarn dev`
+1. Start solver: `cd apps/confidential-swap-router/solver && pnpm dev`
+2. Start frontend: `cd apps/confidential-swap-router/app && pnpm dev`
 3. Have Phantom wallet ready with devnet SOL
 4. Switch Phantom to devnet
 
@@ -117,7 +117,7 @@ Show:
 **"Not about hiding from regulators. It's about not exposing everything to everyone."**
 
 ### Setup Before Recording
-1. Start frontend: `cd apps/rwa-secrets-service/app && yarn dev`
+1. Start frontend: `cd apps/rwa-secrets-service/app && pnpm dev`
 2. Have Phantom wallet ready with devnet SOL
 3. Switch Phantom to devnet
 
@@ -270,8 +270,8 @@ Naturally incorporate these:
 **"Privacy is a privilege you earn through good behavior."**
 
 ### Setup Before Recording
-1. Start solver: `cd apps/umbra/solver && yarn dev`
-2. Start frontend: `cd apps/umbra/app && yarn dev`
+1. Start solver: `cd apps/umbra/solver && pnpm dev`
+2. Start frontend: `cd apps/umbra/app && pnpm dev`
 3. Have Phantom wallet ready with devnet SOL
 4. Ensure wallet has SOVEREIGN identity (or will create one)
 
@@ -342,7 +342,7 @@ Show:
 **"Trade without a trace. Lend without a ledger."**
 
 ### Setup Before Recording
-1. Start frontend: `cd apps/darkflow/app && yarn dev`
+1. Start frontend: `cd apps/darkflow/app && pnpm dev`
 2. Have Phantom wallet ready with devnet SOL
 
 ### Script
@@ -417,7 +417,7 @@ Show:
 **"Break the link between your wallet and your trades."**
 
 ### Setup Before Recording
-1. Start frontend: `cd apps/shadowlaunch && yarn dev`
+1. Start frontend: `cd apps/shadowlaunch && pnpm dev`
 2. Have Phantom wallet ready with mainnet/devnet SOL
 3. Find a trending token on Pump.fun to demonstrate
 

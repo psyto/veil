@@ -91,11 +91,11 @@ This document outlines the strategy for submitting **five privacy-focused applic
 
 ## Shared Architecture Advantage
 
-The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@veil/crypto`). Upgrading this shared library benefits both projects simultaneously.
+The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@veil/core`). Upgrading this shared library benefits both projects simultaneously.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                       @veil/crypto                              │
+│                       @veil/core                              │
 │                                                                          │
 │   Current Implementation:                                                │
 │   ├── nacl-box.ts      → NaCl box encryption (Curve25519-XSalsa20)     │
@@ -129,7 +129,7 @@ The Confidential Swap Router and RWA Secrets Service share a common cryptographi
 
 #### 1.1 Light Protocol ZK Compression Integration
 
-**File:** `packages/crypto/src/zk-compression.ts`
+**File:** `packages/core/src/zk-compression.ts`
 
 ```typescript
 import { LightSystemProgram, Rpc, createRpc } from '@lightprotocol/stateless.js';
@@ -165,7 +165,7 @@ export async function verifyCompressedPayload(
 
 #### 1.2 Privacy Cash SDK Integration
 
-**File:** `packages/crypto/src/shielded.ts`
+**File:** `packages/core/src/shielded.ts`
 
 ```typescript
 import { PrivacyCash } from '@privacy-cash/sdk';
@@ -199,7 +199,7 @@ export async function settleShielded(
 
 #### 1.3 Export Updated Modules
 
-**File:** `packages/crypto/src/index.ts`
+**File:** `packages/core/src/index.ts`
 
 ```typescript
 // Existing exports
@@ -223,7 +223,7 @@ export * from './shielded';
 Update to use ZK compression for order payloads:
 
 ```typescript
-import { compressPayload } from '@veil/crypto';
+import { compressPayload } from '@veil/core';
 
 export async function encryptSwapOrder(
   order: SwapOrderParams,
@@ -254,7 +254,7 @@ export async function encryptSwapOrder(
 Add shielded output delivery:
 
 ```typescript
-import { createShieldedTransfer, settleShielded } from '@veil/crypto';
+import { createShieldedTransfer, settleShielded } from '@veil/core';
 
 async function executeOrderWithShielding(order: OrderData): Promise<string> {
   // 1. Execute swap via Jupiter (existing)
@@ -305,7 +305,7 @@ pub fn submit_order_zk(
 Add ZK proofs for access verification:
 
 ```typescript
-import { compressPayload } from '@veil/crypto';
+import { compressPayload } from '@veil/core';
 
 export async function createAccessProof(
   grantee: PublicKey,
@@ -397,7 +397,7 @@ export async function createSelectiveDisclosure(
 
 #### 4.1 Helius RPC Integration ($5,000 bounty)
 
-**File:** `packages/crypto/src/rpc.ts`
+**File:** `packages/core/src/rpc.ts`
 
 ```typescript
 export function createHeliusConnection(apiKey: string): Connection {
