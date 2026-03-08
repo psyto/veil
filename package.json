@@ -3,19 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "description": "Chain-agnostic privacy primitives for any blockchain, with optional Solana-specific extensions",
-  "workspaces": [
-    "packages/*",
-    "apps/*",
-    "apps/*/sdk",
-    "apps/*/app",
-    "apps/*/solver"
-  ],
   "scripts": {
-    "build": "yarn workspaces run build",
-    "test": "yarn workspaces run test",
-    "clean": "yarn workspaces run clean"
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
   },
   "devDependencies": {
+    "turbo": "^2.4.0",
     "typescript": "^5.0.0"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.31.0"
 }

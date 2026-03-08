@@ -5,7 +5,7 @@ import {
   OrderPayload,
   EncryptedPayload,
 } from '@veil/orders';
-import { EncryptionKeypair } from '@veil/crypto';
+import { EncryptionKeypair } from '@veil/core';
 import BN from 'bn.js';
 
 export function encryptOrder(

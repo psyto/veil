@@ -10,7 +10,7 @@ import {
   ArciumClient,
   createNoirProver,
   NoirProver,
-} from '@veil/crypto';
+} from '@veil/core';
 import {
   DarkPoolConfig,
   DarkPoolState,

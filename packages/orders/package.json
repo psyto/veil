@@ -20,7 +20,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@veil/crypto": "file:../crypto",
+    "@veil/core": "workspace:*",
     "bn.js": "^5.2.1"
   },
   "devDependencies": {
@@ -32,6 +32,6 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@veil/crypto": "^0.2.0"
+    "@veil/core": "^0.2.0"
   }
 }

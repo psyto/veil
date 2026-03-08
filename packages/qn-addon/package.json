@@ -13,7 +13,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@veil/crypto": "file:../crypto",
+    "@veil/core": "workspace:*",
     "@veil/orders": "file:../orders",
     "better-sqlite3": "^11.0.0",
     "bn.js": "^5.2.1",

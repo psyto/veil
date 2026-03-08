@@ -6,7 +6,7 @@ import {
   deserializePayload,
   validateEncryptedData,
   SWAP_ORDER_SCHEMA,
-} from '@veil/crypto';
+} from '@veil/core';
 import BN from 'bn.js';
 
 /**
@@ -152,7 +152,7 @@ export function getEncryptionPublicKey(keypair: EncryptionKeypair): Uint8Array {
 }
 
 // Re-export commonly needed crypto types and address conversion utilities
-export type { EncryptionKeypair } from '@veil/crypto';
+export type { EncryptionKeypair } from '@veil/core';
 export {
   generateEncryptionKeypair,
   deriveEncryptionKeypair,
@@ -162,7 +162,7 @@ export {
   // EVM hex address conversion (Ethereum, Polygon, Arbitrum, etc.)
   encryptionKeyToHex,
   hexToEncryptionKey,
-} from '@veil/crypto';
+} from '@veil/core';
 
 /**
  * Detect the address format of a string.
@@ -186,6 +186,6 @@ export function addressToBytes(address: string): Uint8Array {
     return new Uint8Array(Buffer.from(cleaned, 'hex'));
   }
   // base58
-  const { base58ToEncryptionKey: fromBase58 } = require('@veil/crypto');
+  const { base58ToEncryptionKey: fromBase58 } = require('@veil/core');
   return fromBase58(address);
 }

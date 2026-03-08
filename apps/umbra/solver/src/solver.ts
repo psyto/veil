@@ -11,7 +11,7 @@ import {
 import {
   EncryptionKeypair,
   generateEncryptionKeypair,
-} from '@veil/crypto';
+} from '@veil/core';
 
 import { JupiterClient } from './jupiter';
 

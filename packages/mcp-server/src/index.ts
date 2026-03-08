@@ -19,7 +19,7 @@ import {
   splitSecret,
   combineShares,
   verifyShares,
-} from "@veil/crypto";
+} from "@veil/core";
 import {
   encryptOrderPayload,
   decryptOrderPayload,
@@ -489,7 +489,7 @@ const TOOLS = [
   {
     name: "zk_prove_tier",
     description:
-      "[Solana-specific] Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. Requires Solana RPC. (Note: Full Noir proof generation requires the @veil/crypto noir module.)",
+      "[Solana-specific] Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. Requires Solana RPC. (Note: Full Noir proof generation requires the @veil/core noir module.)",
     inputSchema: {
       type: "object" as const,
       required: ["wallet", "minTier"],
@@ -966,7 +966,7 @@ export async function handleTool(name: string, args: Args) {
           minTier,
           satisfied,
         },
-        note: "Full Noir ZK proof available via @veil/crypto NoirProver",
+        note: "Full Noir ZK proof available via @veil/core NoirProver",
       });
     }
 

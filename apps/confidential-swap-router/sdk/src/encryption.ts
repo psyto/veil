@@ -32,7 +32,7 @@ import {
   estimateCompressionSavings,
   shieldTokens,
   unshieldTokens,
-} from '@veil/crypto';
+} from '@veil/core';
 import { Keypair, PublicKey, Connection } from '@solana/web3.js';
 
 // ============================================================================

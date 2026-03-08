@@ -4,7 +4,7 @@ import {
   compressData,
   decompressData,
   CompressedPayload,
-} from '@veil/crypto';
+} from '@veil/core';
 import { Keypair } from '@solana/web3.js';
 
 export function estimate(dataSize: number): {

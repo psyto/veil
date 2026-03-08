@@ -13,7 +13,7 @@ import {
   EncryptionKeypair,
   deriveEncryptionKeypair,
   generateEncryptionKeypair,
-} from '@veil/crypto';
+} from '@veil/core';
 
 import {
   PROGRAM_ID,
