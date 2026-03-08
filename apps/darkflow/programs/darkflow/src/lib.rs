@@ -31,10 +31,11 @@ pub mod darkflow {
     // Pool Management
     // ========================================================================
 
-    /// Initialize a new dark liquidity pool
+    /// Initialize a new dark liquidity pool (step 1: create pool account)
     ///
     /// The pool stores encrypted LP positions. Only aggregate statistics
     /// (total liquidity, number of LPs) are public.
+    /// Call initialize_pool_vaults after this to create the token vaults.
     pub fn initialize_pool(
         ctx: Context<InitializePool>,
         token_a_mint: Pubkey,
@@ -43,6 +44,15 @@ pub mod darkflow {
         fee_rate_bps: u16,
     ) -> Result<()> {
         instructions::initialize_pool(ctx, token_a_mint, token_b_mint, pool_encryption_pubkey, fee_rate_bps)
+    }
+
+    /// Initialize pool vaults (step 2: create token vaults)
+    ///
+    /// Must be called after initialize_pool to create the token vault accounts.
+    pub fn initialize_pool_vaults(
+        ctx: Context<InitializePoolVaults>,
+    ) -> Result<()> {
+        instructions::initialize_pool_vaults(ctx)
     }
 
     /// Update pool configuration (authority only)
@@ -201,7 +211,24 @@ pub struct InitializePool<'info> {
         seeds = [b"dark_pool", token_a_mint.key().as_ref(), token_b_mint.key().as_ref()],
         bump
     )]
-    pub pool: Account<'info, DarkPool>,
+    pub pool: Box<Account<'info, DarkPool>>,
+
+    /// CHECK: Token A mint
+    pub token_a_mint: UncheckedAccount<'info>,
+
+    /// CHECK: Token B mint
+    pub token_b_mint: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct InitializePoolVaults<'info> {
+    #[account(mut)]
+    pub pool: Box<Account<'info, DarkPool>>,
 
     /// CHECK: Token A mint
     pub token_a_mint: UncheckedAccount<'info>,
@@ -217,7 +244,7 @@ pub struct InitializePool<'info> {
         seeds = [b"pool_vault_a", pool.key().as_ref()],
         bump
     )]
-    pub vault_a: Account<'info, TokenAccount>,
+    pub vault_a: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -227,14 +254,13 @@ pub struct InitializePool<'info> {
         seeds = [b"pool_vault_b", pool.key().as_ref()],
         bump
     )]
-    pub vault_b: Account<'info, TokenAccount>,
+    pub vault_b: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]

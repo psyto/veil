@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{InitializePool, UpdatePoolConfig, DarkPool};
+use crate::{InitializePool, InitializePoolVaults, UpdatePoolConfig, DarkPool};
 use crate::errors::DarkFlowError;
 
 /// Initialize a new dark liquidity pool
@@ -41,6 +41,16 @@ pub fn initialize_pool(
     msg!("Token B: {}", token_b_mint);
     msg!("Fee rate: {} bps", fee_rate_bps);
 
+    Ok(())
+}
+
+/// Initialize pool token vaults (step 2)
+pub fn initialize_pool_vaults(
+    _ctx: Context<InitializePoolVaults>,
+) -> Result<()> {
+    // Vaults are initialized by the Anchor init macro.
+    // No additional logic needed.
+    msg!("DarkFlow pool vaults initialized");
     Ok(())
 }
 
