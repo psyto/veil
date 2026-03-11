@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{InitializePool, InitializePoolVaults, UpdatePoolConfig, DarkPool};
+use crate::{InitializePool, InitializePoolVaults, UpdatePoolConfig};
 use crate::errors::DarkFlowError;
 
 /// Initialize a new dark liquidity pool

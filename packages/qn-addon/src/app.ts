@@ -9,7 +9,7 @@ import ordersRouter from './routes/orders';
 import payloadRouter from './routes/payload';
 import compressionRouter from './routes/compression';
 import { errorHandler } from './middleware/error-handler';
-import { apiLimiter, provisionLimiter } from './middleware/rate-limit';
+import { apiLimiter, provisionLimiter, deprecatedLimiter } from './middleware/rate-limit';
 import { requestId } from './middleware/request-id';
 
 export function createApp(): express.Application {
@@ -80,6 +80,18 @@ export function createApp(): express.Application {
 
   // PUDD provisioning (Basic Auth — handled inside router)
   app.use(provisionLimiter, provisionRouter);
+
+  // Stricter rate limiting for deprecated secret-handling endpoints
+  const deprecatedPaths = [
+    '/v1/encrypt',
+    '/v1/decrypt',
+    '/v1/crypto/encrypt-multiple',
+    '/v1/orders/encrypt',
+    '/v1/orders/decrypt',
+  ];
+  for (const path of deprecatedPaths) {
+    app.use(path, deprecatedLimiter);
+  }
 
   // API endpoints with rate limiting (instance lookup applied inside routes that need it)
   app.use(apiLimiter);

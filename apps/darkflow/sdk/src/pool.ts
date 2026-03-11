@@ -35,7 +35,7 @@ export class DarkPoolOperations {
   static findPoolAddress(
     tokenAMint: PublicKey,
     tokenBMint: PublicKey,
-    programId: PublicKey = new PublicKey('DFLow1111111111111111111111111111111111111')
+    programId: PublicKey = new PublicKey('8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U')
   ): PublicKey {
     const [poolAddress] = PublicKey.findProgramAddressSync(
       [Buffer.from('dark_pool'), tokenAMint.toBuffer(), tokenBMint.toBuffer()],

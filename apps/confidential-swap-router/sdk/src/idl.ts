@@ -91,6 +91,18 @@ export type ConfidentialSwapRouter = {
         {
           "name": "encryptedPayload",
           "type": "bytes"
+        },
+        {
+          "name": "payloadHash",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "userEncryptionPubkey",
+          "type": {
+            "array": ["u8", 32]
+          }
         }
       ]
     },
@@ -146,6 +158,14 @@ export type ConfidentialSwapRouter = {
         {
           "name": "decryptedMinOutput",
           "type": "u64"
+        },
+        {
+          "name": "decryptedSlippageBps",
+          "type": "u16"
+        },
+        {
+          "name": "decryptedDeadline",
+          "type": "i64"
         },
         {
           "name": "actualOutputAmount",
@@ -335,6 +355,18 @@ export type ConfidentialSwapRouter = {
             "type": "bytes"
           },
           {
+            "name": "payloadHash",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "userEncryptionPubkey",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -430,6 +462,11 @@ export type ConfidentialSwapRouter = {
       "code": 6012,
       "name": "alreadyClaimed",
       "msg": "Output already claimed"
+    },
+    {
+      "code": 6013,
+      "name": "payloadHashMismatch",
+      "msg": "Payload hash mismatch: solver's claimed decryption does not match user's commitment"
     }
   ],
   "metadata": {
@@ -530,6 +567,18 @@ export const IDL: ConfidentialSwapRouter = {
         {
           "name": "encryptedPayload",
           "type": "bytes"
+        },
+        {
+          "name": "payloadHash",
+          "type": {
+            "array": ["u8", 32]
+          }
+        },
+        {
+          "name": "userEncryptionPubkey",
+          "type": {
+            "array": ["u8", 32]
+          }
         }
       ]
     },
@@ -585,6 +634,14 @@ export const IDL: ConfidentialSwapRouter = {
         {
           "name": "decryptedMinOutput",
           "type": "u64"
+        },
+        {
+          "name": "decryptedSlippageBps",
+          "type": "u16"
+        },
+        {
+          "name": "decryptedDeadline",
+          "type": "i64"
         },
         {
           "name": "actualOutputAmount",
@@ -774,6 +831,18 @@ export const IDL: ConfidentialSwapRouter = {
             "type": "bytes"
           },
           {
+            "name": "payloadHash",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "userEncryptionPubkey",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -869,6 +938,11 @@ export const IDL: ConfidentialSwapRouter = {
       "code": 6012,
       "name": "alreadyClaimed",
       "msg": "Output already claimed"
+    },
+    {
+      "code": 6013,
+      "name": "payloadHashMismatch",
+      "msg": "Payload hash mismatch: solver's claimed decryption does not match user's commitment"
     }
   ],
   "metadata": {

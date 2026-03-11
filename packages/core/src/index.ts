@@ -103,4 +103,8 @@ export {
   generateSwapProof,
   verifySwapProof,
   generateRangeProof,
+  OrderCommitmentProofInputs,
+  OrderCommitmentProofOutputs,
+  generateOrderCommitmentProof,
+  verifyOrderCommitmentProof,
 } from './noir';

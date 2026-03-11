@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@privacy-suite/crypto`), we maximize impact while minimizing redundant development.
+This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@veil/core`), we maximize impact while minimizing redundant development.
 
 **Hackathons:**
 - Solana PrivacyHack 2026 (January 12-30, 2026)
@@ -586,9 +586,33 @@ anchor deploy
 
 ---
 
+## Cross-Chain: EVM Swap Router
+
+The `@veil/evm-swap-router` package is an Ethereum proof-of-concept that reuses the same `@veil/orders` library used on Solana. This demonstrates that Veil's order encryption and serialization is chain-agnostic — the same encrypted order format works on both Solana and EVM chains.
+
+### Additional Packages
+
+| Package | Purpose |
+|---------|---------|
+| `@veil/core` | Shared encryption, Arcium MPC module, ZK compression, shielded transfers |
+| `@veil/orders` | Order-specific encryption and serialization (used by both Solana and EVM routers) |
+| `@veil/browser` | Browser-friendly VeilClient wrapper |
+| `@veil/mcp-server` | MCP server for AI agent integration |
+| `@veil/qn-addon` | QuickNode marketplace add-on |
+| `@veil/evm-swap-router` | EVM proof-of-concept (Ethereum version) |
+
+### Technology Stack Update
+
+- **Build system:** pnpm + Turbo (monorepo)
+- **ZK circuits:** Noir (`apps/darkflow/circuits/`) — swap, execution, and position proofs
+- **MPC:** Arcium integration via `@veil/core` arcium module
+- **Cross-chain:** `@veil/evm-swap-router` proves chain-agnostic encryption
+
+---
+
 ## Conclusion
 
-By leveraging shared infrastructure (`@privacy-suite/crypto`), we've built five privacy-focused applications across three hackathons. Each app targets a different track/hackathon, maximizing prize potential while sharing core cryptographic functionality.
+By leveraging shared infrastructure (`@veil/core`), we've built five privacy-focused applications across three hackathons. Each app targets a different track/hackathon, maximizing prize potential while sharing core cryptographic functionality.
 
 **Key Success Factors:**
 1. Shared library upgrades benefit all five applications
@@ -596,6 +620,10 @@ By leveraging shared infrastructure (`@privacy-suite/crypto`), we've built five 
 3. Multiple bounty eligibility per project
 4. Three deployed programs on devnet (Swap Router, RWA Secrets, Umbra)
 5. Comprehensive documentation and demo scripts prepared
+6. Chain-agnostic encryption proven via `@veil/evm-swap-router` (same `@veil/orders` on Solana and Ethereum)
+7. Noir ZK circuits at `apps/darkflow/circuits/` for swap, execution, and position proofs
+8. MCP server (`@veil/mcp-server`) enables AI agent integration
+9. Monorepo managed with pnpm + Turbo for unified builds
 
 **Deployed Programs:**
 - Confidential Swap Router: `v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM`

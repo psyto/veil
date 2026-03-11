@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "anchor build --no-idl",
-    "test": "ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=~/.config/solana/id.json yarn run ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'",
+    "test": "ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=~/.config/solana/id.json pnpm ts-mocha -p ./tsconfig.json -t 1000000 'tests/**/*.ts'",
     "deploy": "anchor deploy",
     "clean": "rm -rf target"
   },

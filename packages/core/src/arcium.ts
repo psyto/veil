@@ -185,12 +185,28 @@ export class ArciumClient {
    * This is the key privacy feature - totals are public, individuals are private
    */
   async queryPoolAggregates(poolAddress: PublicKey): Promise<PoolAggregates> {
-    // In production, this would query Arcium's MPC network
-    // For now, return mock data structure
     console.log(`[Arcium] Querying aggregates for pool: ${poolAddress.toBase58()}`);
 
-    // TODO: Implement actual Arcium MPC query
-    // const result = await this.mpcQuery('pool_aggregates', { pool: poolAddress });
+    try {
+      const result = await this.mpcCompute('pool_aggregates', new Map([
+        ['pool', new TextEncoder().encode(poolAddress.toBase58())],
+      ]));
+
+      if (result.success && result.result && result.result.length >= 32) {
+        // Parse aggregate data from MPC result:
+        // [0..8] totalValueLocked (u64 BE), [8..12] lpCount (u32 BE),
+        // [12..20] volume24h (u64 BE), [20..24] utilizationRate (u32 BE, bps)
+        const view = new DataView(result.result.buffer, result.result.byteOffset);
+        return {
+          totalValueLocked: view.getBigUint64(0, false),
+          lpCount: view.getUint32(8, false),
+          volume24h: view.getBigUint64(12, false),
+          utilizationRate: view.getUint32(20, false) / 10000,
+        };
+      }
+    } catch (error) {
+      console.warn(`[Arcium] MPC query failed, returning zero aggregates:`, error);
+    }
 
     return {
       totalValueLocked: BigInt(0),
@@ -285,16 +301,61 @@ export class ArciumClient {
   ): Promise<MpcComputationResult> {
     console.log(`[Arcium] Executing MPC computation: ${computation}`);
 
-    // TODO: Implement actual Arcium MPC execution
-    // This would:
-    // 1. Submit encrypted inputs to Arcium network
-    // 2. MPC nodes compute on encrypted data
-    // 3. Return encrypted result (or public aggregate)
+    const endpoint = `${this.config.endpoint}/v1/compute`;
 
-    return {
-      success: true,
-      result: new Uint8Array(0),
-    };
+    try {
+      // Serialize inputs for the Arcium API
+      const serializedInputs: Record<string, string> = {};
+      for (const [key, value] of inputs) {
+        serializedInputs[key] = Buffer.from(value).toString('base64');
+      }
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (this.config.apiKey) {
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          computation,
+          inputs: serializedInputs,
+          network: this.config.network,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return {
+          success: false,
+          error: `Arcium API error ${response.status}: ${errorText}`,
+        };
+      }
+
+      const data = await response.json() as {
+        success: boolean;
+        result?: string;
+        publicOutput?: string;
+        error?: string;
+      };
+
+      return {
+        success: data.success,
+        result: data.result ? new Uint8Array(Buffer.from(data.result, 'base64')) : undefined,
+        publicOutput: data.publicOutput ? BigInt(data.publicOutput) : undefined,
+        error: data.error,
+      };
+    } catch (error: any) {
+      // Network errors are expected when Arcium is not available
+      console.warn(`[Arcium] MPC compute unavailable: ${error.message}`);
+      return {
+        success: false,
+        error: `Arcium network unavailable: ${error.message}`,
+      };
+    }
   }
 
   /**
@@ -306,10 +367,28 @@ export class ArciumClient {
   ): Promise<boolean> {
     console.log(`[Arcium] Verifying position proof`);
 
-    // TODO: Implement actual ZK proof verification
-    // This would verify the proof against the commitment
+    try {
+      const result = await this.mpcCompute('verify_position_proof', new Map([
+        ['commitment', commitment],
+        ['proof', proof],
+      ]));
 
-    return true;
+      if (result.success && result.publicOutput !== undefined) {
+        return result.publicOutput === BigInt(1);
+      }
+
+      // Fallback: local SHA-256 verification matching Noir circuit logic
+      // commitment must equal SHA-256(proof_data)
+      const proofHash = sha256(proof);
+      if (proofHash.length !== commitment.length) return false;
+      for (let i = 0; i < commitment.length; i++) {
+        if (proofHash[i] !== commitment[i]) return false;
+      }
+      return true;
+    } catch (error) {
+      console.warn(`[Arcium] Position proof verification failed:`, error);
+      return false;
+    }
   }
 }
 

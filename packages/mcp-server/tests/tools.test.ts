@@ -16,8 +16,8 @@ describe('mcp-server tools', () => {
   // ── generate_keypair ────────────────────────────────────────────────
 
   describe('generate_keypair', () => {
-    it('returns JSON with publicKey and secretKey as base64', () => {
-      const result = handleTool('generate_keypair', {});
+    it('returns JSON with publicKey and secretKey as base64', async () => {
+      const result = await handleTool('generate_keypair', {});
       const data = parseResult(result);
       expect(data.publicKey).toBeDefined();
       expect(data.secretKey).toBeDefined();
@@ -30,10 +30,10 @@ describe('mcp-server tools', () => {
   // ── derive_keypair ──────────────────────────────────────────────────
 
   describe('derive_keypair', () => {
-    it('is deterministic — same seed produces same keypair', () => {
+    it('is deterministic — same seed produces same keypair', async () => {
       const seed = randomSeed();
-      const r1 = parseResult(handleTool('derive_keypair', { seed }));
-      const r2 = parseResult(handleTool('derive_keypair', { seed }));
+      const r1 = parseResult(await handleTool('derive_keypair', { seed }));
+      const r2 = parseResult(await handleTool('derive_keypair', { seed }));
       expect(r1.publicKey).toBe(r2.publicKey);
       expect(r1.secretKey).toBe(r2.secretKey);
     });
@@ -42,13 +42,13 @@ describe('mcp-server tools', () => {
   // ── encrypt / decrypt ──────────────────────────────────────────────
 
   describe('encrypt / decrypt', () => {
-    it('roundtrip: decrypt recovers original message', () => {
-      const sender = parseResult(handleTool('generate_keypair', {}));
-      const recipient = parseResult(handleTool('generate_keypair', {}));
+    it('roundtrip: decrypt recovers original message', async () => {
+      const sender = parseResult(await handleTool('generate_keypair', {}));
+      const recipient = parseResult(await handleTool('generate_keypair', {}));
       const message = Buffer.from('hello world').toString('base64');
 
       const encrypted = parseResult(
-        handleTool('encrypt', {
+        await handleTool('encrypt', {
           message,
           recipientPublicKey: recipient.publicKey,
           senderSecretKey: sender.secretKey,
@@ -60,7 +60,7 @@ describe('mcp-server tools', () => {
       expect(encrypted.bytes).toBeDefined();
 
       const decrypted = parseResult(
-        handleTool('decrypt', {
+        await handleTool('decrypt', {
           encrypted: encrypted.bytes,
           senderPublicKey: sender.publicKey,
           recipientSecretKey: recipient.secretKey,
@@ -74,14 +74,14 @@ describe('mcp-server tools', () => {
   // ── encrypt_multiple ────────────────────────────────────────────────
 
   describe('encrypt_multiple', () => {
-    it('returns recipientCount and recipients map', () => {
-      const sender = parseResult(handleTool('generate_keypair', {}));
-      const r1 = parseResult(handleTool('generate_keypair', {}));
-      const r2 = parseResult(handleTool('generate_keypair', {}));
+    it('returns recipientCount and recipients map', async () => {
+      const sender = parseResult(await handleTool('generate_keypair', {}));
+      const r1 = parseResult(await handleTool('generate_keypair', {}));
+      const r2 = parseResult(await handleTool('generate_keypair', {}));
       const message = Buffer.from('shared secret').toString('base64');
 
       const result = parseResult(
-        handleTool('encrypt_multiple', {
+        await handleTool('encrypt_multiple', {
           message,
           recipientPublicKeys: [r1.publicKey, r2.publicKey],
           senderSecretKey: sender.secretKey,
@@ -96,13 +96,13 @@ describe('mcp-server tools', () => {
   // ── validate_encrypted ──────────────────────────────────────────────
 
   describe('validate_encrypted', () => {
-    it('returns valid: true for properly encrypted data', () => {
-      const sender = parseResult(handleTool('generate_keypair', {}));
-      const recipient = parseResult(handleTool('generate_keypair', {}));
+    it('returns valid: true for properly encrypted data', async () => {
+      const sender = parseResult(await handleTool('generate_keypair', {}));
+      const recipient = parseResult(await handleTool('generate_keypair', {}));
       const message = Buffer.from('test').toString('base64');
 
       const encrypted = parseResult(
-        handleTool('encrypt', {
+        await handleTool('encrypt', {
           message,
           recipientPublicKey: recipient.publicKey,
           senderSecretKey: sender.secretKey,
@@ -111,7 +111,7 @@ describe('mcp-server tools', () => {
       );
 
       const result = parseResult(
-        handleTool('validate_encrypted', { data: encrypted.bytes }),
+        await handleTool('validate_encrypted', { data: encrypted.bytes }),
       );
       expect(result.valid).toBe(true);
       expect(result.byteLength).toBeGreaterThan(0);
@@ -121,15 +121,15 @@ describe('mcp-server tools', () => {
   // ── key_convert ─────────────────────────────────────────────────────
 
   describe('key_convert', () => {
-    it('base64 → base58 and back', () => {
-      const kp = parseResult(handleTool('generate_keypair', {}));
+    it('base64 → base58 and back', async () => {
+      const kp = parseResult(await handleTool('generate_keypair', {}));
 
       // base64 → base58
-      const r1 = parseResult(handleTool('key_convert', { publicKey: kp.publicKey }));
+      const r1 = parseResult(await handleTool('key_convert', { publicKey: kp.publicKey }));
       expect(r1.base58).toBeDefined();
 
       // base58 → base64
-      const r2 = parseResult(handleTool('key_convert', { base58: r1.base58 }));
+      const r2 = parseResult(await handleTool('key_convert', { base58: r1.base58 }));
       expect(r2.publicKey).toBe(kp.publicKey);
     });
   });
@@ -137,18 +137,18 @@ describe('mcp-server tools', () => {
   // ── shamir_split / shamir_combine ──────────────────────────────────
 
   describe('shamir_split / shamir_combine', () => {
-    it('roundtrip: split then combine recovers original secret', () => {
+    it('roundtrip: split then combine recovers original secret', async () => {
       const secret = randomSeed();
 
       const splitResult = parseResult(
-        handleTool('shamir_split', { secret, totalShares: 5, threshold: 3 }),
+        await handleTool('shamir_split', { secret, totalShares: 5, threshold: 3 }),
       );
       expect(splitResult.shares.length).toBe(5);
       expect(splitResult.threshold).toBe(3);
       expect(splitResult.totalShares).toBe(5);
 
       const combineResult = parseResult(
-        handleTool('shamir_combine', {
+        await handleTool('shamir_combine', {
           shares: splitResult.shares.slice(0, 3),
         }),
       );
@@ -159,14 +159,14 @@ describe('mcp-server tools', () => {
   // ── shamir_verify ──────────────────────────────────────────────────
 
   describe('shamir_verify', () => {
-    it('returns valid: true for consistent shares', () => {
+    it('returns valid: true for consistent shares', async () => {
       const secret = randomSeed();
       const splitResult = parseResult(
-        handleTool('shamir_split', { secret, totalShares: 5, threshold: 3 }),
+        await handleTool('shamir_split', { secret, totalShares: 5, threshold: 3 }),
       );
 
       const verifyResult = parseResult(
-        handleTool('shamir_verify', {
+        await handleTool('shamir_verify', {
           shares: splitResult.shares,
           threshold: 3,
         }),
@@ -180,12 +180,12 @@ describe('mcp-server tools', () => {
   // ── encrypt_order / decrypt_order ──────────────────────────────────
 
   describe('encrypt_order / decrypt_order', () => {
-    it('roundtrip preserves order fields', () => {
-      const user = parseResult(handleTool('generate_keypair', {}));
-      const solver = parseResult(handleTool('generate_keypair', {}));
+    it('roundtrip preserves order fields', async () => {
+      const user = parseResult(await handleTool('generate_keypair', {}));
+      const solver = parseResult(await handleTool('generate_keypair', {}));
 
       const encrypted = parseResult(
-        handleTool('encrypt_order', {
+        await handleTool('encrypt_order', {
           minOutputAmount: '1000000000',
           slippageBps: 50,
           deadline: 1700000000,
@@ -194,11 +194,12 @@ describe('mcp-server tools', () => {
           userPublicKey: user.publicKey,
         }),
       );
-      expect(encrypted.nonce).toBeDefined();
       expect(encrypted.bytes).toBeDefined();
+      expect(encrypted.payloadHash).toBeDefined();
+      expect(encrypted.userPublicKey).toBeDefined();
 
       const decrypted = parseResult(
-        handleTool('decrypt_order', {
+        await handleTool('decrypt_order', {
           encrypted: encrypted.bytes,
           userPublicKey: user.publicKey,
           solverSecretKey: solver.secretKey,
@@ -214,8 +215,8 @@ describe('mcp-server tools', () => {
   // ── unknown tool ────────────────────────────────────────────────────
 
   describe('unknown tool', () => {
-    it('throws for an unrecognized tool name', () => {
-      expect(() => handleTool('nonexistent_tool', {})).toThrow('Unknown tool: nonexistent_tool');
+    it('rejects for an unrecognized tool name', async () => {
+      await expect(handleTool('nonexistent_tool', {})).rejects.toThrow('Unknown tool: nonexistent_tool');
     });
   });
 });

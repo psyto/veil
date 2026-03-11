@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
-use crate::{LaunchConfidentialToken, BuyFromLaunch, ConfidentialLaunch, LaunchStatus};
+use crate::{LaunchConfidentialToken, BuyFromLaunch, LaunchStatus};
 use crate::errors::DarkFlowError;
 
 /// Launch a token with confidential bonding curve
@@ -123,7 +123,7 @@ pub fn buy_from_launch(
 fn calculate_tokens_for_payment(
     payment: u64,
     initial_price: u64,
-    current_sold: u64,
+    _current_sold: u64,
     _max_supply: u64,
 ) -> Result<u64> {
     // Simple linear bonding curve: price increases with supply

@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
 use crate::{DarkSwap, SubmitDarkOrder, ExecuteDarkOrder, CancelDarkOrder, DarkOrder, OrderStatus};
 use crate::errors::DarkFlowError;
+use crate::zk_verify;
 
 /// Execute a dark swap with ZK proof
 pub fn dark_swap(
@@ -21,9 +22,9 @@ pub fn dark_swap(
         DarkFlowError::InvalidEncryptedData
     );
 
-    // Validate ZK proof
+    // Validate ZK proof (Noir circuit verification)
     require!(
-        verify_swap_proof(&zk_proof, &encrypted_order, &nullifier),
+        zk_verify::verify_swap_proof(&zk_proof, &encrypted_order, &nullifier),
         DarkFlowError::InvalidZkProof
     );
 
@@ -126,9 +127,9 @@ pub fn execute_dark_order(
     // Validate order can be executed
     require!(order.can_execute()?, DarkFlowError::OrderNotPending);
 
-    // Validate execution proof
+    // Validate execution proof (Noir circuit verification)
     require!(
-        verify_execution_proof(&execution_proof, &order.commitment),
+        zk_verify::verify_execution_proof(&execution_proof, &order.commitment),
         DarkFlowError::InvalidZkProof
     );
 
@@ -223,33 +224,6 @@ pub fn cancel_dark_order(ctx: Context<CancelDarkOrder>) -> Result<()> {
 }
 
 // Helper functions
-
-fn verify_swap_proof(proof: &[u8], order: &[u8], nullifier: &[u8; 32]) -> bool {
-    if proof.len() < 32 {
-        return false;
-    }
-    // Proof must contain blake3(order || nullifier || "darkflow_swap")
-    // TODO: Replace with real Noir proof verification
-    let mut input = Vec::with_capacity(order.len() + 32 + 13);
-    input.extend_from_slice(order);
-    input.extend_from_slice(nullifier);
-    input.extend_from_slice(b"darkflow_swap");
-    let expected = blake3::hash(&input);
-    proof[..32] == *expected.as_bytes()
-}
-
-fn verify_execution_proof(proof: &[u8], commitment: &[u8; 32]) -> bool {
-    if proof.len() < 32 {
-        return false;
-    }
-    // Proof must contain blake3(commitment || "darkflow_execution")
-    // TODO: Replace with real Noir proof verification
-    let mut input = [0u8; 50];
-    input[..32].copy_from_slice(commitment);
-    input[32..50].copy_from_slice(b"darkflow_execution");
-    let expected = blake3::hash(&input);
-    proof[..32] == *expected.as_bytes()
-}
 
 fn calculate_swap_output(
     input: u64,

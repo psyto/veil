@@ -1,6 +1,6 @@
 {
   "name": "@veil/mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "MCP server exposing Veil privacy primitives for AI agents — chain-agnostic crypto tools (encryption, Shamir, orders) plus Solana-specific identity/trust tools",
   "main": "dist/index.js",

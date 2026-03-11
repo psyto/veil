@@ -4,6 +4,18 @@ import { decodeBase64 } from '../utils/validation';
 
 const router = Router();
 
+const SUNSET_DATE = '2026-09-01';
+const SUNSET_MS = new Date(SUNSET_DATE).getTime();
+
+/** Log a deprecation warning with days remaining until sunset */
+function logDeprecatedAccess(endpoint: string, req: Request): void {
+  const daysRemaining = Math.ceil((SUNSET_MS - Date.now()) / (1000 * 60 * 60 * 24));
+  const instanceId = req.headers['x-instance-id'] || 'unknown';
+  console.warn(
+    `[DEPRECATED] ${endpoint} called by instance=${instanceId} — ${daysRemaining} days until sunset (${SUNSET_DATE})`
+  );
+}
+
 router.post('/v1/keypair/generate', (_req: Request, res: Response) => {
   try {
     const kp = cryptoService.generate();
@@ -59,6 +71,7 @@ router.post('/v1/keypair/derive', (req: Request, res: Response) => {
 });
 
 router.post('/v1/encrypt', (req: Request, res: Response) => {
+  logDeprecatedAccess('POST /v1/encrypt', req);
   try {
     const { plaintext, recipientPublicKey, senderSecretKey, senderPublicKey } = req.body;
 
@@ -86,6 +99,8 @@ router.post('/v1/encrypt', (req: Request, res: Response) => {
       { publicKey: senderPk, secretKey: senderSk },
     );
 
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
     res.json({
       success: true,
       nonce: {
@@ -100,6 +115,11 @@ router.post('/v1/encrypt', (req: Request, res: Response) => {
         base64: Buffer.from(result.bytes).toString('base64'),
         hex: Buffer.from(result.bytes).toString('hex'),
       },
+      _deprecated: {
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @veil/core or @veil/browser instead.',
+        sunset: '2026-09-01',
+        alternative: '@veil/core encrypt() or @veil/browser VeilClient.encrypt()',
+      },
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -107,6 +127,7 @@ router.post('/v1/encrypt', (req: Request, res: Response) => {
 });
 
 router.post('/v1/decrypt', (req: Request, res: Response) => {
+  logDeprecatedAccess('POST /v1/decrypt', req);
   try {
     const { bytes, senderPublicKey, recipientSecretKey, recipientPublicKey } = req.body;
 
@@ -134,11 +155,18 @@ router.post('/v1/decrypt', (req: Request, res: Response) => {
       { publicKey: recipientPk, secretKey: recipientSk },
     );
 
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
     res.json({
       success: true,
       plaintext: {
         base64: Buffer.from(result).toString('base64'),
         hex: Buffer.from(result).toString('hex'),
+      },
+      _deprecated: {
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform decryption client-side using @veil/core or @veil/browser instead.',
+        sunset: '2026-09-01',
+        alternative: '@veil/core decrypt() or @veil/browser VeilClient.decrypt()',
       },
     });
   } catch (error: any) {
@@ -147,6 +175,7 @@ router.post('/v1/decrypt', (req: Request, res: Response) => {
 });
 
 router.post('/v1/crypto/encrypt-multiple', (req: Request, res: Response) => {
+  logDeprecatedAccess('POST /v1/crypto/encrypt-multiple', req);
   try {
     const { plaintext, recipientPublicKeys, senderSecretKey, senderPublicKey } = req.body;
 
@@ -208,7 +237,18 @@ router.post('/v1/crypto/encrypt-multiple', (req: Request, res: Response) => {
       };
     });
 
-    res.json({ success: true, recipientCount: recipientPublicKeys.length, recipients });
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
+    res.json({
+      success: true,
+      recipientCount: recipientPublicKeys.length,
+      recipients,
+      _deprecated: {
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @veil/core or @veil/browser instead.',
+        sunset: '2026-09-01',
+        alternative: '@veil/core encryptForMultiple() or @veil/browser VeilClient.encryptForMultiple()',
+      },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

@@ -40,6 +40,8 @@ pub mod confidential_swap_router {
         order_id: u64,
         input_amount: u64,
         encrypted_payload: Vec<u8>,
+        payload_hash: [u8; 32],
+        user_encryption_pubkey: [u8; 32],
     ) -> Result<()> {
         require!(
             encrypted_payload.len() >= MIN_PAYLOAD_SIZE && encrypted_payload.len() <= MAX_PAYLOAD_SIZE,
@@ -73,6 +75,8 @@ pub mod confidential_swap_router {
         order.executed_at = 0;
         order.executed_by = None;
         order.execution_signature = Vec::new();
+        order.payload_hash = payload_hash;
+        order.user_encryption_pubkey = user_encryption_pubkey;
         order.bump = ctx.bumps.order;
 
         msg!("Order {} submitted", order_id);
@@ -82,8 +86,29 @@ pub mod confidential_swap_router {
     pub fn execute_order(
         ctx: Context<ExecuteOrder>,
         decrypted_min_output: u64,
+        decrypted_slippage_bps: u16,
+        decrypted_deadline: i64,
         actual_output_amount: u64,
     ) -> Result<()> {
+        // Verify commitment: reconstruct serialized payload and hash it.
+        // Layout matches @veil/core SWAP_ORDER_SCHEMA:
+        // minOutputAmount(u64 LE, 8) + slippageBps(u16 LE, 2) + deadline(i64 LE, 8) + padding(6 zeros) = 24 bytes
+        let mut payload_bytes = Vec::with_capacity(24);
+        payload_bytes.extend_from_slice(&decrypted_min_output.to_le_bytes());
+        payload_bytes.extend_from_slice(&decrypted_slippage_bps.to_le_bytes());
+        payload_bytes.extend_from_slice(&decrypted_deadline.to_le_bytes());
+        payload_bytes.extend_from_slice(&[0u8; 6]); // padding
+
+        let computed_hash = anchor_lang::solana_program::hash::hash(&payload_bytes);
+        require!(
+            computed_hash.to_bytes() == ctx.accounts.order.payload_hash,
+            SwapError::PayloadHashMismatch
+        );
+
+        // Verify deadline hasn't passed
+        let clock = Clock::get()?;
+        require!(clock.unix_timestamp <= decrypted_deadline, SwapError::OrderExpired);
+
         require!(actual_output_amount >= decrypted_min_output, SwapError::SlippageExceeded);
 
         let order = &ctx.accounts.order;

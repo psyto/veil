@@ -31,10 +31,15 @@ export function createSolverApiRouter(solver: ConfidentialSwapSolver): Router {
 
   /**
    * POST /api/register-encryption-pubkey
-   * Registers a user's encryption public key
+   * @deprecated User encryption pubkeys are now stored on-chain via submit_order.
+   * This endpoint is kept for backward compatibility with legacy clients.
+   * Sunset: 2026-09-01
    * Body: { userAddress: string, encryptionPubkey: string (hex) }
    */
   router.post('/register-encryption-pubkey', (req: Request, res: Response) => {
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
+
     try {
       const { userAddress, encryptionPubkey } = req.body;
 
@@ -89,6 +94,10 @@ export function createSolverApiRouter(solver: ConfidentialSwapSolver): Router {
         success: true,
         message: `Encryption pubkey registered for ${userAddress}`,
         registeredUsers: ConfidentialSwapSolver.getRegisteredUserCount(),
+        _deprecated: {
+          warning: 'This endpoint is deprecated. User encryption pubkeys are now stored on-chain via submit_order. This endpoint will be removed after 2026-09-01.',
+          alternative: 'Pass userEncryptionPubkey as an argument to submit_order on-chain.',
+        },
       });
     } catch (error: any) {
       res.status(500).json({
@@ -133,7 +142,7 @@ export function createSolverApiServer(solver: ConfidentialSwapSolver, port: numb
       version: '1.0.0',
       endpoints: [
         'GET /api/solver-pubkey - Get solver encryption pubkey',
-        'POST /api/register-encryption-pubkey - Register user encryption pubkey',
+        'POST /api/register-encryption-pubkey - [DEPRECATED] Register user encryption pubkey (now stored on-chain)',
         'GET /api/health - Health check',
       ],
     });

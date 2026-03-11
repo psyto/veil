@@ -40,4 +40,7 @@ pub enum SwapError {
 
     #[msg("Order already claimed")]
     AlreadyClaimed,
+
+    #[msg("Payload hash mismatch: solver's claimed decryption does not match user's commitment")]
+    PayloadHashMismatch,
 }

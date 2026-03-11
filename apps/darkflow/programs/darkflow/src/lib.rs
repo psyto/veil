@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::token::{Token, TokenAccount};
 
 declare_id!("8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U");
 
@@ -19,6 +19,7 @@ declare_id!("8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U");
 pub mod state;
 pub mod instructions;
 pub mod errors;
+pub mod zk_verify;
 
 pub use state::*;
 pub use errors::*;

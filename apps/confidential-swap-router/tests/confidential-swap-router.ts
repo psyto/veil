@@ -15,6 +15,7 @@ import {
 } from "@solana/spl-token";
 import { expect } from "chai";
 import * as nacl from "tweetnacl";
+import { createHash } from "crypto";
 
 // Import IDL from SDK (bypasses anchor.workspace IDL format issues)
 import { IDL, ConfidentialSwapRouter } from "../sdk/src/idl";
@@ -64,17 +65,21 @@ describe("confidential-swap-router", () => {
   const ORDER_VAULT_SEED = Buffer.from("order_vault");
   const OUTPUT_VAULT_SEED = Buffer.from("output_vault");
 
-  // Helper function to create encrypted payload
+  // Helper function to create encrypted payload with commitment hash
   function createEncryptedPayload(
     minOutputAmount: BN,
     slippageBps: number,
     deadline: number
-  ): Uint8Array {
+  ): { encrypted: Uint8Array; payloadHash: number[] } {
     // Serialize payload: minOutputAmount (8) + slippageBps (2) + deadline (8) + padding (6) = 24 bytes
     const payload = Buffer.alloc(24);
     payload.writeBigUInt64LE(BigInt(minOutputAmount.toString()), 0);
     payload.writeUInt16LE(slippageBps, 8);
     payload.writeBigInt64LE(BigInt(deadline), 10);
+
+    // Compute SHA-256 commitment hash of the serialized payload
+    const hash = createHash("sha256").update(payload).digest();
+    const payloadHash = Array.from(new Uint8Array(hash));
 
     // Encrypt with NaCl box
     const nonce = nacl.randomBytes(24);
@@ -90,7 +95,7 @@ describe("confidential-swap-router", () => {
     encrypted.set(nonce, 0);
     encrypted.set(ciphertext, nonce.length);
 
-    return encrypted;
+    return { encrypted, payloadHash };
   }
 
   // Helper to derive order PDA
@@ -303,7 +308,7 @@ describe("confidential-swap-router", () => {
       const slippageBps = 50; // 0.5%
       const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes
 
-      const encryptedPayload = createEncryptedPayload(
+      const { encrypted: encryptedPayload, payloadHash } = createEncryptedPayload(
         minOutputAmount,
         slippageBps,
         deadline
@@ -314,7 +319,7 @@ describe("confidential-swap-router", () => {
       ).amount;
 
       await program.methods
-        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload))
+        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload), payloadHash, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -337,6 +342,11 @@ describe("confidential-swap-router", () => {
       expect(order.outputMint.toBase58()).to.equal(outputMint.toBase58());
       expect(order.inputAmount.toNumber()).to.equal(inputAmount.toNumber());
       expect(order.status).to.deep.equal({ pending: {} });
+
+      // Verify user encryption pubkey stored on-chain
+      expect(Array.from(order.userEncryptionPubkey)).to.deep.equal(
+        Array.from(userEncryptionKeypair.publicKey)
+      );
 
       // Verify tokens transferred to vault
       const vaultBalance = (
@@ -363,10 +373,11 @@ describe("confidential-swap-router", () => {
       const [newOrderVaultPda] = getOrderVaultPda(newOrderPda);
 
       const shortPayload = Buffer.alloc(10); // Too short
+      const dummyHash = Array.from(new Uint8Array(32));
 
       try {
         await program.methods
-          .submitOrder(newOrderId, inputAmount, shortPayload)
+          .submitOrder(newOrderId, inputAmount, shortPayload, dummyHash, Array.from(userEncryptionKeypair.publicKey))
           .accounts({
             owner: user.publicKey,
             solverConfig: solverConfigPda,
@@ -395,6 +406,8 @@ describe("confidential-swap-router", () => {
     let orderPda: PublicKey;
     let orderVaultPda: PublicKey;
     let outputVaultPda: PublicKey;
+    const slippageBps = 50;
+    let deadline: number;
 
     before(async function() {
       if (solverConfigAlreadyExists) {
@@ -408,16 +421,15 @@ describe("confidential-swap-router", () => {
       [outputVaultPda] = getOutputVaultPda(orderPda);
 
       // Submit order first
-      const slippageBps = 50;
-      const deadline = Math.floor(Date.now() / 1000) + 300;
-      const encryptedPayload = createEncryptedPayload(
+      deadline = Math.floor(Date.now() / 1000) + 300;
+      const { encrypted: encryptedPayload, payloadHash } = createEncryptedPayload(
         minOutputAmount,
         slippageBps,
         deadline
       );
 
       await program.methods
-        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload))
+        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload), payloadHash, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -447,7 +459,7 @@ describe("confidential-swap-router", () => {
       ).amount;
 
       await program.methods
-        .executeOrder(minOutputAmount, actualOutputAmount)
+        .executeOrder(minOutputAmount, slippageBps, new BN(deadline), actualOutputAmount)
         .accounts({
           solver: solver.publicKey,
           solverConfig: solverConfigPda,
@@ -507,14 +519,16 @@ describe("confidential-swap-router", () => {
       const [newOutputVaultPda] = getOutputVaultPda(newOrderPda);
 
       // Submit order
-      const encryptedPayload = createEncryptedPayload(
+      const slippage3 = 50;
+      const deadline3 = Math.floor(Date.now() / 1000) + 300;
+      const { encrypted: encryptedPayload3, payloadHash: payloadHash3 } = createEncryptedPayload(
         new BN(100_000_000), // min output: 100
-        50,
-        Math.floor(Date.now() / 1000) + 300
+        slippage3,
+        deadline3
       );
 
       await program.methods
-        .submitOrder(newOrderId, new BN(50_000_000), Buffer.from(encryptedPayload))
+        .submitOrder(newOrderId, new BN(50_000_000), Buffer.from(encryptedPayload3), payloadHash3, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -532,7 +546,7 @@ describe("confidential-swap-router", () => {
       // Try to execute with less than min output
       try {
         await program.methods
-          .executeOrder(new BN(100_000_000), new BN(50_000_000)) // actual < min
+          .executeOrder(new BN(100_000_000), slippage3, new BN(deadline3), new BN(50_000_000)) // actual < min
           .accounts({
             solver: solver.publicKey,
             solverConfig: solverConfigPda,
@@ -553,6 +567,66 @@ describe("confidential-swap-router", () => {
         expect(err.error.errorCode.code).to.equal("SlippageExceeded");
       }
     });
+
+    it("fails when order has expired (deadline passed)", async function() {
+      if (solverConfigAlreadyExists) {
+        console.log("  Skipping - solver config from previous run (solver mismatch)");
+        this.skip();
+        return;
+      }
+
+      const expiredOrderId = new BN(10);
+      const [expiredOrderPda] = getOrderPda(user.publicKey, expiredOrderId);
+      const [expiredOrderVaultPda] = getOrderVaultPda(expiredOrderPda);
+      const [expiredOutputVaultPda] = getOutputVaultPda(expiredOrderPda);
+
+      // Use a deadline in the past
+      const pastDeadline = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
+      const { encrypted: expiredPayload, payloadHash: expiredHash } = createEncryptedPayload(
+        new BN(48_000_000),
+        50,
+        pastDeadline
+      );
+
+      await program.methods
+        .submitOrder(expiredOrderId, new BN(50_000_000), Buffer.from(expiredPayload), expiredHash, Array.from(userEncryptionKeypair.publicKey))
+        .accounts({
+          owner: user.publicKey,
+          solverConfig: solverConfigPda,
+          order: expiredOrderPda,
+          inputMint,
+          outputMint,
+          userInputToken,
+          orderVault: expiredOrderVaultPda,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([user])
+        .rpc();
+
+      try {
+        await program.methods
+          .executeOrder(new BN(48_000_000), 50, new BN(pastDeadline), new BN(49_000_000))
+          .accounts({
+            solver: solver.publicKey,
+            solverConfig: solverConfigPda,
+            order: expiredOrderPda,
+            inputMint,
+            outputMint,
+            orderVault: expiredOrderVaultPda,
+            outputVault: expiredOutputVaultPda,
+            solverInputToken,
+            solverOutputToken,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([solver])
+          .rpc();
+        expect.fail("Should have thrown error");
+      } catch (err: any) {
+        expect(err.error.errorCode.code).to.equal("OrderExpired");
+      }
+    });
   });
 
   describe("cancel_order", () => {
@@ -566,14 +640,14 @@ describe("confidential-swap-router", () => {
       [orderVaultPda] = getOrderVaultPda(orderPda);
 
       // Submit order
-      const encryptedPayload = createEncryptedPayload(
+      const { encrypted: encryptedPayload4, payloadHash: payloadHash4 } = createEncryptedPayload(
         new BN(24_000_000),
         50,
         Math.floor(Date.now() / 1000) + 300
       );
 
       await program.methods
-        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload))
+        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload4), payloadHash4, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -630,14 +704,14 @@ describe("confidential-swap-router", () => {
       const [newOrderVaultPda] = getOrderVaultPda(newOrderPda);
 
       // Submit order
-      const encryptedPayload = createEncryptedPayload(
+      const { encrypted: encryptedPayload5, payloadHash: payloadHash5 } = createEncryptedPayload(
         new BN(10_000_000),
         50,
         Math.floor(Date.now() / 1000) + 300
       );
 
       await program.methods
-        .submitOrder(newOrderId, new BN(10_000_000), Buffer.from(encryptedPayload))
+        .submitOrder(newOrderId, new BN(10_000_000), Buffer.from(encryptedPayload5), payloadHash5, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -696,14 +770,16 @@ describe("confidential-swap-router", () => {
       [outputVaultPda] = getOutputVaultPda(orderPda);
 
       // Submit order
-      const encryptedPayload = createEncryptedPayload(
+      const slippage6 = 50;
+      const deadline6 = Math.floor(Date.now() / 1000) + 300;
+      const { encrypted: encryptedPayload6, payloadHash: payloadHash6 } = createEncryptedPayload(
         minOutputAmount,
-        50,
-        Math.floor(Date.now() / 1000) + 300
+        slippage6,
+        deadline6
       );
 
       await program.methods
-        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload))
+        .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload6), payloadHash6, Array.from(userEncryptionKeypair.publicKey))
         .accounts({
           owner: user.publicKey,
           solverConfig: solverConfigPda,
@@ -720,7 +796,7 @@ describe("confidential-swap-router", () => {
 
       // Execute order
       await program.methods
-        .executeOrder(minOutputAmount, actualOutputAmount)
+        .executeOrder(minOutputAmount, slippage6, new BN(deadline6), actualOutputAmount)
         .accounts({
           solver: solver.publicKey,
           solverConfig: solverConfigPda,

@@ -6,7 +6,13 @@ import {
   deserializePayload,
   validateEncryptedData,
   SWAP_ORDER_SCHEMA,
+  splitSecret,
+  combineShares,
+  SecretShare,
+  createThresholdEncryption,
+  decryptWithThreshold,
 } from '@veil/core';
+import { createHash } from 'crypto';
 import BN from 'bn.js';
 
 /**
@@ -151,8 +157,184 @@ export function getEncryptionPublicKey(keypair: EncryptionKeypair): Uint8Array {
   return keypair.publicKey;
 }
 
+/**
+ * Compute SHA-256 hash of the serialized order payload (commitment).
+ * This hash is submitted on-chain alongside the encrypted payload,
+ * allowing the program to verify the solver's decryption is honest.
+ */
+export function computePayloadHash(payload: OrderPayload): Uint8Array {
+  const serialized = serializeOrderPayload(payload);
+  const hash = createHash('sha256').update(serialized).digest();
+  return new Uint8Array(hash);
+}
+
+/**
+ * Result of creating an encrypted order with commitment
+ */
+export interface EncryptedOrderWithCommitment {
+  /** Encrypted bytes for on-chain storage */
+  encryptedBytes: Uint8Array;
+  /** SHA-256 hash of plaintext payload (commitment for on-chain verification) */
+  payloadHash: Uint8Array;
+  /** User's encryption public key (solver needs this to decrypt) */
+  userPublicKey: Uint8Array;
+}
+
+/**
+ * Create an encrypted order with commitment hash for on-chain verification.
+ * The payloadHash should be submitted alongside the encrypted bytes in submit_order.
+ * This is the recommended way to create orders — it enables on-chain commitment verification.
+ */
+export function createCommittedEncryptedOrder(
+  minOutputAmount: BN | number | string,
+  slippageBps: number,
+  deadlineInSeconds: number,
+  solverPublicKey: Uint8Array,
+  userKeypair: EncryptionKeypair,
+  routingHint?: Uint8Array
+): EncryptedOrderWithCommitment {
+  const payload: OrderPayload = {
+    minOutputAmount: new BN(minOutputAmount),
+    slippageBps,
+    deadline: deadlineInSeconds,
+    routingHint,
+  };
+
+  const encrypted = encryptOrderPayload(payload, solverPublicKey, userKeypair);
+  const payloadHash = computePayloadHash(payload);
+
+  return {
+    encryptedBytes: encrypted.bytes,
+    payloadHash,
+    userPublicKey: userKeypair.publicKey,
+  };
+}
+
+// ============================================================================
+// Threshold Order Encryption (M-of-N Solvers)
+// ============================================================================
+
+/**
+ * Threshold-encrypted order where M-of-N solvers must cooperate to decrypt.
+ * Prevents a single dishonest solver from front-running.
+ */
+export interface ThresholdEncryptedOrder {
+  /** Encrypted order payload (encrypted with a random temp key) */
+  encryptedPayload: Uint8Array;
+  /** SHA-256 commitment hash of the plaintext payload */
+  payloadHash: Uint8Array;
+  /** Key shares, one per solver, each encrypted with that solver's public key */
+  solverShares: ThresholdSolverShare[];
+  /** Threshold required to reconstruct */
+  threshold: number;
+  /** Total number of solver shares */
+  totalSolvers: number;
+  /** User's public key (solvers need this to decrypt their share) */
+  userPublicKey: Uint8Array;
+}
+
+/**
+ * A key share encrypted for a specific solver
+ */
+export interface ThresholdSolverShare {
+  /** Solver index (1-based, matches Shamir share index) */
+  solverIndex: number;
+  /** The share encrypted with this solver's public key (NaCl box) */
+  encryptedShare: Uint8Array;
+}
+
+/**
+ * Create a threshold-encrypted order requiring M-of-N solvers to decrypt.
+ *
+ * Flow:
+ * 1. Serialize and hash the order payload (commitment)
+ * 2. Generate a random temp encryption key
+ * 3. Encrypt the order with the temp key (XOR-based from @veil/core)
+ * 4. Split the temp key into N shares with threshold M
+ * 5. Encrypt each share for its corresponding solver using NaCl box
+ *
+ * @param payload - Order parameters
+ * @param threshold - Minimum solvers required to decrypt (M)
+ * @param solverPublicKeys - Array of solver X25519 public keys (N solvers)
+ * @param userKeypair - User's encryption keypair
+ */
+export function createThresholdEncryptedOrder(
+  payload: OrderPayload,
+  threshold: number,
+  solverPublicKeys: Uint8Array[],
+  userKeypair: EncryptionKeypair,
+): ThresholdEncryptedOrder {
+  if (threshold < 2) {
+    throw new Error('Threshold must be at least 2');
+  }
+  if (solverPublicKeys.length < threshold) {
+    throw new Error(`Need at least ${threshold} solver keys, got ${solverPublicKeys.length}`);
+  }
+
+  const serialized = serializeOrderPayload(payload);
+  const payloadHash = computePayloadHash(payload);
+
+  // Use threshold encryption from @veil/core:
+  // generates random key, XOR-encrypts the data, splits key with Shamir
+  const { encryptedSecret, keyShares } = createThresholdEncryption(
+    serialized,
+    threshold,
+    solverPublicKeys.length,
+  );
+
+  // Encrypt each key share for its solver using NaCl box
+  const solverShares: ThresholdSolverShare[] = keyShares.map((share, index) => {
+    // Encode share as: [index byte] + [32 bytes value]
+    const shareBytes = new Uint8Array(1 + share.value.length);
+    shareBytes[0] = share.index;
+    shareBytes.set(share.value, 1);
+
+    const encrypted = encrypt(shareBytes, solverPublicKeys[index], userKeypair);
+    return {
+      solverIndex: share.index,
+      encryptedShare: encrypted.bytes,
+    };
+  });
+
+  return {
+    encryptedPayload: encryptedSecret,
+    payloadHash,
+    solverShares,
+    threshold,
+    totalSolvers: solverPublicKeys.length,
+    userPublicKey: userKeypair.publicKey,
+  };
+}
+
+/**
+ * Decrypt a solver's key share from a threshold-encrypted order.
+ * Each solver calls this with their own keypair to obtain their share.
+ */
+export function decryptSolverShare(
+  encryptedShare: Uint8Array,
+  userPublicKey: Uint8Array,
+  solverKeypair: EncryptionKeypair,
+): SecretShare {
+  const shareBytes = decrypt(encryptedShare, userPublicKey, solverKeypair);
+  return {
+    index: shareBytes[0],
+    value: shareBytes.slice(1),
+  };
+}
+
+/**
+ * Reconstruct and decrypt a threshold-encrypted order once enough shares are collected.
+ */
+export function reconstructThresholdOrder(
+  encryptedPayload: Uint8Array,
+  shares: SecretShare[],
+): OrderPayload {
+  const plaintext = decryptWithThreshold(encryptedPayload, shares);
+  return deserializeOrderPayload(plaintext);
+}
+
 // Re-export commonly needed crypto types and address conversion utilities
-export type { EncryptionKeypair } from '@veil/core';
+export type { EncryptionKeypair, SecretShare } from '@veil/core';
 export {
   generateEncryptionKeypair,
   deriveEncryptionKeypair,

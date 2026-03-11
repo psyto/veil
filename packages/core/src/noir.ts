@@ -104,6 +104,32 @@ export interface RangeProofInputs {
 }
 
 /**
+ * Order commitment proof inputs
+ * Proves that the solver's claimed decryption matches the encrypted payload's commitment
+ * without revealing the encryption key
+ */
+export interface OrderCommitmentProofInputs {
+  /** Decrypted min output amount (private - solver reveals this to program) */
+  minOutputAmount: bigint;
+  /** Decrypted slippage bps (private) */
+  slippageBps: number;
+  /** Decrypted deadline (private) */
+  deadline: bigint;
+  /** The on-chain payload hash commitment (public) */
+  payloadHash: Uint8Array;
+}
+
+/**
+ * Order commitment proof outputs
+ */
+export interface OrderCommitmentProofOutputs {
+  /** The payload hash (public, should match on-chain commitment) */
+  payloadHash: Uint8Array;
+  /** Whether the proof validates the commitment */
+  isValid: boolean;
+}
+
+/**
  * Circuit configuration
  */
 export interface CircuitConfig {
@@ -153,6 +179,11 @@ export class NoirProver {
     // Balance proof circuit
     this.circuits.set('balance_proof', {
       name: 'balance_proof',
+    });
+
+    // Order commitment circuit — proves honest decryption
+    this.circuits.set('order_commitment', {
+      name: 'order_commitment',
     });
 
     // KYC compliance circuit — proves trader meets KYC requirements
@@ -284,6 +315,83 @@ export class NoirProver {
   }
 
   /**
+   * Generate an order commitment proof
+   *
+   * Proves: SHA-256(serialize(minOutput, slippageBps, deadline, padding)) == payloadHash
+   * Without revealing: the encryption key used (in future, proves decryption was correct)
+   *
+   * This is the bridge between the commitment hash scheme and full ZK verification.
+   * In production Noir circuit:
+   *   fn main(
+   *     min_output: u64,        // private
+   *     slippage_bps: u16,      // private
+   *     deadline: i64,           // private
+   *     payload_hash: pub [u8; 32] // public
+   *   ) {
+   *     let serialized = serialize_le(min_output, slippage_bps, deadline, [0; 6]);
+   *     let computed = std::hash::sha256(serialized);
+   *     assert(computed == payload_hash);
+   *   }
+   */
+  async generateOrderCommitmentProof(
+    inputs: OrderCommitmentProofInputs
+  ): Promise<NoirProof> {
+    console.log('[Noir] Generating order commitment proof...');
+
+    // Validate inputs
+    if (inputs.minOutputAmount <= BigInt(0)) {
+      throw new Error('Min output amount must be positive');
+    }
+    if (inputs.payloadHash.length !== 32) {
+      throw new Error('Payload hash must be 32 bytes');
+    }
+
+    // Reconstruct the serialized payload (matches SWAP_ORDER_SCHEMA layout)
+    // minOutputAmount(u64 LE, 8) + slippageBps(u16 LE, 2) + deadline(i64 LE, 8) + padding(6) = 24
+    const payload = new Uint8Array(24);
+    const view = new DataView(payload.buffer);
+
+    // minOutputAmount as u64 LE
+    const minOutLow = Number(inputs.minOutputAmount & BigInt(0xFFFFFFFF));
+    const minOutHigh = Number((inputs.minOutputAmount >> BigInt(32)) & BigInt(0xFFFFFFFF));
+    view.setUint32(0, minOutLow, true);
+    view.setUint32(4, minOutHigh, true);
+
+    // slippageBps as u16 LE
+    view.setUint16(8, inputs.slippageBps, true);
+
+    // deadline as i64 LE
+    const deadlineLow = Number(inputs.deadline & BigInt(0xFFFFFFFF));
+    const deadlineHigh = Number((inputs.deadline >> BigInt(32)) & BigInt(0xFFFFFFFF));
+    view.setUint32(10, deadlineLow, true);
+    view.setUint32(14, deadlineHigh, true);
+
+    // padding bytes 18-23 are already zero
+
+    // Compute SHA-256 hash to verify commitment
+    const computedHash = hashBytes(payload);
+
+    // Verify locally that the commitment matches
+    if (!bytesEqual(computedHash, inputs.payloadHash)) {
+      throw new Error('Order commitment mismatch: decrypted values do not match payload hash');
+    }
+
+    const proofBytes = await this.mockProofGeneration('order_commitment', {
+      minOutputAmount: inputs.minOutputAmount,
+      slippageBps: inputs.slippageBps,
+      deadline: inputs.deadline,
+      payloadHash: inputs.payloadHash,
+    });
+
+    return {
+      proof: proofBytes,
+      publicInputs: [inputs.payloadHash],
+      circuitId: 'order_commitment',
+      generatedAt: Date.now(),
+    };
+  }
+
+  /**
    * Compute a Pedersen commitment to a value
    */
   private async computeCommitment(value: bigint): Promise<Uint8Array> {
@@ -375,7 +483,7 @@ export class NoirVerifier {
     const vk = this.verificationKeys.get(proof.circuitId);
     if (!vk) {
       // Use default verification for known circuits
-      if (!['swap_validity', 'position_ownership', 'range_proof', 'balance_proof'].includes(proof.circuitId)) {
+      if (!['swap_validity', 'position_ownership', 'range_proof', 'balance_proof', 'order_commitment'].includes(proof.circuitId)) {
         return {
           valid: false,
           error: `Unknown circuit: ${proof.circuitId}`,
@@ -424,6 +532,38 @@ export class NoirVerifier {
       return {
         valid: false,
         error: 'Nullifier mismatch',
+      };
+    }
+
+    return { valid: true, estimatedGas: basicResult.estimatedGas };
+  }
+
+  /**
+   * Verify an order commitment proof
+   * Checks that the proof's public input (payloadHash) matches the expected on-chain commitment
+   */
+  async verifyOrderCommitmentProof(
+    proof: NoirProof,
+    expectedPayloadHash: Uint8Array
+  ): Promise<VerificationResult> {
+    if (proof.circuitId !== 'order_commitment') {
+      return {
+        valid: false,
+        error: 'Invalid circuit type for order commitment proof',
+      };
+    }
+
+    const basicResult = await this.verify(proof);
+    if (!basicResult.valid) {
+      return basicResult;
+    }
+
+    // Verify the payload hash matches
+    const proofPayloadHash = proof.publicInputs[0];
+    if (!bytesEqual(proofPayloadHash, expectedPayloadHash)) {
+      return {
+        valid: false,
+        error: 'Payload hash mismatch in proof public inputs',
       };
     }
 
@@ -581,4 +721,34 @@ export async function generateRangeProof(
 ): Promise<NoirProof> {
   const prover = createNoirProver();
   return prover.generateRangeProof({ value, min, max, commitment });
+}
+
+/**
+ * Generate an order commitment proof (convenience function)
+ */
+export async function generateOrderCommitmentProof(
+  minOutputAmount: bigint,
+  slippageBps: number,
+  deadline: bigint,
+  payloadHash: Uint8Array
+): Promise<NoirProof> {
+  const prover = createNoirProver();
+  return prover.generateOrderCommitmentProof({
+    minOutputAmount,
+    slippageBps,
+    deadline,
+    payloadHash,
+  });
+}
+
+/**
+ * Verify an order commitment proof (convenience function)
+ */
+export async function verifyOrderCommitmentProof(
+  proof: NoirProof,
+  expectedPayloadHash: Uint8Array
+): Promise<boolean> {
+  const verifier = createNoirVerifier();
+  const result = await verifier.verifyOrderCommitmentProof(proof, expectedPayloadHash);
+  return result.valid;
 }

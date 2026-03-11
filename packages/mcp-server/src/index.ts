@@ -23,6 +23,8 @@ import {
 import {
   encryptOrderPayload,
   decryptOrderPayload,
+  createCommittedEncryptedOrder,
+  computePayloadHash,
 } from "@veil/orders";
 import BN from "bn.js";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
@@ -651,20 +653,17 @@ export async function handleTool(name: string, args: Args) {
         publicKey: fromBase64(args.userPublicKey as string),
         secretKey: fromBase64(args.userSecretKey as string),
       };
-      const payload = {
-        minOutputAmount: new BN(args.minOutputAmount as string),
-        slippageBps: args.slippageBps as number,
-        deadline: args.deadline as number,
-      };
-      const result = encryptOrderPayload(
-        payload,
+      const committed = createCommittedEncryptedOrder(
+        args.minOutputAmount as string,
+        args.slippageBps as number,
+        args.deadline as number,
         fromBase64(args.solverPublicKey as string),
         userKeypair,
       );
       return jsonContent({
-        nonce: toBase64(result.nonce),
-        ciphertext: toBase64(result.ciphertext),
-        bytes: toBase64(result.bytes),
+        bytes: toBase64(committed.encryptedBytes),
+        payloadHash: toBase64(committed.payloadHash),
+        userPublicKey: toBase64(committed.userPublicKey),
       });
     }
 

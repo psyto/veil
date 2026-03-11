@@ -3,11 +3,26 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**",
+        "target/deploy/**",
+        "target/idl/**",
+        "artifacts/**",
+        "typechain-types/**"
+      ]
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "outputs": [],
+      "env": ["NODE_ENV", "ANCHOR_PROVIDER_URL", "ANCHOR_WALLET"]
     },
-    "lint": {}
+    "lint": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    }
   }
 }

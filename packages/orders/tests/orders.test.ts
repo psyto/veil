@@ -7,6 +7,11 @@ import {
   createEncryptedOrder,
   validateEncryptedPayload,
   generateEncryptionKeypair,
+  computePayloadHash,
+  createCommittedEncryptedOrder,
+  createThresholdEncryptedOrder,
+  decryptSolverShare,
+  reconstructThresholdOrder,
 } from '../src/index';
 
 describe('orders', () => {
@@ -122,6 +127,157 @@ describe('orders', () => {
 
     it('returns false for too-long bytes', () => {
       expect(validateEncryptedPayload(new Uint8Array(129))).toBe(false);
+    });
+  });
+
+  // ── computePayloadHash ──────────────────────────────────────────────
+
+  describe('computePayloadHash', () => {
+    it('produces deterministic 32-byte hash', () => {
+      const payload = {
+        minOutputAmount: new BN('1000000'),
+        slippageBps: 50,
+        deadline: 1700000000,
+      };
+      const hash1 = computePayloadHash(payload);
+      const hash2 = computePayloadHash(payload);
+      expect(hash1.length).toBe(32);
+      expect(Buffer.from(hash1).toString('hex')).toBe(Buffer.from(hash2).toString('hex'));
+    });
+
+    it('different payloads produce different hashes', () => {
+      const hash1 = computePayloadHash({
+        minOutputAmount: new BN('1000000'),
+        slippageBps: 50,
+        deadline: 1700000000,
+      });
+      const hash2 = computePayloadHash({
+        minOutputAmount: new BN('2000000'),
+        slippageBps: 50,
+        deadline: 1700000000,
+      });
+      expect(Buffer.from(hash1).toString('hex')).not.toBe(Buffer.from(hash2).toString('hex'));
+    });
+  });
+
+  // ── createCommittedEncryptedOrder ───────────────────────────────────
+
+  describe('createCommittedEncryptedOrder', () => {
+    it('returns encryptedBytes, payloadHash, and userPublicKey', () => {
+      const user = generateEncryptionKeypair();
+      const solver = generateEncryptionKeypair();
+      const result = createCommittedEncryptedOrder(
+        '1000000',
+        50,
+        1700000000,
+        solver.publicKey,
+        user,
+      );
+      expect(result.encryptedBytes).toBeInstanceOf(Uint8Array);
+      expect(result.encryptedBytes.length).toBeGreaterThan(0);
+      expect(result.payloadHash).toBeInstanceOf(Uint8Array);
+      expect(result.payloadHash.length).toBe(32);
+      expect(result.userPublicKey).toBeInstanceOf(Uint8Array);
+      expect(result.userPublicKey.length).toBe(32);
+    });
+
+    it('commitment hash round-trip: encrypt → decrypt → reserialize → hash matches', () => {
+      const user = generateEncryptionKeypair();
+      const solver = generateEncryptionKeypair();
+      const committed = createCommittedEncryptedOrder(
+        '999999999',
+        200,
+        1710000000,
+        solver.publicKey,
+        user,
+      );
+
+      // Decrypt
+      const decrypted = decryptOrderPayload(committed.encryptedBytes, user.publicKey, solver);
+
+      // Recompute hash from decrypted payload
+      const recomputedHash = computePayloadHash(decrypted);
+
+      expect(Buffer.from(recomputedHash).toString('hex')).toBe(
+        Buffer.from(committed.payloadHash).toString('hex')
+      );
+    });
+  });
+
+  // ── Threshold Encrypted Orders (M-of-N) ────────────────────────────
+
+  describe('threshold encrypted orders', () => {
+    it('2-of-3 threshold: encrypt → decrypt shares → reconstruct matches original', () => {
+      const user = generateEncryptionKeypair();
+      const solver1 = generateEncryptionKeypair();
+      const solver2 = generateEncryptionKeypair();
+      const solver3 = generateEncryptionKeypair();
+
+      const payload = {
+        minOutputAmount: new BN('5000000'),
+        slippageBps: 100,
+        deadline: 1700000000,
+      };
+
+      const thresholdOrder = createThresholdEncryptedOrder(
+        payload,
+        2,
+        [solver1.publicKey, solver2.publicKey, solver3.publicKey],
+        user,
+      );
+
+      expect(thresholdOrder.threshold).toBe(2);
+      expect(thresholdOrder.totalSolvers).toBe(3);
+      expect(thresholdOrder.solverShares.length).toBe(3);
+      expect(thresholdOrder.payloadHash.length).toBe(32);
+
+      // Each solver decrypts their share
+      const share1 = decryptSolverShare(
+        thresholdOrder.solverShares[0].encryptedShare,
+        user.publicKey,
+        solver1,
+      );
+      const share2 = decryptSolverShare(
+        thresholdOrder.solverShares[1].encryptedShare,
+        user.publicKey,
+        solver2,
+      );
+
+      // Reconstruct with 2-of-3 shares
+      const reconstructed = reconstructThresholdOrder(
+        thresholdOrder.encryptedPayload,
+        [share1, share2],
+      );
+
+      expect(reconstructed.minOutputAmount.toString()).toBe('5000000');
+      expect(reconstructed.slippageBps).toBe(100);
+      expect(reconstructed.deadline).toBe(1700000000);
+    });
+
+    it('threshold must be at least 2', () => {
+      const user = generateEncryptionKeypair();
+      const solver1 = generateEncryptionKeypair();
+      const payload = {
+        minOutputAmount: new BN('1000'),
+        slippageBps: 10,
+        deadline: 0,
+      };
+      expect(() =>
+        createThresholdEncryptedOrder(payload, 1, [solver1.publicKey], user)
+      ).toThrow('Threshold must be at least 2');
+    });
+
+    it('needs at least threshold number of solver keys', () => {
+      const user = generateEncryptionKeypair();
+      const solver1 = generateEncryptionKeypair();
+      const payload = {
+        minOutputAmount: new BN('1000'),
+        slippageBps: 10,
+        deadline: 0,
+      };
+      expect(() =>
+        createThresholdEncryptedOrder(payload, 3, [solver1.publicKey], user)
+      ).toThrow('Need at least 3 solver keys');
     });
   });
 });

@@ -15,6 +15,7 @@ import {
 import {
   EncryptionKeypair,
   createEncryptedOrder,
+  createCommittedEncryptedOrder,
   decryptOrderPayload,
   deriveEncryptionKeypair,
   generateEncryptionKeypair,
@@ -56,6 +57,8 @@ export interface OrderData {
   minOutputAmount: BN;
   outputAmount: BN;
   encryptedPayload: Uint8Array;
+  payloadHash: Uint8Array;
+  userEncryptionPubkey: Uint8Array;
   status: OrderStatus;
   createdAt: BN;
   executedAt: BN;
@@ -222,6 +225,8 @@ export class ConfidentialSwapClient {
       minOutputAmount: account.minOutputAmount,
       outputAmount: account.outputAmount,
       encryptedPayload: new Uint8Array(account.encryptedPayload),
+      payloadHash: new Uint8Array(account.payloadHash),
+      userEncryptionPubkey: new Uint8Array(account.userEncryptionPubkey),
       status: statusKey as OrderStatus,
       createdAt: account.createdAt,
       executedAt: account.executedAt,
@@ -271,8 +276,8 @@ export class ConfidentialSwapClient {
       throw new Error('Encryption not initialized');
     }
 
-    // Create encrypted payload
-    const encryptedPayload = createEncryptedOrder(
+    // Create encrypted payload with commitment hash
+    const committed = createCommittedEncryptedOrder(
       minOutputAmount,
       slippageBps,
       deadlineSeconds,
@@ -288,7 +293,7 @@ export class ConfidentialSwapClient {
     const userInputToken = await getAssociatedTokenAddress(inputMint, owner);
 
     const tx = await this.program.methods
-      .submitOrder(orderId, inputAmount, Buffer.from(encryptedPayload))
+      .submitOrder(orderId, inputAmount, Buffer.from(committed.encryptedBytes), Array.from(committed.payloadHash), Array.from(this.encryptionKeypair.publicKey))
       .accounts({
         owner,
         solverConfig: solverConfigPda,
@@ -409,6 +414,8 @@ export class SolverClient {
     inputMint: PublicKey,
     outputMint: PublicKey,
     decryptedMinOutput: BN,
+    decryptedSlippageBps: number,
+    decryptedDeadline: number,
     actualOutputAmount: BN
   ): Promise<string> {
     const solver = this.provider.wallet.publicKey;
@@ -433,7 +440,7 @@ export class SolverClient {
     const solverOutputToken = await getAssociatedTokenAddress(outputMint, solver);
 
     const tx = await this.program.methods
-      .executeOrder(decryptedMinOutput, actualOutputAmount)
+      .executeOrder(decryptedMinOutput, decryptedSlippageBps, new BN(decryptedDeadline), actualOutputAmount)
       .accounts({
         solver,
         solverConfig: solverConfigPda,

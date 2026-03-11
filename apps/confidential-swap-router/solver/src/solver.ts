@@ -188,9 +188,15 @@ export class ConfidentialSwapSolver {
 
     try {
       // Step 1: Decrypt the order payload
-      // NOTE: We need the user's encryption public key, which should be stored somewhere
-      // For now, we'll assume it's derivable from the order or stored off-chain
-      const userEncryptionPubkey = await this.getUserEncryptionPubkey(order.owner);
+      // Read user's encryption pubkey from on-chain order data (stored at submit time)
+      const userEncryptionPubkey = order.userEncryptionPubkey;
+      if (!userEncryptionPubkey || userEncryptionPubkey.length !== 32) {
+        // Fallback to in-memory registry for orders submitted before on-chain pubkey storage
+        const fallback = userEncryptionPubkeyRegistry.get(order.owner.toBase58());
+        if (!fallback) {
+          throw new Error(`No encryption pubkey found for user ${order.owner.toBase58()}`);
+        }
+      }
 
       const decryptedPayload = this.solverClient.decryptOrderPayload(
         order.encryptedPayload,
@@ -270,6 +276,8 @@ export class ConfidentialSwapSolver {
         order.inputMint,
         order.outputMint,
         decryptedPayload.minOutputAmount,
+        decryptedPayload.slippageBps,
+        decryptedPayload.deadline,
         swapResult.outputAmount
       );
 

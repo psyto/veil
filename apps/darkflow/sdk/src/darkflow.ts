@@ -24,7 +24,7 @@ import {
 } from './types';
 
 // Program ID (replace with actual deployed ID)
-const DARKFLOW_PROGRAM_ID = new PublicKey('DFLow1111111111111111111111111111111111111');
+const DARKFLOW_PROGRAM_ID = new PublicKey('8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U');
 
 /**
  * DarkFlow client for interacting with the confidential AMM

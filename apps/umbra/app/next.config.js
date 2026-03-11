@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
     '@umbra/sdk',
-    '@privacy-suite/crypto',
+    '@veil/core',
   ],
   webpack: (config) => {
     config.resolve.fallback = {

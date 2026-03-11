@@ -3,6 +3,7 @@ export {
   OrderPayload,
   EncryptedPayload,
   EncryptionKeypair,
+  EncryptedOrderWithCommitment,
   generateEncryptionKeypair,
   deriveEncryptionKeypair,
   encryptionKeyToBase58,
@@ -12,6 +13,8 @@ export {
   encryptOrderPayload,
   decryptOrderPayload,
   createEncryptedOrder,
+  createCommittedEncryptedOrder,
+  computePayloadHash,
   validateEncryptedPayload,
   getEncryptionPublicKey,
 } from '@veil/orders';

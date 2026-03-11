@@ -23,3 +23,7 @@ pub const MIN_PAYLOAD_SIZE: usize = 24;
 /// Maximum encrypted payload size
 #[constant]
 pub const MAX_PAYLOAD_SIZE: usize = 128;
+
+/// Payload hash size (SHA-256)
+#[constant]
+pub const PAYLOAD_HASH_SIZE: usize = 32;

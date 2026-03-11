@@ -43,7 +43,7 @@ Veil is a collection of five privacy-preserving applications for Solana:
 4. **DarkFlow** - Confidential AMM with dark liquidity pools and ZK swaps
 5. **ShadowLaunch** - Privacy-first token purchases on Pump.fun
 
-All applications share a common cryptographic library (`@privacy-suite/crypto`) that provides:
+All applications share a common cryptographic library (`@veil/core`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
 - ZK compression via Light Protocol
@@ -126,7 +126,7 @@ All applications share a common cryptographic library (`@privacy-suite/crypto`) 
 │  └──────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                          │
 │  ┌──────────────────────────────────────────────────────────────────────────────────┐   │
-│  │                              @privacy-suite/crypto                               │   │
+│  │                                  @veil/core                                     │   │
 │  │  NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers  •  SOVEREIGN    │   │
 │  └──────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                          │
@@ -228,7 +228,8 @@ DarkFlow brings institutional-grade dark pool mechanics to DeFi with encrypted L
 - **Hidden LP Positions:** Encrypted using NaCl box
 - **Dark Swaps:** ZK proofs verify validity without revealing amounts
 - **Confidential Token Launches:** Private bonding curves prevent front-running
-- **Noir Circuits:** Zero-knowledge proof generation
+- **Noir Circuits:** Zero-knowledge proof generation at `apps/darkflow/circuits/` (swap, execution, and position proofs)
+- **Arcium MPC:** Encrypted shared state via `@veil/core` arcium module
 
 ### Privacy Model
 | Data | Visibility |
@@ -260,6 +261,18 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
                   ↓
           Link broken here
 ```
+
+---
+
+## EVM Swap Router (Proof-of-Concept)
+
+The `@veil/evm-swap-router` package demonstrates chain-agnostic encryption by reusing the same `@veil/orders` library on Ethereum. This proves Veil's order encryption and serialization works across both Solana and EVM chains, opening a path toward multi-chain confidential trading.
+
+---
+
+## MCP Server for AI Agent Integration
+
+The `@veil/mcp-server` package exposes Veil's privacy tools through the Model Context Protocol, enabling AI agents to submit encrypted orders, manage shielded transfers, and interact with DarkFlow pools programmatically.
 
 ---
 
@@ -370,7 +383,13 @@ veil/
 │   │       ├── threshold.ts       # Shamir's Secret Sharing
 │   │       ├── zk-compression.ts  # Light Protocol integration
 │   │       ├── shielded.ts        # Privacy Cash integration
-│   │       └── rpc-providers.ts   # Helius/Quicknode config
+│   │       ├── rpc-providers.ts   # Helius/Quicknode config
+│   │       └── arcium/            # Arcium MPC integration
+│   ├── orders/                    # Order encryption/serialization (@veil/orders)
+│   ├── browser/                   # Browser-friendly VeilClient wrapper (@veil/browser)
+│   ├── mcp-server/                # MCP server for AI agent integration (@veil/mcp-server)
+│   ├── qn-addon/                  # QuickNode marketplace add-on (@veil/qn-addon)
+│   └── evm-swap-router/           # EVM proof-of-concept swap router (@veil/evm-swap-router)
 ├── apps/
 │   ├── confidential-swap-router/   # MEV-protected swaps
 │   │   ├── programs/              # Anchor program
@@ -388,6 +407,7 @@ veil/
 │   │   └── app/                   # Next.js frontend
 │   ├── darkflow/                   # Confidential AMM
 │   │   ├── programs/darkflow/     # Anchor program
+│   │   ├── circuits/              # Noir ZK circuits (swap, execution, position proofs)
 │   │   ├── sdk/                   # TypeScript SDK
 │   │   └── app/                   # Next.js frontend
 │   └── shadowlaunch/               # Private Pump.fun purchases
@@ -437,17 +457,20 @@ npx ts-node --esm scripts/verify-deployment.ts
 
 ## Tech Stack
 
-- **Blockchain:** Solana
+- **Blockchain:** Solana (primary), Ethereum (EVM proof-of-concept)
 - **Smart Contracts:** Anchor 0.30
 - **Frontend:** Next.js 14, React 18, TailwindCSS
 - **Encryption:** TweetNaCl (NaCl box)
 - **ZK Compression:** Light Protocol
+- **ZK Proofs:** Noir circuits (`apps/darkflow/circuits/`)
 - **Shielded Transfers:** Privacy Cash SDK
 - **DEX Aggregation:** Jupiter API
 - **RPC Providers:** Helius, Quicknode
 - **Reputation:** SOVEREIGN Protocol
-- **Dark Pools:** Arcium (encrypted state)
-- **ZK Proofs:** Noir circuits
+- **Dark Pools:** Arcium MPC (encrypted state via `@veil/core` arcium module)
+- **Monorepo:** pnpm + Turbo
+- **AI Integration:** MCP server (`@veil/mcp-server`)
+- **Cross-Chain:** EVM swap router (`@veil/evm-swap-router`) using shared `@veil/orders`
 
 ---
 

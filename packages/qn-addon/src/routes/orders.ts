@@ -4,7 +4,19 @@ import { decodeBase64 } from '../utils/validation';
 
 const router = Router();
 
+const SUNSET_DATE = '2026-09-01';
+const SUNSET_MS = new Date(SUNSET_DATE).getTime();
+
+function logDeprecatedAccess(endpoint: string, req: Request): void {
+  const daysRemaining = Math.ceil((SUNSET_MS - Date.now()) / (1000 * 60 * 60 * 24));
+  const instanceId = req.headers['x-instance-id'] || 'unknown';
+  console.warn(
+    `[DEPRECATED] ${endpoint} called by instance=${instanceId} — ${daysRemaining} days until sunset (${SUNSET_DATE})`
+  );
+}
+
 router.post('/v1/orders/encrypt', (req: Request, res: Response) => {
+  logDeprecatedAccess('POST /v1/orders/encrypt', req);
   try {
     const { minOutputAmount, slippageBps, deadline, solverPublicKey, userSecretKey, userPublicKey } = req.body;
 
@@ -38,6 +50,8 @@ router.post('/v1/orders/encrypt', (req: Request, res: Response) => {
       { publicKey: userPk, secretKey: userSk },
     );
 
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
     res.json({
       success: true,
       nonce: {
@@ -52,6 +66,11 @@ router.post('/v1/orders/encrypt', (req: Request, res: Response) => {
         base64: Buffer.from(result.bytes).toString('base64'),
         hex: Buffer.from(result.bytes).toString('hex'),
       },
+      _deprecated: {
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform order encryption client-side using @veil/orders or @veil/browser instead.',
+        sunset: '2026-09-01',
+        alternative: '@veil/orders createCommittedEncryptedOrder() or @veil/browser VeilClient.encryptOrder()',
+      },
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -59,6 +78,7 @@ router.post('/v1/orders/encrypt', (req: Request, res: Response) => {
 });
 
 router.post('/v1/orders/decrypt', (req: Request, res: Response) => {
+  logDeprecatedAccess('POST /v1/orders/decrypt', req);
   try {
     const { bytes, userPublicKey, solverSecretKey, solverPublicKey } = req.body;
 
@@ -86,9 +106,16 @@ router.post('/v1/orders/decrypt', (req: Request, res: Response) => {
       { publicKey: solverPk, secretKey: solverSk },
     );
 
+    res.set('Deprecation', 'true');
+    res.set('Sunset', '2026-09-01');
     res.json({
       success: true,
       payload,
+      _deprecated: {
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform order decryption in the solver\'s own infrastructure, not via a cloud API.',
+        sunset: '2026-09-01',
+        alternative: '@veil/orders decryptOrderPayload() locally',
+      },
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

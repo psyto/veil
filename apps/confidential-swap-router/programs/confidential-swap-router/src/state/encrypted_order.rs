@@ -42,6 +42,14 @@ pub struct EncryptedOrder {
     /// Transaction signature of execution (for verification)
     #[max_len(88)]
     pub execution_signature: Vec<u8>,
+    /// SHA-256 hash of the plaintext order payload (commitment).
+    /// User submits this alongside the encrypted payload so the program
+    /// can verify the solver's decryption matches the original intent.
+    pub payload_hash: [u8; 32],
+    /// User's X25519 encryption public key (32 bytes).
+    /// Stored on-chain so the solver can decrypt the payload without
+    /// needing an off-chain pubkey registry.
+    pub user_encryption_pubkey: [u8; 32],
     /// Bump seed for PDA
     pub bump: u8,
 }

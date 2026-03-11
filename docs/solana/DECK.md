@@ -211,8 +211,8 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 │  └────────────────────────────────────────────────────────────────────┘ │
 │                                                                          │
 │  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                       @privacy-suite/crypto                        │ │
-│  │  NaCl Box • Shamir's • ZK Compression • Shielded • SOVEREIGN       │ │
+│  │                            @veil/core                               │ │
+│  │  NaCl Box • Shamir's • ZK Compression • Shielded • Arcium MPC      │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────────┘
 ```

@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
 use crate::{AddLiquidityEncrypted, RemoveLiquidityPrivate, EncryptedPosition};
 use crate::errors::DarkFlowError;
+use crate::zk_verify;
 
 /// Add liquidity with encrypted amount
 pub fn add_liquidity_encrypted(
@@ -102,9 +103,9 @@ pub fn remove_liquidity_private(
         DarkFlowError::InvalidCommitment
     );
 
-    // Validate ZK proof
+    // Validate ZK proof (Noir circuit verification)
     require!(
-        verify_position_proof(&zk_proof, &position_commitment),
+        zk_verify::verify_position_proof(&zk_proof, &position_commitment),
         DarkFlowError::InvalidZkProof
     );
 
@@ -126,7 +127,7 @@ pub fn remove_liquidity_private(
     let withdraw_b = (vault_b_balance * share * withdraw_percentage_bps as u64) / (10000 * 10000);
 
     // Transfer tokens back to owner
-    let pool_key = pool.key();
+    let _pool_key = pool.key();
     let seeds = &[
         b"dark_pool",
         pool.token_a_mint.as_ref(),
@@ -181,16 +182,3 @@ fn create_nullifier(commitment: &[u8; 32], owner: &Pubkey) -> [u8; 32] {
     *blake3::hash(&input).as_bytes()
 }
 
-/// Verify ZK proof of position ownership
-fn verify_position_proof(proof: &[u8], commitment: &[u8; 32]) -> bool {
-    if proof.len() < 32 {
-        return false;
-    }
-    // Proof must contain blake3(commitment || "darkflow_position")
-    // TODO: Replace with real Noir proof verification
-    let mut input = [0u8; 50];
-    input[..32].copy_from_slice(commitment);
-    input[32..50].copy_from_slice(b"darkflow_position");
-    let expected = blake3::hash(&input);
-    proof[..32] == *expected.as_bytes()
-}

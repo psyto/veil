@@ -102,7 +102,7 @@ export class LiquidityOperations {
     pool: PublicKey,
     owner: PublicKey,
     positionIndex: number,
-    programId: PublicKey = new PublicKey('DFLow1111111111111111111111111111111111111')
+    programId: PublicKey = new PublicKey('8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U')
   ): PublicKey {
     const [positionAddress] = PublicKey.findProgramAddressSync(
       [
