@@ -4,6 +4,7 @@
   "private": true,
   "description": "Chain-agnostic privacy primitives for any blockchain, with optional Solana-specific extensions",
   "scripts": {
+    "prepare": "pnpm run build",
     "build": "turbo run build",
     "test": "turbo run test",
     "clean": "turbo run clean",

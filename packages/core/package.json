@@ -16,6 +16,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
     "test": "jest",
     "clean": "rm -rf dist",
     "postinstall": "node scripts/copy-wasm.js || true"
