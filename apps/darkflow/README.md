@@ -52,7 +52,7 @@ DarkFlow:
 │              └───────────────┬───────────────┘                  │
 │                              │                                  │
 │              ┌───────────────▼───────────────┐                  │
-│              │        @veil/crypto           │                  │
+│              │        @fabrknt/veil-crypto           │                  │
 │              │   NaCl • Noir • ZK Compress   │                  │
 │              └───────────────────────────────┘                  │
 │                                                                  │
@@ -175,7 +175,7 @@ yarn test
 ### Using the SDK
 
 ```typescript
-import { createDarkFlowClient } from '@veil/darkflow-sdk';
+import { createDarkFlowClient } from '@fabrknt/veil-darkflow-sdk';
 import { Connection, Keypair } from '@solana/web3.js';
 
 // Create client
@@ -245,7 +245,7 @@ DarkFlow targets these Solana PrivacyHack 2026 bounties:
 
 - **Blockchain**: Solana
 - **Smart Contracts**: Anchor 0.30
-- **Encryption**: NaCl (via @veil/crypto)
+- **Encryption**: NaCl (via @fabrknt/veil-crypto)
 - **ZK Proofs**: Noir
 - **Encrypted State**: Arcium
 - **Compression**: Light Protocol

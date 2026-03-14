@@ -132,7 +132,7 @@ https://explorer.solana.com/address/8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U
 ## Links
 
 ### GitHub Repository
-https://github.com/psyto/veil/tree/main/apps/darkflow
+https://github.com/fabrknt/veil/tree/main/apps/darkflow
 
 ### Demo Video
 https://youtu.be/Mslq17qW6B8

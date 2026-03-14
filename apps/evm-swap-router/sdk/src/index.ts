@@ -1,13 +1,13 @@
 /**
- * @veil/evm-swap-router — EVM proof-of-concept for Veil's encrypted order flow
+ * @fabrknt/veil-evm-swap-router — EVM proof-of-concept for Veil's encrypted order flow
  *
- * Demonstrates that @veil/orders encryption is fully chain-agnostic by
+ * Demonstrates that @fabrknt/veil-orders encryption is fully chain-agnostic by
  * providing an Ethereum-compatible contract + TypeScript SDK that uses
  * the exact same NaCl box encryption and commitment hash scheme as Solana.
  *
  * @example
  * ```typescript
- * import { createEvmEncryptedOrder, CONFIDENTIAL_SWAP_ROUTER_ABI } from '@veil/evm-swap-router';
+ * import { createEvmEncryptedOrder, CONFIDENTIAL_SWAP_ROUTER_ABI } from '@fabrknt/veil-evm-swap-router';
  * import { ethers } from 'ethers';
  *
  * // Client-side encryption (no secret keys leave the browser)
@@ -38,7 +38,7 @@ import {
   hexToEncryptionKey,
   type EncryptionKeypair,
   type EncryptedOrderWithCommitment,
-} from '@veil/orders';
+} from '@fabrknt/veil-orders';
 
 /**
  * Parameters for creating an EVM encrypted order
@@ -106,4 +106,4 @@ export const CONFIDENTIAL_SWAP_ROUTER_ABI = [
 ] as const;
 
 // Re-export utilities for EVM consumers
-export { generateEncryptionKeypair, encryptionKeyToHex, hexToEncryptionKey } from '@veil/orders';
+export { generateEncryptionKeypair, encryptionKeyToHex, hexToEncryptionKey } from '@fabrknt/veil-orders';

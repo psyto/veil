@@ -198,7 +198,7 @@ Built for the @pumpdotfun Build In Public hackathon.
 🌐 App: [URL]
 🪙 Token: pump.fun/SHADOW
 💬 TG: t.me/shadowlaunch
-📖 Docs: github.com/psyto/veil
+📖 Docs: github.com/fabrknt/veil
 
 Privacy shouldn't cost you alpha.
 
@@ -267,7 +267,7 @@ Privacy has a cost. We think it's worth it.
 
 Follow for updates. Building in public for @pumpdotfun hackathon.
 
-github.com/psyto/veil
+github.com/fabrknt/veil
 ```
 
 ### Pump.fun Stream Script
@@ -323,7 +323,7 @@ Would love to:
 Happy to demo anytime.
 
 App: [URL]
-Repo: github.com/psyto/veil
+Repo: github.com/fabrknt/veil
 ```
 
 ### Light Protocol
@@ -447,7 +447,7 @@ Currently in Pump.fun hackathon (MVP stage). Could this be a good collaboration?
 
 - **App:** [Vercel URL TBD]
 - **Token:** pump.fun/SHADOW [TBD]
-- **GitHub:** github.com/psyto/veil
+- **GitHub:** github.com/fabrknt/veil
 - **Telegram:** t.me/shadowlaunch [TBD]
 - **Twitter:** @[your_handle]
 

@@ -1,5 +1,5 @@
 /**
- * @veil/crypto — Multi-recipient Encryption Example
+ * @fabrknt/veil-crypto — Multi-recipient Encryption Example
  *
  * Demonstrates encrypting a single payload for multiple recipients
  * (e.g. a compliance officer and a counterparty both need to read
@@ -9,7 +9,7 @@ import {
   generateEncryptionKeypair,
   encryptForMultiple,
   decrypt,
-} from '@veil/crypto';
+} from '@fabrknt/veil-crypto';
 
 // Three parties
 const issuer = generateEncryptionKeypair();

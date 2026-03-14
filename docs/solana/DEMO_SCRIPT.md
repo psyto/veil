@@ -106,7 +106,7 @@ Result: Fair execution. No frontrunning.
 "Confidential Swap Router: MEV protection through encryption."
 
 Show:
-- GitHub: github.com/psyto/veil
+- GitHub: github.com/fabrknt/veil
 - Built with: Light Protocol, Privacy Cash, Jupiter
 
 ---
@@ -203,7 +203,7 @@ Asset registered → Metadata encrypted
 "RWA Secrets Service: Confidentiality through selective disclosure."
 
 Show:
-- GitHub: github.com/psyto/veil
+- GitHub: github.com/fabrknt/veil
 - Built with: Light Protocol, NaCl encryption
 
 ---
@@ -331,7 +331,7 @@ Diamond (5)    → 0.05% → VIP         → Yes
 "Umbra: Where reputation unlocks privacy."
 
 Show:
-- GitHub: github.com/psyto/veil
+- GitHub: github.com/fabrknt/veil
 - Built with: SOVEREIGN, FairScale, Jupiter
 
 ---
@@ -406,7 +406,7 @@ Result: Your value stays yours
 "DarkFlow: Where your trades stay in the shadows."
 
 Show:
-- GitHub: github.com/psyto/veil
+- GitHub: github.com/fabrknt/veil
 - Built with: Arcium, Noir, Light Protocol
 
 ---
@@ -475,7 +475,7 @@ Your Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 "ShadowLaunch: Accumulate without being tracked."
 
 Show:
-- GitHub: github.com/psyto/veil
+- GitHub: github.com/fabrknt/veil
 - Built with: Quicknode, Privacy Cash, Light Protocol
 
 ---

@@ -67,9 +67,9 @@ router.post('/v1/orders/encrypt', (req: Request, res: Response) => {
         hex: Buffer.from(result.bytes).toString('hex'),
       },
       _deprecated: {
-        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform order encryption client-side using @veil/orders or @veil/browser instead.',
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform order encryption client-side using @fabrknt/veil-orders or @fabrknt/veil-browser instead.',
         sunset: '2026-09-01',
-        alternative: '@veil/orders createCommittedEncryptedOrder() or @veil/browser VeilClient.encryptOrder()',
+        alternative: '@fabrknt/veil-orders createCommittedEncryptedOrder() or @fabrknt/veil-browser VeilClient.encryptOrder()',
       },
     });
   } catch (error: any) {
@@ -114,7 +114,7 @@ router.post('/v1/orders/decrypt', (req: Request, res: Response) => {
       _deprecated: {
         warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform order decryption in the solver\'s own infrastructure, not via a cloud API.',
         sunset: '2026-09-01',
-        alternative: '@veil/orders decryptOrderPayload() locally',
+        alternative: '@fabrknt/veil-orders decryptOrderPayload() locally',
       },
     });
   } catch (error: any) {

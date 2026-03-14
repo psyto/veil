@@ -2,7 +2,7 @@
 
 ## Overview
 
-ShadowLaunch is a Next.js 14 application that provides privacy-preserving token purchases on Pump.fun. It leverages the Veil privacy suite's `@veil/core` package for shielded transfers and ephemeral wallet management.
+ShadowLaunch is a Next.js 14 application that provides privacy-preserving token purchases on Pump.fun. It leverages the Veil privacy suite's `@fabrknt/veil-core` package for shielded transfers and ephemeral wallet management.
 
 ## System Architecture
 
@@ -34,7 +34,7 @@ ShadowLaunch is a Next.js 14 application that provides privacy-preserving token 
          │                 │                   │
          ▼                 ▼                   ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    @veil/core                         │
+│                    @fabrknt/veil-core                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │  NaCl Box   │  │   Privacy   │  │    ZK Compression       │  │
 │  │  Encryption │  │    Cash     │  │   (Light Protocol)      │  │
@@ -207,12 +207,12 @@ export function calculatePurchaseAmount(token, solAmount): PurchaseCalculation
 export function getBondingCurveState(token): BondingCurveState
 ```
 
-## Integration with @veil/core
+## Integration with @fabrknt/veil-core
 
 ShadowLaunch imports privacy primitives from the monorepo's shared package:
 
 ```typescript
-import { shieldTokens, unshieldTokens } from "@veil/core";
+import { shieldTokens, unshieldTokens } from "@fabrknt/veil-core";
 ```
 
 This provides:

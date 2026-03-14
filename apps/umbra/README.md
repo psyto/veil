@@ -21,7 +21,7 @@ Umbra introduces **reputation-gated privacy**: your SOVEREIGN identity unlocks e
 
 ## SOVEREIGN Integration
 
-Umbra integrates with [SOVEREIGN](https://github.com/psyto/sovereign), a universal identity and multi-dimensional reputation protocol on Solana. Your SOVEREIGN identity provides portable reputation that works across multiple applications.
+Umbra integrates with [SOVEREIGN](https://github.com/fabrknt/sovereign), a universal identity and multi-dimensional reputation protocol on Solana. Your SOVEREIGN identity provides portable reputation that works across multiple applications.
 
 ### How It Works
 
@@ -38,7 +38,7 @@ Tier 5 (Diamond)    ───────────────►  0.05% fee 
 ### Using SOVEREIGN
 
 ```typescript
-import { UmbraClient } from '@umbra/sdk';
+import { UmbraClient } from '@fabrknt/veil-umbra-sdk';
 
 const client = new UmbraClient(connection, wallet);
 
@@ -130,7 +130,7 @@ let benefits = get_privacy_benefits(sovereign_tier);
 ### SDK (TypeScript)
 
 ```typescript
-import { UmbraClient } from '@umbra/sdk';
+import { UmbraClient } from '@fabrknt/veil-umbra-sdk';
 
 const client = new UmbraClient(connection, wallet);
 
@@ -292,7 +292,7 @@ umbra/
 
 ## Resources
 
-- [SOVEREIGN Protocol](https://github.com/psyto/sovereign) - Universal identity & reputation
+- [SOVEREIGN Protocol](https://github.com/fabrknt/sovereign) - Universal identity & reputation
 - [Solana Docs](https://docs.solana.com/)
 - [Anchor Framework](https://www.anchor-lang.com/)
 

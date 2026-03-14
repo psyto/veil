@@ -52,7 +52,7 @@ Integrations:
 Trade without a trace. Lend without a ledger.
 
 Demo: youtu.be/Mslq17qW6B8
-Code: github.com/psyto/veil/tree/main/apps/darkflow
+Code: github.com/fabrknt/veil/tree/main/apps/darkflow
 
 #PrivacyHack2026
 ```
@@ -104,7 +104,7 @@ INTEGRATIONS:
 - Solana (@solana) - High-throughput blockchain
 
 LINKS:
-- GitHub: https://github.com/psyto/veil/tree/main/apps/darkflow
+- GitHub: https://github.com/fabrknt/veil/tree/main/apps/darkflow
 - Program (Devnet): 8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U
 - Solana Explorer: https://explorer.solana.com/address/8UvUSCfsXUjRW6NwcLVEJ4Y5jg8nWbxsZGNrzK1xs38U?cluster=devnet
 

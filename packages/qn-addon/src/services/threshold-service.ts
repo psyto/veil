@@ -1,4 +1,4 @@
-import { splitSecret, combineShares, verifyShares, SecretShare } from '@veil/core';
+import { splitSecret, combineShares, verifyShares, SecretShare } from '@fabrknt/veil-core';
 
 export function split(secret: Uint8Array, threshold: number, totalShares: number): SecretShare[] {
   return splitSecret(secret, threshold, totalShares);

@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
-    '@umbra/sdk',
-    '@veil/core',
+    '@fabrknt/veil-umbra-sdk',
+    '@fabrknt/veil-core',
   ],
   webpack: (config) => {
     config.resolve.fallback = {

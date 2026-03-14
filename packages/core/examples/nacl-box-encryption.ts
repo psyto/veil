@@ -1,5 +1,5 @@
 /**
- * @veil/crypto — NaCl Box Encryption Example
+ * @fabrknt/veil-crypto — NaCl Box Encryption Example
  *
  * Demonstrates authenticated public-key encryption using
  * Curve25519-XSalsa20-Poly1305 (NaCl box).
@@ -12,7 +12,7 @@ import {
   deriveEncryptionKeypair,
   encrypt,
   decrypt,
-} from '@veil/crypto';
+} from '@fabrknt/veil-crypto';
 
 // ---------------------------------------------------------------------------
 // 1. Generate fresh keypairs for two parties

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@veil/core`), we maximize impact while minimizing redundant development.
+This document outlines the strategy for submitting **five privacy-focused applications** across multiple hackathons. By leveraging shared infrastructure (`@fabrknt/veil-core`), we maximize impact while minimizing redundant development.
 
 **Hackathons:**
 - Solana PrivacyHack 2026 (January 12-30, 2026)
@@ -91,11 +91,11 @@ This document outlines the strategy for submitting **five privacy-focused applic
 
 ## Shared Architecture Advantage
 
-The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@veil/core`). Upgrading this shared library benefits both projects simultaneously.
+The Confidential Swap Router and RWA Secrets Service share a common cryptographic library (`@fabrknt/veil-core`). Upgrading this shared library benefits both projects simultaneously.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                       @veil/core                              │
+│                       @fabrknt/veil-core                              │
 │                                                                          │
 │   Current Implementation:                                                │
 │   ├── nacl-box.ts      → NaCl box encryption (Curve25519-XSalsa20)     │
@@ -223,7 +223,7 @@ export * from './shielded';
 Update to use ZK compression for order payloads:
 
 ```typescript
-import { compressPayload } from '@veil/core';
+import { compressPayload } from '@fabrknt/veil-core';
 
 export async function encryptSwapOrder(
   order: SwapOrderParams,
@@ -254,7 +254,7 @@ export async function encryptSwapOrder(
 Add shielded output delivery:
 
 ```typescript
-import { createShieldedTransfer, settleShielded } from '@veil/core';
+import { createShieldedTransfer, settleShielded } from '@fabrknt/veil-core';
 
 async function executeOrderWithShielding(order: OrderData): Promise<string> {
   // 1. Execute swap via Jupiter (existing)
@@ -305,7 +305,7 @@ pub fn submit_order_zk(
 Add ZK proofs for access verification:
 
 ```typescript
-import { compressPayload } from '@veil/core';
+import { compressPayload } from '@fabrknt/veil-core';
 
 export async function createAccessProof(
   grantee: PublicKey,
@@ -588,31 +588,31 @@ anchor deploy
 
 ## Cross-Chain: EVM Swap Router
 
-The `@veil/evm-swap-router` package is an Ethereum proof-of-concept that reuses the same `@veil/orders` library used on Solana. This demonstrates that Veil's order encryption and serialization is chain-agnostic — the same encrypted order format works on both Solana and EVM chains.
+The `@fabrknt/veil-evm-swap-router` package is an Ethereum proof-of-concept that reuses the same `@fabrknt/veil-orders` library used on Solana. This demonstrates that Veil's order encryption and serialization is chain-agnostic — the same encrypted order format works on both Solana and EVM chains.
 
 ### Additional Packages
 
 | Package | Purpose |
 |---------|---------|
-| `@veil/core` | Shared encryption, Arcium MPC module, ZK compression, shielded transfers |
-| `@veil/orders` | Order-specific encryption and serialization (used by both Solana and EVM routers) |
-| `@veil/browser` | Browser-friendly VeilClient wrapper |
-| `@veil/mcp-server` | MCP server for AI agent integration |
-| `@veil/qn-addon` | QuickNode marketplace add-on |
-| `@veil/evm-swap-router` | EVM proof-of-concept (Ethereum version) |
+| `@fabrknt/veil-core` | Shared encryption, Arcium MPC module, ZK compression, shielded transfers |
+| `@fabrknt/veil-orders` | Order-specific encryption and serialization (used by both Solana and EVM routers) |
+| `@fabrknt/veil-browser` | Browser-friendly VeilClient wrapper |
+| `@fabrknt/veil-mcp-server` | MCP server for AI agent integration |
+| `@fabrknt/veil-qn-addon` | QuickNode marketplace add-on |
+| `@fabrknt/veil-evm-swap-router` | EVM proof-of-concept (Ethereum version) |
 
 ### Technology Stack Update
 
 - **Build system:** pnpm + Turbo (monorepo)
 - **ZK circuits:** Noir (`apps/darkflow/circuits/`) — swap, execution, and position proofs
-- **MPC:** Arcium integration via `@veil/core` arcium module
-- **Cross-chain:** `@veil/evm-swap-router` proves chain-agnostic encryption
+- **MPC:** Arcium integration via `@fabrknt/veil-core` arcium module
+- **Cross-chain:** `@fabrknt/veil-evm-swap-router` proves chain-agnostic encryption
 
 ---
 
 ## Conclusion
 
-By leveraging shared infrastructure (`@veil/core`), we've built five privacy-focused applications across three hackathons. Each app targets a different track/hackathon, maximizing prize potential while sharing core cryptographic functionality.
+By leveraging shared infrastructure (`@fabrknt/veil-core`), we've built five privacy-focused applications across three hackathons. Each app targets a different track/hackathon, maximizing prize potential while sharing core cryptographic functionality.
 
 **Key Success Factors:**
 1. Shared library upgrades benefit all five applications
@@ -620,9 +620,9 @@ By leveraging shared infrastructure (`@veil/core`), we've built five privacy-foc
 3. Multiple bounty eligibility per project
 4. Three deployed programs on devnet (Swap Router, RWA Secrets, Umbra)
 5. Comprehensive documentation and demo scripts prepared
-6. Chain-agnostic encryption proven via `@veil/evm-swap-router` (same `@veil/orders` on Solana and Ethereum)
+6. Chain-agnostic encryption proven via `@fabrknt/veil-evm-swap-router` (same `@fabrknt/veil-orders` on Solana and Ethereum)
 7. Noir ZK circuits at `apps/darkflow/circuits/` for swap, execution, and position proofs
-8. MCP server (`@veil/mcp-server`) enables AI agent integration
+8. MCP server (`@fabrknt/veil-mcp-server`) enables AI agent integration
 9. Monorepo managed with pnpm + Turbo for unified builds
 
 **Deployed Programs:**

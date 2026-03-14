@@ -4,15 +4,15 @@
 
 ### Deprecated Endpoints
 
-#### QN-Addon (`@veil/qn-addon`)
+#### QN-Addon (`@fabrknt/veil-qn-addon`)
 
 | Endpoint | Replacement | Status |
 |----------|-------------|--------|
-| `POST /v1/encrypt` | Client-side via `@veil/core` or `@veil/browser` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/decrypt` | Client-side via `@veil/core` or `@veil/browser` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/crypto/encrypt-multiple` | Client-side via `@veil/core` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/orders/encrypt` | Client-side via `@veil/orders` | Deprecated, rate-limited (10 req/min) |
-| `POST /v1/orders/decrypt` | Client-side via `@veil/orders` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/encrypt` | Client-side via `@fabrknt/veil-core` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/decrypt` | Client-side via `@fabrknt/veil-core` or `@fabrknt/veil-browser` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/crypto/encrypt-multiple` | Client-side via `@fabrknt/veil-core` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/orders/encrypt` | Client-side via `@fabrknt/veil-orders` | Deprecated, rate-limited (10 req/min) |
+| `POST /v1/orders/decrypt` | Client-side via `@fabrknt/veil-orders` | Deprecated, rate-limited (10 req/min) |
 
 #### Confidential Swap Router Solver
 
@@ -38,7 +38,7 @@
 const res = await fetch('/v1/encrypt', { body: JSON.stringify({ message, recipientPublicKey }) });
 
 // After (client-side)
-import { VeilClient } from '@veil/browser';
+import { VeilClient } from '@fabrknt/veil-browser';
 const client = VeilClient.create();
 const encrypted = client.encrypt(message, recipientPublicKey);
 ```
@@ -49,7 +49,7 @@ const encrypted = client.encrypt(message, recipientPublicKey);
 const res = await fetch('/v1/orders/encrypt', { body: JSON.stringify({ minOutputAmount, ... }) });
 
 // After (client-side)
-import { createEncryptedOrder } from '@veil/orders';
+import { createEncryptedOrder } from '@fabrknt/veil-orders';
 const order = createEncryptedOrder(minOutputAmount, slippageBps, deadline, solverPubkey, keypair);
 ```
 

@@ -16,7 +16,7 @@ Using QuickNode for high-performance RPC. Privacy + speed = no compromise.
 
 Would love to chat about Solana privacy infrastructure.
 
-github.com/psyto/veil
+github.com/fabrknt/veil
 ```
 
 **Option B: Building in Public**
@@ -147,7 +147,7 @@ Huge thanks to:
 @heaborgie - Privacy primitives
 
 Demo: [link]
-Repo: github.com/psyto/veil
+Repo: github.com/fabrknt/veil
 
 Fingers crossed for top 12!
 ```
@@ -198,7 +198,7 @@ Happy to share a demo anytime.
 Best,
 [Your name]
 
-GitHub: github.com/psyto/veil
+GitHub: github.com/fabrknt/veil
 ```
 
 **Follow-up DM**

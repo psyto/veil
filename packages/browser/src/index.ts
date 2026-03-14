@@ -1,12 +1,12 @@
 /**
- * @veil/browser — Client-side encryption SDK for Veil
+ * @fabrknt/veil-browser — Client-side encryption SDK for Veil
  *
  * All encryption/decryption happens locally in the browser.
  * No secret keys ever leave the user's device.
  *
  * @example
  * ```typescript
- * import { VeilClient } from '@veil/browser';
+ * import { VeilClient } from '@fabrknt/veil-browser';
  *
  * const client = VeilClient.create();
  *
@@ -39,7 +39,7 @@ import {
   type EncryptionKeypair,
   type EncryptedData,
   type SecretShare,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 
 import {
   createEncryptedOrder,
@@ -58,7 +58,7 @@ import {
   type EncryptedOrderWithCommitment,
   type ThresholdEncryptedOrder,
   type ThresholdSolverShare,
-} from '@veil/orders';
+} from '@fabrknt/veil-orders';
 
 import BN from 'bn.js';
 

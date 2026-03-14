@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 /**
  * @title ConfidentialSwapRouter
  * @notice EVM implementation of Veil's encrypted order flow for MEV protection.
- * @dev Orders are encrypted client-side using @veil/orders (NaCl box).
+ * @dev Orders are encrypted client-side using @fabrknt/veil-orders (NaCl box).
  *      The solver decrypts off-chain and executes with commitment verification.
  *      This proves Veil's chain-agnostic claim beyond Solana.
  */

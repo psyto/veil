@@ -1,6 +1,6 @@
 {
-  "name": "@veil/mcp-server",
-  "version": "0.2.0",
+  "name": "@fabrknt/veil-mcp-server",
+  "version": "1.0.0",
   "type": "module",
   "description": "MCP server exposing Veil privacy primitives for AI agents — chain-agnostic crypto tools (encryption, Shamir, orders) plus Solana-specific identity/trust tools",
   "main": "dist/index.js",
@@ -27,8 +27,8 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@solana/web3.js": "^1.95.0",
-    "@veil/core": "workspace:*",
-    "@veil/orders": "file:../orders",
+    "@fabrknt/veil-core": "workspace:*",
+    "@fabrknt/veil-orders": "file:../orders",
     "tweetnacl": "^1.0.3",
     "zod": "^3.24.0"
   },
@@ -38,5 +38,9 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

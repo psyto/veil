@@ -15,7 +15,7 @@ import {
   createKeyShareForGrantee,
   generateEncryptionKeypair,
   EncryptionKeypair,
-} from '@rwa-secrets/sdk';
+} from '@fabrknt/veil-rwa-secrets-sdk';
 
 // Asset types matching the on-chain enum
 const ASSET_TYPES = [

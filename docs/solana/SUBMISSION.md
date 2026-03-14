@@ -7,7 +7,7 @@
 - FairScale Hackathon 2026 (Umbra)
 - Pump.fun Build In Public Hackathon 2026 (ShadowLaunch)
 
-**Repository:** https://github.com/psyto/veil
+**Repository:** https://github.com/fabrknt/veil
 
 ---
 
@@ -43,7 +43,7 @@ Veil is a collection of five privacy-preserving applications for Solana:
 4. **DarkFlow** - Confidential AMM with dark liquidity pools and ZK swaps
 5. **ShadowLaunch** - Privacy-first token purchases on Pump.fun
 
-All applications share a common cryptographic library (`@veil/core`) that provides:
+All applications share a common cryptographic library (`@fabrknt/veil-core`) that provides:
 - NaCl box encryption (Curve25519-XSalsa20-Poly1305)
 - Shamir's Secret Sharing for threshold decryption
 - ZK compression via Light Protocol
@@ -126,7 +126,7 @@ All applications share a common cryptographic library (`@veil/core`) that provid
 │  └──────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                          │
 │  ┌──────────────────────────────────────────────────────────────────────────────────┐   │
-│  │                                  @veil/core                                     │   │
+│  │                                  @fabrknt/veil-core                                     │   │
 │  │  NaCl Box  •  Shamir's  •  ZK Compression  •  Shielded Transfers  •  SOVEREIGN    │   │
 │  └──────────────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                          │
@@ -229,7 +229,7 @@ DarkFlow brings institutional-grade dark pool mechanics to DeFi with encrypted L
 - **Dark Swaps:** ZK proofs verify validity without revealing amounts
 - **Confidential Token Launches:** Private bonding curves prevent front-running
 - **Noir Circuits:** Zero-knowledge proof generation at `apps/darkflow/circuits/` (swap, execution, and position proofs)
-- **Arcium MPC:** Encrypted shared state via `@veil/core` arcium module
+- **Arcium MPC:** Encrypted shared state via `@fabrknt/veil-core` arcium module
 
 ### Privacy Model
 | Data | Visibility |
@@ -266,13 +266,13 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 
 ## EVM Swap Router (Proof-of-Concept)
 
-The `@veil/evm-swap-router` package demonstrates chain-agnostic encryption by reusing the same `@veil/orders` library on Ethereum. This proves Veil's order encryption and serialization works across both Solana and EVM chains, opening a path toward multi-chain confidential trading.
+The `@fabrknt/veil-evm-swap-router` package demonstrates chain-agnostic encryption by reusing the same `@fabrknt/veil-orders` library on Ethereum. This proves Veil's order encryption and serialization works across both Solana and EVM chains, opening a path toward multi-chain confidential trading.
 
 ---
 
 ## MCP Server for AI Agent Integration
 
-The `@veil/mcp-server` package exposes Veil's privacy tools through the Model Context Protocol, enabling AI agents to submit encrypted orders, manage shielded transfers, and interact with DarkFlow pools programmatically.
+The `@fabrknt/veil-mcp-server` package exposes Veil's privacy tools through the Model Context Protocol, enabling AI agents to submit encrypted orders, manage shielded transfers, and interact with DarkFlow pools programmatically.
 
 ---
 
@@ -285,7 +285,7 @@ The `@veil/mcp-server` package exposes Veil's privacy tools through the Model Co
 
 ### Installation
 ```bash
-git clone https://github.com/psyto/veil.git
+git clone https://github.com/fabrknt/veil.git
 cd veil
 pnpm install
 ```
@@ -330,7 +330,7 @@ npx ts-node --esm scripts/verify-deployment.ts
 
 ### Encrypt Swap Order
 ```typescript
-import { createEncryptedOrder, generateEncryptionKeypair } from '@confidential-swap/sdk';
+import { createEncryptedOrder, generateEncryptionKeypair } from '@fabrknt/veil-confidential-swap-sdk';
 
 const userKeypair = generateEncryptionKeypair();
 const encrypted = createEncryptedOrder(
@@ -342,7 +342,7 @@ const encrypted = createEncryptedOrder(
 
 ### Encrypt RWA Metadata
 ```typescript
-import { encryptAssetMetadata, generateEncryptionKeypair } from '@rwa-secrets/sdk';
+import { encryptAssetMetadata, generateEncryptionKeypair } from '@fabrknt/veil-rwa-secrets-sdk';
 
 const keypair = generateEncryptionKeypair();
 const encrypted = encryptAssetMetadata({
@@ -354,7 +354,7 @@ const encrypted = encryptAssetMetadata({
 
 ### ZK Compression
 ```typescript
-import { createHeliusRpc, compressData } from '@veil/core';
+import { createHeliusRpc, compressData } from '@fabrknt/veil-core';
 
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');
 const compressed = await compressData(zkRpc, data, payer);
@@ -363,7 +363,7 @@ const compressed = await compressData(zkRpc, data, payer);
 
 ### Shielded Transfer
 ```typescript
-import { PrivacyCashClient } from '@veil/core';
+import { PrivacyCashClient } from '@fabrknt/veil-core';
 
 const client = new PrivacyCashClient(connection, wallet, 'SOL');
 await client.deposit(1000000n);  // Shield tokens
@@ -377,7 +377,7 @@ await client.withdraw(500000n, recipient);  // Unshield
 ```
 veil/
 ├── packages/
-│   ├── core/                       # Shared encryption library (@veil/core)
+│   ├── core/                       # Shared encryption library (@fabrknt/veil-core)
 │   │   └── src/
 │   │       ├── nacl-box.ts        # NaCl box encryption
 │   │       ├── threshold.ts       # Shamir's Secret Sharing
@@ -385,11 +385,11 @@ veil/
 │   │       ├── shielded.ts        # Privacy Cash integration
 │   │       ├── rpc-providers.ts   # Helius/Quicknode config
 │   │       └── arcium/            # Arcium MPC integration
-│   ├── orders/                    # Order encryption/serialization (@veil/orders)
-│   ├── browser/                   # Browser-friendly VeilClient wrapper (@veil/browser)
-│   ├── mcp-server/                # MCP server for AI agent integration (@veil/mcp-server)
-│   ├── qn-addon/                  # QuickNode marketplace add-on (@veil/qn-addon)
-│   └── evm-swap-router/           # EVM proof-of-concept swap router (@veil/evm-swap-router)
+│   ├── orders/                    # Order encryption/serialization (@fabrknt/veil-orders)
+│   ├── browser/                   # Browser-friendly VeilClient wrapper (@fabrknt/veil-browser)
+│   ├── mcp-server/                # MCP server for AI agent integration (@fabrknt/veil-mcp-server)
+│   ├── qn-addon/                  # QuickNode marketplace add-on (@fabrknt/veil-qn-addon)
+│   └── evm-swap-router/           # EVM proof-of-concept swap router (@fabrknt/veil-evm-swap-router)
 ├── apps/
 │   ├── confidential-swap-router/   # MEV-protected swaps
 │   │   ├── programs/              # Anchor program
@@ -467,10 +467,10 @@ npx ts-node --esm scripts/verify-deployment.ts
 - **DEX Aggregation:** Jupiter API
 - **RPC Providers:** Helius, Quicknode
 - **Reputation:** SOVEREIGN Protocol
-- **Dark Pools:** Arcium MPC (encrypted state via `@veil/core` arcium module)
+- **Dark Pools:** Arcium MPC (encrypted state via `@fabrknt/veil-core` arcium module)
 - **Monorepo:** pnpm + Turbo
-- **AI Integration:** MCP server (`@veil/mcp-server`)
-- **Cross-Chain:** EVM swap router (`@veil/evm-swap-router`) using shared `@veil/orders`
+- **AI Integration:** MCP server (`@fabrknt/veil-mcp-server`)
+- **Cross-Chain:** EVM swap router (`@fabrknt/veil-evm-swap-router`) using shared `@fabrknt/veil-orders`
 
 ---
 
@@ -498,7 +498,7 @@ Read our full philosophical background: [PHILOSOPHY.md](./PHILOSOPHY.md)
 
 ## Links
 
-- **GitHub:** https://github.com/psyto/veil
+- **GitHub:** https://github.com/fabrknt/veil
 - **Swap Router Program:** https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet
 - **RWA Secrets Program:** https://explorer.solana.com/address/DWgiBrRNa3JM3XWkPXGXwo7jJ59PvXVr3bVeyKbGySam?cluster=devnet
 - **Umbra Swap Program:** https://explorer.solana.com/address/41Ps5GR2E6QbXRDaXjAcQCcKmPR942VYLRQQDqdkQXLr?cluster=devnet
@@ -513,7 +513,7 @@ Read our full philosophical background: [PHILOSOPHY.md](./PHILOSOPHY.md)
 - [Helius](https://helius.dev/) - RPC infrastructure
 - [Quicknode](https://www.quicknode.com/) - RPC infrastructure
 - [Anchor](https://www.anchor-lang.com/) - Solana framework
-- [SOVEREIGN Protocol](https://github.com/psyto/sovereign) - On-chain identity
+- [SOVEREIGN Protocol](https://github.com/fabrknt/sovereign) - On-chain identity
 - [Arcium](https://arcium.com/) - Encrypted state
 - [Noir](https://noir-lang.org/) - ZK proofs
 - [Pump.fun](https://pump.fun) - Token launches

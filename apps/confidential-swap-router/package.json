@@ -1,5 +1,5 @@
 {
-  "name": "@apps/confidential-swap-router",
+  "name": "@fabrknt/veil-confidential-swap-router",
   "version": "0.1.0",
   "private": true,
   "license": "ISC",

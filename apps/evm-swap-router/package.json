@@ -1,7 +1,7 @@
 {
-  "name": "@veil/evm-swap-router",
-  "version": "0.1.0",
-  "description": "EVM proof-of-concept for Veil's chain-agnostic encrypted order flow — MEV protection on Ethereum using the same @veil/orders encryption as Solana",
+  "name": "@fabrknt/veil-evm-swap-router",
+  "version": "1.0.0",
+  "description": "EVM proof-of-concept for Veil's chain-agnostic encrypted order flow — MEV protection on Ethereum using the same @fabrknt/veil-orders encryption as Solana",
   "license": "MIT",
   "main": "sdk/src/index.ts",
   "scripts": {
@@ -12,7 +12,7 @@
     "verify": "hardhat run scripts/verify-deployment.ts"
   },
   "dependencies": {
-    "@veil/orders": "workspace:*",
+    "@fabrknt/veil-orders": "workspace:*",
     "bn.js": "^5.2.1",
     "dotenv": "^16.3.0"
   },
@@ -30,5 +30,9 @@
     "solidity-coverage": "^0.8.0",
     "typechain": "^8.3.0",
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

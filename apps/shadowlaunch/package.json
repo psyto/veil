@@ -1,5 +1,5 @@
 {
-  "name": "@veil-solana/shadowlaunch",
+  "name": "@fabrknt/veil-shadowlaunch",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@veil/core": "workspace:*",
+    "@fabrknt/veil-core": "workspace:*",
     "@coral-xyz/anchor": "^0.30.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",

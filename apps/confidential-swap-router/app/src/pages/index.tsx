@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import {
   ConfidentialSwapClient,
   deriveEncryptionKeypair,
-} from '@confidential-swap/sdk';
+} from '@fabrknt/veil-confidential-swap-sdk';
 import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 
 // Common token mints (devnet)

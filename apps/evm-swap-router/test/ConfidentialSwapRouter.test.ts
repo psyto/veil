@@ -350,7 +350,7 @@ describe("ConfidentialSwapRouter", function () {
       const slippage = 100;
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
 
-      // Compute hash in TypeScript (same as @veil/orders computePayloadHash)
+      // Compute hash in TypeScript (same as @fabrknt/veil-orders computePayloadHash)
       const expectedHash = computePayloadHash(minOutput, slippage, deadline);
 
       // Submit order with this hash

@@ -1,6 +1,6 @@
 {
-  "name": "@confidential-swap/sdk",
-  "version": "0.1.0",
+  "name": "@fabrknt/veil-confidential-swap-sdk",
+  "version": "1.0.0",
   "description": "SDK for Confidential Swap Router - MEV-protected swap orders",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@veil/orders": "file:../../../../veil/packages/orders",
-    "@veil/core": "workspace:*",
+    "@fabrknt/veil-orders": "file:../../../../veil/packages/orders",
+    "@fabrknt/veil-core": "workspace:*",
     "@coral-xyz/anchor": "^0.30.0",
     "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.0",
@@ -21,5 +21,9 @@
     "@types/bn.js": "^5.1.5",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

@@ -9,7 +9,7 @@ import {
   validateEncryptedData,
   EncryptionKeypair,
   EncryptedData,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 
 export function generate(): { publicKey: Uint8Array; secretKey: Uint8Array } {
   return generateEncryptionKeypair();

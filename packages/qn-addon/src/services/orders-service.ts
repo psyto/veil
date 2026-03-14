@@ -4,8 +4,8 @@ import {
   validateEncryptedPayload,
   OrderPayload,
   EncryptedPayload,
-} from '@veil/orders';
-import { EncryptionKeypair } from '@veil/core';
+} from '@fabrknt/veil-orders';
+import { EncryptionKeypair } from '@fabrknt/veil-core';
 import BN from 'bn.js';
 
 export function encryptOrder(

@@ -193,7 +193,7 @@ WHAT'S NEXT
 [Closing]
 SHADOWLAUNCH
 pump.fun/SHADOW
-github.com/psyto/veil
+github.com/fabrknt/veil
 @[your_twitter]
 ```
 

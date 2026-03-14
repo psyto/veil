@@ -150,7 +150,7 @@ Veil is infrastructure for this era.
 
 ## Related Work
 
-This project shares philosophical foundations with [Fabcash](https://github.com/psyto/fabcash), a true burner wallet for Solana focused on payment privacy and coercion resistance.
+This project shares philosophical foundations with [Fabcash](https://github.com/fabrknt/fabcash), a true burner wallet for Solana focused on payment privacy and coercion resistance.
 
 Both projects believe:
 - Privacy is infrastructure, not a feature

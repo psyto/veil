@@ -18,7 +18,7 @@
 - DarkFlow (PrivacyHack - Arcium/Noir Bounties)
 - ShadowLaunch (Pump.fun Hackathon - Privacy Purchases)
 
-GitHub: github.com/psyto/veil
+GitHub: github.com/fabrknt/veil
 
 ---
 
@@ -211,7 +211,7 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 │  └────────────────────────────────────────────────────────────────────┘ │
 │                                                                          │
 │  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                            @veil/core                               │ │
+│  │                            @fabrknt/veil-core                               │ │
 │  │  NaCl Box • Shamir's • ZK Compression • Shielded • Arcium MPC      │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -236,7 +236,7 @@ Main Wallet → Privacy Pool → Ephemeral Wallet → Pump.fun Purchase
 ## Slide 15: Code Example - Encrypted Swap
 
 ```typescript
-import { createEncryptedOrder } from '@confidential-swap/sdk';
+import { createEncryptedOrder } from '@fabrknt/veil-confidential-swap-sdk';
 
 // User encrypts order - only solver can read
 const encrypted = createEncryptedOrder(
@@ -258,7 +258,7 @@ await program.submitEncryptedOrder(encrypted);
 ## Slide 16: Code Example - Selective Disclosure
 
 ```typescript
-import { encryptAssetMetadata, grantAccess } from '@rwa-secrets/sdk';
+import { encryptAssetMetadata, grantAccess } from '@fabrknt/veil-rwa-secrets-sdk';
 
 // Encrypt sensitive metadata
 const encrypted = encryptAssetMetadata({
@@ -338,7 +338,7 @@ Five applications. One principle.
 
 ## Slide 21: Links & Contact
 
-**Repository:** github.com/psyto/veil
+**Repository:** github.com/fabrknt/veil
 
 **Explorer Links:**
 - [Swap Router](https://explorer.solana.com/address/v7th9XoyXeonxKLPsKdcgaNsSMLR44HDY7hadD7CCRM?cluster=devnet)

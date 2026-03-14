@@ -141,7 +141,7 @@ apps/shadowlaunch/
 
 | Package | Purpose |
 |---------|---------|
-| `@veil/core` | Shielded transfers, ZK compression |
+| `@fabrknt/veil-core` | Shielded transfers, ZK compression |
 | `@solana/web3.js` | Solana blockchain interaction |
 | `@solana/wallet-adapter-*` | Wallet connection (Phantom, Solflare, etc.) |
 | `next` | React framework with App Router |
@@ -185,7 +185,7 @@ ShadowLaunch provides **transaction unlinkability** through:
 
 1. **Ephemeral Addresses**: Generated fresh for each purchase using `Keypair.generate()`. No seed phrase, no pattern, no history.
 
-2. **Shielded Transfer**: Uses `@veil/core` to route funds through a privacy pool, breaking the on-chain link between source and destination.
+2. **Shielded Transfer**: Uses `@fabrknt/veil-core` to route funds through a privacy pool, breaking the on-chain link between source and destination.
 
 3. **No Persistent State**: Ephemeral wallets exist only for the purchase. Private keys are held in memory and can be exported or discarded.
 
@@ -230,7 +230,7 @@ MIT
 ## Links
 
 - [Pump.fun](https://pump.fun)
-- [Veil Privacy Suite](https://github.com/psyto/veil)
+- [Veil Privacy Suite](https://github.com/fabrknt/veil)
 - [QuickNode](https://quicknode.com)
 - [Helius](https://helius.dev)
 - [Light Protocol](https://lightprotocol.com)

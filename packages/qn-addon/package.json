@@ -1,6 +1,6 @@
 {
-  "name": "@veil/qn-addon",
-  "version": "0.1.0",
+  "name": "@fabrknt/veil-qn-addon",
+  "version": "1.0.0",
   "description": "QuickNode Marketplace REST Add-On wrapping Veil chain-agnostic privacy primitives with optional Solana-specific extensions",
   "license": "MIT",
   "main": "dist/index.js",
@@ -13,8 +13,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@veil/core": "workspace:*",
-    "@veil/orders": "file:../orders",
+    "@fabrknt/veil-core": "workspace:*",
+    "@fabrknt/veil-orders": "file:../orders",
     "better-sqlite3": "^11.0.0",
     "bn.js": "^5.2.1",
     "cors": "^2.8.5",
@@ -36,5 +36,9 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

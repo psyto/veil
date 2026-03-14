@@ -19,13 +19,13 @@ import {
   splitSecret,
   combineShares,
   verifyShares,
-} from "@veil/core";
+} from "@fabrknt/veil-core";
 import {
   encryptOrderPayload,
   decryptOrderPayload,
   createCommittedEncryptedOrder,
   computePayloadHash,
-} from "@veil/orders";
+} from "@fabrknt/veil-orders";
 import BN from "bn.js";
 import { Connection, PublicKey, Keypair } from "@solana/web3.js";
 import nacl from "tweetnacl";
@@ -491,7 +491,7 @@ const TOOLS = [
   {
     name: "zk_prove_tier",
     description:
-      "[Solana-specific] Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. Requires Solana RPC. (Note: Full Noir proof generation requires the @veil/core noir module.)",
+      "[Solana-specific] Generate a conceptual ZK proof that your SOVEREIGN tier meets a minimum threshold, without revealing your exact scores or identity. Returns a proof commitment structure. Requires Solana RPC. (Note: Full Noir proof generation requires the @fabrknt/veil-core noir module.)",
     inputSchema: {
       type: "object" as const,
       required: ["wallet", "minTier"],
@@ -965,7 +965,7 @@ export async function handleTool(name: string, args: Args) {
           minTier,
           satisfied,
         },
-        note: "Full Noir ZK proof available via @veil/core NoirProver",
+        note: "Full Noir ZK proof available via @fabrknt/veil-core NoirProver",
       });
     }
 

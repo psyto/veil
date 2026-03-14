@@ -1,11 +1,13 @@
 {
-  "name": "@veil/browser",
-  "version": "0.1.0",
+  "name": "@fabrknt/veil-browser",
+  "version": "1.0.0",
   "description": "Browser-optimized SDK for Veil privacy primitives — ensures encryption happens client-side, never on a server",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -20,8 +22,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@veil/core": "workspace:*",
-    "@veil/orders": "workspace:*",
+    "@fabrknt/veil-core": "workspace:*",
+    "@fabrknt/veil-orders": "workspace:*",
     "bn.js": "^5.2.1",
     "tweetnacl": "^1.0.3"
   },
@@ -36,5 +38,9 @@
     "> 0.5%",
     "not dead",
     "not ie 11"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  }
 }

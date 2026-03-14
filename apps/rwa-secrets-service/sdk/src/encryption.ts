@@ -17,7 +17,7 @@ import {
   compressData,
   decompressData,
   estimateCompressionSavings,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 import { Keypair } from '@solana/web3.js';
 
 // Re-export common crypto functions

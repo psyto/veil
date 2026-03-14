@@ -1,5 +1,5 @@
 {
-  "name": "@rwa-secrets/app",
+  "name": "@fabrknt/veil-rwa-secrets-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@rwa-secrets/sdk": "file:../sdk",
+    "@fabrknt/veil-rwa-secrets-sdk": "file:../sdk",
     "@coral-xyz/anchor": "^0.30.0",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",

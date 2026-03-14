@@ -141,7 +141,7 @@ async function main() {
   console.log('');
 
   // Test 3: Test crypto package
-  console.log('Test 3: @veil/crypto Package');
+  console.log('Test 3: @fabrknt/veil-crypto Package');
   console.log('-'.repeat(40));
   try {
     const crypto = await import('../packages/crypto/src/index.ts');

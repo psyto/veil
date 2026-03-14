@@ -7,11 +7,11 @@ import {
   TieredSolverClient,
   TieredOrderData,
   OrderStatus,
-} from '@umbra/sdk';
+} from '@fabrknt/veil-umbra-sdk';
 import {
   EncryptionKeypair,
   generateEncryptionKeypair,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 
 import { JupiterClient } from './jupiter';
 

@@ -17,14 +17,14 @@ export {
   computePayloadHash,
   validateEncryptedPayload,
   getEncryptionPublicKey,
-} from '@veil/orders';
+} from '@fabrknt/veil-orders';
 
 import {
   OrderPayload,
   EncryptionKeypair,
   encryptOrderPayload,
   decryptOrderPayload,
-} from '@veil/orders';
+} from '@fabrknt/veil-orders';
 
 import {
   ZkCompressionConfig,
@@ -35,7 +35,7 @@ import {
   estimateCompressionSavings,
   shieldTokens,
   unshieldTokens,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 import { Keypair, PublicKey, Connection } from '@solana/web3.js';
 
 // ============================================================================

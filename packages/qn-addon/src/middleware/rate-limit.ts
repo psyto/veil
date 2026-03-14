@@ -22,7 +22,7 @@ export const deprecatedLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    error: 'Rate limit exceeded for deprecated endpoint. Please migrate to client-side encryption via @veil/core.',
+    error: 'Rate limit exceeded for deprecated endpoint. Please migrate to client-side encryption via @fabrknt/veil-core.',
   },
 });
 

@@ -84,7 +84,7 @@ confidential-swap-router/
 
 ```bash
 # Clone the repository
-git clone https://github.com/psyto/confidential-swap-router.git
+git clone https://github.com/fabrknt/confidential-swap-router.git
 cd confidential-swap-router
 
 # Install dependencies
@@ -218,7 +218,7 @@ curl -X POST http://localhost:3001/api/register-encryption-pubkey \
 Orders are encrypted using **NaCl box** (Curve25519-XSalsa20-Poly1305):
 
 ```typescript
-import { createEncryptedOrder, generateEncryptionKeypair } from '@confidential-swap/sdk';
+import { createEncryptedOrder, generateEncryptionKeypair } from '@fabrknt/veil-confidential-swap-sdk';
 
 // Generate user encryption keypair
 const userKeypair = generateEncryptionKeypair();
@@ -238,8 +238,8 @@ const encryptedPayload = createEncryptedOrder(
 For enhanced privacy with ~99% on-chain storage reduction:
 
 ```typescript
-import { createZkEncryptedOrder, shieldSwapOutput } from '@confidential-swap/sdk';
-import { createHeliusRpc } from '@veil/core';
+import { createZkEncryptedOrder, shieldSwapOutput } from '@fabrknt/veil-confidential-swap-sdk';
+import { createHeliusRpc } from '@fabrknt/veil-core';
 
 // Create ZK-compressed encrypted order
 const { connection, zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');

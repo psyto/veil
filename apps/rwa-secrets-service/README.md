@@ -154,7 +154,7 @@ import {
   encryptAssetMetadata,
   AssetType,
   AccessLevel
-} from '@rwa-secrets/sdk';
+} from '@fabrknt/veil-rwa-secrets-sdk';
 
 // Initialize client with wallet
 const client = new RwaSecretsClient(connection, undefined, wallet);
@@ -203,8 +203,8 @@ import {
   createZkEncryptedAsset,
   createZkAccessProof,
   verifyZkAccessProof
-} from '@rwa-secrets/sdk';
-import { createHeliusRpc } from '@veil/core';
+} from '@fabrknt/veil-rwa-secrets-sdk';
+import { createHeliusRpc } from '@fabrknt/veil-core';
 
 // Create ZK-compressed encrypted asset
 const { zkRpc } = createHeliusRpc('YOUR_HELIUS_API_KEY', 'devnet');

@@ -1,6 +1,6 @@
 {
-  "name": "@veil/orders",
-  "version": "0.2.0",
+  "name": "@fabrknt/veil-orders",
+  "version": "1.0.0",
   "description": "Chain-agnostic order encryption utilities — serialize, encrypt, and decrypt DEX swap order payloads for MEV protection on any blockchain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@veil/core": "workspace:*",
+    "@fabrknt/veil-core": "workspace:*",
     "bn.js": "^5.2.1"
   },
   "devDependencies": {
@@ -32,6 +32,10 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@veil/core": "^0.2.0"
+    "@fabrknt/veil-core": "^0.2.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

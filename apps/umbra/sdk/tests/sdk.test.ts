@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
-import { generateEncryptionKeypair } from '@veil/core';
+import { generateEncryptionKeypair } from '@fabrknt/veil-core';
 import {
   createEncryptedOrder,
   decryptOrderPayload,

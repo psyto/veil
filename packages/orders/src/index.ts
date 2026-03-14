@@ -11,7 +11,7 @@ import {
   SecretShare,
   createThresholdEncryption,
   decryptWithThreshold,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 import { createHash } from 'crypto';
 import BN from 'bn.js';
 
@@ -249,7 +249,7 @@ export interface ThresholdSolverShare {
  * Flow:
  * 1. Serialize and hash the order payload (commitment)
  * 2. Generate a random temp encryption key
- * 3. Encrypt the order with the temp key (XOR-based from @veil/core)
+ * 3. Encrypt the order with the temp key (XOR-based from @fabrknt/veil-core)
  * 4. Split the temp key into N shares with threshold M
  * 5. Encrypt each share for its corresponding solver using NaCl box
  *
@@ -274,7 +274,7 @@ export function createThresholdEncryptedOrder(
   const serialized = serializeOrderPayload(payload);
   const payloadHash = computePayloadHash(payload);
 
-  // Use threshold encryption from @veil/core:
+  // Use threshold encryption from @fabrknt/veil-core:
   // generates random key, XOR-encrypts the data, splits key with Shamir
   const { encryptedSecret, keyShares } = createThresholdEncryption(
     serialized,
@@ -334,7 +334,7 @@ export function reconstructThresholdOrder(
 }
 
 // Re-export commonly needed crypto types and address conversion utilities
-export type { EncryptionKeypair, SecretShare } from '@veil/core';
+export type { EncryptionKeypair, SecretShare } from '@fabrknt/veil-core';
 export {
   generateEncryptionKeypair,
   deriveEncryptionKeypair,
@@ -344,7 +344,7 @@ export {
   // EVM hex address conversion (Ethereum, Polygon, Arbitrum, etc.)
   encryptionKeyToHex,
   hexToEncryptionKey,
-} from '@veil/core';
+} from '@fabrknt/veil-core';
 
 /**
  * Detect the address format of a string.
@@ -368,6 +368,6 @@ export function addressToBytes(address: string): Uint8Array {
     return new Uint8Array(Buffer.from(cleaned, 'hex'));
   }
   // base58
-  const { base58ToEncryptionKey: fromBase58 } = require('@veil/core');
+  const { base58ToEncryptionKey: fromBase58 } = require('@fabrknt/veil-core');
   return fromBase58(address);
 }

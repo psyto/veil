@@ -10,4 +10,4 @@ export {
   encryptOrderPayload,
   decryptOrderPayload,
   createEncryptedOrder,
-} from '@veil/orders';
+} from '@fabrknt/veil-orders';

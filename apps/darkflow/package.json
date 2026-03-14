@@ -1,5 +1,5 @@
 {
-  "name": "@veil-solana/darkflow",
+  "name": "@fabrknt/veil-darkflow",
   "version": "0.1.0",
   "description": "DarkFlow - Confidential AMM with Dark Liquidity for Solana",
   "private": true,

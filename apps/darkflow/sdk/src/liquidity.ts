@@ -7,7 +7,7 @@ import {
   DecryptedPositionData,
   TxResult,
 } from './types';
-import { decrypt, EncryptionKeypair } from '@veil/core';
+import { decrypt, EncryptionKeypair } from '@fabrknt/veil-core';
 
 /**
  * Liquidity operations for DarkFlow

@@ -7,7 +7,7 @@ module.exports = {
     '^.+\\.ts$': ['ts-jest', { diagnostics: false }],
   },
   moduleNameMapper: {
-    '^@veil/core$': '<rootDir>/../../../packages/core/src/index.ts',
-    '^@veil/orders$': '<rootDir>/../../../packages/orders/src/index.ts',
+    '^@fabrknt/veil-core$': '<rootDir>/../../../packages/core/src/index.ts',
+    '^@fabrknt/veil-orders$': '<rootDir>/../../../packages/orders/src/index.ts',
   },
 };

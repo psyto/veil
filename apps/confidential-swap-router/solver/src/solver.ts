@@ -15,7 +15,7 @@ import {
   SOLVER_CONFIG_SEED,
   ORDER_SEED,
   ConfidentialSwapClient,
-} from '@confidential-swap/sdk';
+} from '@fabrknt/veil-confidential-swap-sdk';
 import { JupiterClient, findOptimalRoute } from './jupiter';
 import { getAssociatedTokenAddress, getAccount, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { shouldUseCompliantRouting, getCompliantQuote, getTierFromScore, type CompliantModeConfig } from './compliant-mode';

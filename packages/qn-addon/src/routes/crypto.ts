@@ -116,9 +116,9 @@ router.post('/v1/encrypt', (req: Request, res: Response) => {
         hex: Buffer.from(result.bytes).toString('hex'),
       },
       _deprecated: {
-        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @veil/core or @veil/browser instead.',
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @fabrknt/veil-core or @fabrknt/veil-browser instead.',
         sunset: '2026-09-01',
-        alternative: '@veil/core encrypt() or @veil/browser VeilClient.encrypt()',
+        alternative: '@fabrknt/veil-core encrypt() or @fabrknt/veil-browser VeilClient.encrypt()',
       },
     });
   } catch (error: any) {
@@ -164,9 +164,9 @@ router.post('/v1/decrypt', (req: Request, res: Response) => {
         hex: Buffer.from(result).toString('hex'),
       },
       _deprecated: {
-        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform decryption client-side using @veil/core or @veil/browser instead.',
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform decryption client-side using @fabrknt/veil-core or @fabrknt/veil-browser instead.',
         sunset: '2026-09-01',
-        alternative: '@veil/core decrypt() or @veil/browser VeilClient.decrypt()',
+        alternative: '@fabrknt/veil-core decrypt() or @fabrknt/veil-browser VeilClient.decrypt()',
       },
     });
   } catch (error: any) {
@@ -244,9 +244,9 @@ router.post('/v1/crypto/encrypt-multiple', (req: Request, res: Response) => {
       recipientCount: recipientPublicKeys.length,
       recipients,
       _deprecated: {
-        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @veil/core or @veil/browser instead.',
+        warning: 'This endpoint accepts secret keys over HTTP and will be removed in a future version. Perform encryption client-side using @fabrknt/veil-core or @fabrknt/veil-browser instead.',
         sunset: '2026-09-01',
-        alternative: '@veil/core encryptForMultiple() or @veil/browser VeilClient.encryptForMultiple()',
+        alternative: '@fabrknt/veil-core encryptForMultiple() or @fabrknt/veil-browser VeilClient.encryptForMultiple()',
       },
     });
   } catch (error: any) {
